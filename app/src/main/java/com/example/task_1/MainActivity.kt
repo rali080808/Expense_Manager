@@ -42,46 +42,14 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-@PreviewScreenSizes
+@Preview
 @Composable
 fun Task_1App() {
-    var currentDestination by rememberSaveable { mutableStateOf(AppDestinations.DASHBOARD) }
-
-    NavigationSuiteScaffold(
-        navigationSuiteItems = {
-            AppDestinations.entries.forEach {
-                item(
-                    icon = {
-                        Icon(
-                            painterResource(it.icon),
-                            contentDescription = it.label
-                        )
-                    },
-                    label = { Text(it.label) },
-                    selected = it == currentDestination,
-                    onClick = { currentDestination = it }
-
-                )
-            }
-        }
-    ) {
-        Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-            currentDestination.composable(Modifier.padding(innerPadding).shadow(50.dp), 50.sp)
-        }
-    }
+   Navigation()
 }
 
 
 
-enum class AppDestinations(
-    val label: String,
-    val icon: Int, // TODO pass a single object instead of many arguments to the screens
-    val composable: @Composable (Modifier, TextUnit) -> Unit
-) {
-    DASHBOARD("Dashboard", R.drawable.ic_home, {modifier, fontSize -> DashboardScreen(modifier, fontSize, color=Color.Blue)}),
-    TRANSACTIONS("Transactions", R.drawable.ic_favorite,{modifier, fontSize -> TransactionsScreen(modifier, fontSize, color=Color.Red)}),
-    CATEGORIES("Categories", R.drawable.ic_account_box, {modifier, fontSize -> CategoriesScreen(modifier, fontSize, color=Color.Yellow)}),
-}
 
 
 
