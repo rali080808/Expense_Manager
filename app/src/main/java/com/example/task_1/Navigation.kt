@@ -1,8 +1,10 @@
 package com.example.task_1
 
+import android.app.Notification
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteScaffold
@@ -15,12 +17,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.task_1.ui.screens.CategoriesScreen
-import com.example.task_1.ui.screens.DashboardScreen
-import com.example.task_1.ui.screens.TransactionsScreen
+import com.example.task_1.ui.category.CategoriesScreen
+import com.example.task_1.ui.dashboard.DashboardScreen
+import com.example.task_1.ui.transaction.TransactionsScreen
 
 
 @Composable
@@ -47,16 +50,18 @@ fun Navigation()
         }
     ) {
         Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-            currentDestination.composable(Modifier.padding(innerPadding).shadow(50.dp), 50.sp)
+            currentDestination.composable(Modifier
+                .padding(innerPadding)
+                .shadow(50.dp), MaterialTheme.typography.titleLarge)
         }
     }
 }
 enum class AppDestinations(
     val label: String,
     val icon: Int, // TODO pass a single object instead of many arguments to the screens
-    val composable: @Composable (Modifier, TextUnit) -> Unit
+    val composable: @Composable (Modifier, TextStyle) -> Unit
 ) {
-    DASHBOARD("Dashboard", R.drawable.ic_home, {modifier, fontSize -> DashboardScreen(modifier, fontSize, color=Color.Blue)}),
-    TRANSACTIONS("Transactions", R.drawable.ic_favorite,{modifier, fontSize -> TransactionsScreen(modifier, fontSize, color=Color.Red)}),
-    CATEGORIES("Categories", R.drawable.ic_account_box, {modifier, fontSize -> CategoriesScreen(modifier, fontSize, color=Color.Yellow)}),
+    DASHBOARD("Dashboard", R.drawable.ic_home, { modifier,style -> DashboardScreen(modifier, style)}),
+    TRANSACTIONS("Transactions", R.drawable.ic_favorite,{  modifier,style -> TransactionsScreen(modifier, style)}),
+    CATEGORIES("Categories", R.drawable.ic_account_box, {  modifier,style -> CategoriesScreen(modifier, style)}),
 }

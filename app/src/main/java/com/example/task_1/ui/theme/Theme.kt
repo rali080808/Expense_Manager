@@ -9,7 +9,12 @@ import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.platform.LocalContext
+import com.yourpackage.ui.theme.Border
+import com.yourpackage.ui.theme.LocalBorder
+import com.yourpackage.ui.theme.LocalSpacing
+import com.yourpackage.ui.theme.Spacing
 
 private val DarkColorScheme = darkColorScheme(
     primary = Purple80,
@@ -19,8 +24,8 @@ private val DarkColorScheme = darkColorScheme(
 )
 
 private val LightColorScheme = lightColorScheme(
-    primary = Purple40,
-    secondary = PurpleGrey40,
+    primary = DashboardPrimary,
+    secondary = DashboardSecondary,
     tertiary = Pink40
 
     /* Other default colors to override
@@ -33,7 +38,12 @@ private val LightColorScheme = lightColorScheme(
     onSurface = Color(0xFF1C1B1F),
     */
 )
-
+val MaterialTheme.spacing: Spacing
+    @Composable
+    get() = LocalSpacing.current
+val MaterialTheme.border: Border
+    @Composable
+    get() = LocalBorder.current
 @Composable
 fun Task_1Theme(
     darkTheme: Boolean = isSystemInDarkTheme(),
@@ -41,6 +51,9 @@ fun Task_1Theme(
     dynamicColor: Boolean = true,
     content: @Composable () -> Unit
 ) {
+    CompositionLocalProvider(LocalSpacing provides Spacing(), LocalBorder provides Border()) {
+
+
     val colorScheme = when {
         dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
             val context = LocalContext.current
@@ -54,6 +67,8 @@ fun Task_1Theme(
     MaterialTheme(
         colorScheme = colorScheme,
         typography = Typography,
+        shapes = Shapes,
         content = content
     )
+}
 }
