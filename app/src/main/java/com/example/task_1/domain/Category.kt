@@ -1,4 +1,10 @@
 package com.example.task_1.domain
-enum class Category(val icon: String) {
-    Clothes("👕"), Food("🍓"), Medicaments("💊");
+
+import androidx.core.util.Predicate.not
+import com.example.task_1.data.DataService
+
+class Category (val text: String, val icon: String) {
+
+
+
 }

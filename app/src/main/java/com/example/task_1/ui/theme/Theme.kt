@@ -11,10 +11,6 @@ import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.platform.LocalContext
-import com.yourpackage.ui.theme.Border
-import com.yourpackage.ui.theme.LocalBorder
-import com.yourpackage.ui.theme.LocalSpacing
-import com.yourpackage.ui.theme.Spacing
 
 private val DarkColorScheme = darkColorScheme(
     primary = Purple80,

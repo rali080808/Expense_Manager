@@ -1,4 +1,4 @@
-package com.yourpackage.ui.theme
+package com.example.task_1.ui.theme
 
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.staticCompositionLocalOf

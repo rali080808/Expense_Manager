@@ -1,26 +1,32 @@
-package com.example.task_1.ui.dashboard
+package com.example.task_1.ui
 
-import androidx.compose.animation.core.animate
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
+import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.unit.sp
 import com.example.task_1.domain.Transaction
 import com.example.task_1.ui.theme.Money
 import com.example.task_1.ui.theme.border
 import com.example.task_1.ui.theme.spacing
 
+
 @Composable
-fun TransactionCard(transaction: Transaction){
-    Column(modifier = Modifier.border(width = MaterialTheme.border.medium, shape= MaterialTheme.shapes.large,
-        color= MaterialTheme.colorScheme.primary)){
+fun TransactionCard(transaction: Transaction, showDescription: (String)-> Unit){
+    Column(modifier = Modifier
+        .border(width = MaterialTheme.border.medium,
+            shape= MaterialTheme.shapes.large,
+        color= MaterialTheme.colorScheme.primary)
+     .clickable(onClick = {showDescription(transaction.description)})
+    ){
         Row {
             Text(transaction.sender
                     + " -> "
@@ -46,5 +52,20 @@ fun TransactionCard(transaction: Transaction){
                 + ".",
             style = MaterialTheme.typography.bodySmall,
             modifier = Modifier.padding(MaterialTheme.spacing.medium))
+    }
+}
+
+@Composable
+fun ShowDescription(description: String, returnToMainScreen:()->Unit) {
+    Box(
+        modifier = Modifier.fillMaxSize(),
+        contentAlignment = Alignment.Center
+    ) {
+        Column {
+            Text(description)
+            Button(onClick=returnToMainScreen ) {
+                Text("Return")
+            }
+        }
     }
 }
