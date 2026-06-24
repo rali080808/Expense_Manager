@@ -8,3 +8,6 @@ class Category (val text: String, val icon: String) {
 
 
 }
+
+val NoFilter: Category = Category("", "")
+val MAX_CATEGORY_LENGTH  = 16

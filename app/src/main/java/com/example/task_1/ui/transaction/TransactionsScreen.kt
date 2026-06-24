@@ -1,9 +1,11 @@
 package com.example.task_1.ui.transaction
 
+import android.R
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -11,6 +13,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.Button
 import androidx.compose.material3.DatePicker
@@ -30,12 +33,17 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import com.example.task_1.domain.Category
+import com.example.task_1.domain.MAX_MONEY_LENGTH
+import com.example.task_1.domain.MAX_RECEIVER_LENGTH
+import com.example.task_1.domain.NoFilter
 import com.example.task_1.domain.PayMethod
 import com.example.task_1.domain.SortTypes
 import com.example.task_1.domain.Transaction
@@ -46,6 +54,7 @@ import com.example.task_1.ui.LoadingScreen
 import com.example.task_1.ui.TransactionCard
 import com.example.task_1.ui.theme.border
 import com.example.task_1.ui.theme.spacing
+import kotlinx.coroutines.launch
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
@@ -63,8 +72,10 @@ fun TransactionsScreen(
     val uiState by viewModel.uiState.collectAsState()
     var expandedSortTypes by remember { mutableStateOf(false) }
     var expandedCategoryFilter by remember { mutableStateOf(false) }
-    val categoryFilter = remember { Category("all", "all") }
+    val categoryFilter = remember { NoFilter }
     val isRefreshing = uiState is UiState.Loading
+    var lastDate: LocalDate? = null
+    val scope = rememberCoroutineScope()
 
     PullToRefreshBox(
         isRefreshing = isRefreshing,
@@ -76,90 +87,104 @@ fun TransactionsScreen(
             is UiState.Success<*> -> {
                 LazyColumn(Modifier.padding(start = MaterialTheme.spacing.medium)) {
                     item {
-                        Row {
+                        Row(horizontalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.medium), modifier = Modifier.fillMaxWidth()) {
                             Text(
                                 "Transactions",
                                 modifier = modifier,
                                 style = style,
                                 color = MaterialTheme.colorScheme.primary
                             )
-
-                            Button(onClick = onAddClick) { Text("+") }
-
+                            Button(onClick = onAddClick, Modifier
+                                .clip(MaterialTheme.shapes.small),
+                                shape = MaterialTheme.shapes.small){
+                                Text("+", style = MaterialTheme.typography.bodyLarge)
+                            }
                         }
-                        Row {
-                            Box {
-                                Text(
-                                    text = if (categoryFilter.text == "all") "Filter Categories" else "Filter: $categoryFilter",
-                                    modifier = Modifier
-                                        .clickable {
-                                            expandedCategoryFilter = !expandedCategoryFilter
-                                        }
-                                        .border(
-                                            BorderStroke(
-                                                width = MaterialTheme.border.small,
-                                                color = MaterialTheme.colorScheme.primary
+                        Box(contentAlignment = Alignment.Center, modifier=Modifier.fillMaxWidth()) {
+                            Row ( horizontalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.medium)){
+                                Box {
+                                    Text(
+                                        text = if (categoryFilter == NoFilter) "Filter Categories" else "Filter: $categoryFilter",
+                                        modifier = Modifier
+                                            .clickable {
+                                                expandedCategoryFilter = !expandedCategoryFilter
+                                            }.border(
+                                                BorderStroke(
+                                                    width = MaterialTheme.border.small,
+                                                    color = MaterialTheme.colorScheme.primary
+                                                )
                                             )
-                                        )
-                                        .background(color = MaterialTheme.colorScheme.secondary),
-                                    style = MaterialTheme.typography.titleMedium
-                                )
-                                DropdownMenu(
-                                    expanded = expandedCategoryFilter,
-                                    onDismissRequest = { expandedCategoryFilter = false }
-                                ) {
-                                    DropdownMenuItem(
-                                        text = { Text("All") },
-                                        onClick = {
-                                            // TODO const variable of type category for "all"
-                                            viewModel.filterByCategory(Category("all", "all"))
-                                            expandedCategoryFilter = false
-                                        }
+                                            .background(color = MaterialTheme.colorScheme.secondary)
+                                            .padding(MaterialTheme.spacing.small),
+                                        style = MaterialTheme.typography.titleSmall
                                     )
-                                    categories.forEach { filter ->
+                                    DropdownMenu(
+                                        expanded = expandedCategoryFilter,
+                                        onDismissRequest = { expandedCategoryFilter = false }
+                                    ) {
                                         DropdownMenuItem(
-                                            text = { Text(filter.text) },
+                                            text = { Text("All") },
                                             onClick = {
-                                                viewModel.filterByCategory(filter)
-                                                expandedCategoryFilter = false
+                                                scope.launch {
+                                                    viewModel.filterByCategory(NoFilter)
+                                                    expandedCategoryFilter = false
+                                                }
                                             }
                                         )
+                                        categories.forEach { filter ->
+                                            DropdownMenuItem(
+                                                text = { Text(filter.text) },
+                                                onClick = {
+                                                    scope.launch {
+                                                        viewModel.filterByCategory(filter)
+                                                        expandedCategoryFilter = false
+                                                    }
+                                                }
+                                            )
+                                        }
                                     }
                                 }
-                            }
-                            Box {
-                                Text(
-                                    text = "Sort Transactions",
-                                    modifier = Modifier
-                                        .clickable { expandedSortTypes = !expandedSortTypes }
-                                        .border(
-                                            BorderStroke(
-                                                width = MaterialTheme.border.small,
-                                                color = MaterialTheme.colorScheme.primary
+                                Box {
+                                    Text(
+                                        text = "Sort Transactions",
+                                        modifier = Modifier
+                                            .clickable { expandedSortTypes = !expandedSortTypes }
+                                            .border(
+                                                BorderStroke(
+                                                    width = MaterialTheme.border.small,
+                                                    color = MaterialTheme.colorScheme.primary
+                                                )
                                             )
-                                        )
-                                        .background(color = MaterialTheme.colorScheme.secondary),
-                                    style = MaterialTheme.typography.titleMedium
-                                )
-                                DropdownMenu(
-                                    expanded = expandedSortTypes,
-                                    onDismissRequest = { expandedSortTypes = false }
-                                ) {
-                                    SortTypes.entries.forEach { option ->
-                                        DropdownMenuItem(
-                                            text = { Text(option.displayName) },
-                                            onClick = {
-                                                viewModel.sortTransactions(option)
-                                                expandedSortTypes = false
-                                            }
-                                        )
+                                            .background(color = MaterialTheme.colorScheme.secondary)
+                                            .padding(MaterialTheme.spacing.small),
+                                        style = MaterialTheme.typography.titleSmall
+                                    )
+                                    DropdownMenu(
+                                        expanded = expandedSortTypes,
+                                        onDismissRequest = { expandedSortTypes = false }
+                                    ) {
+                                        SortTypes.entries.forEach { option ->
+                                            DropdownMenuItem(
+                                                text = { Text(option.displayName) },
+                                                onClick = {
+                                                    viewModel.sortTransactions(option)
+                                                    expandedSortTypes = false
+                                                }
+                                            )
+                                        }
                                     }
                                 }
                             }
                         }
+                        Spacer(Modifier.padding(MaterialTheme.spacing.small))
                         Column {
-                            transactions.getTransactions().forEach { transaction ->
+                            transactions.getTransactions().forEachIndexed { index, transaction ->
+                                if (viewModel.currentSortType == SortTypes.SORTBY_DATE_ASCENDING || viewModel.currentSortType == SortTypes.SORTBY_DATE_DESCENDING)
+                                    if (lastDate != transaction.date)
+                                        Text(transaction.date.toString())
                                 TransactionCard(transaction, onNavigateToDescription)
+                                lastDate = transaction.date
+                                if (index == transactions.getTransactions().size - 1) lastDate = null
                             }
                         }
                     }
@@ -168,6 +193,7 @@ fun TransactionsScreen(
         }
     }
 }
+
 @Composable
 fun AddTransaction(
     returnToTransactionScreen: () -> Unit,
@@ -177,8 +203,8 @@ fun AddTransaction(
     val categories by viewModel.categories.collectAsState()
 
     if (categories.isEmpty()) {
-        ErrorScreen("Add a category to become able to add transaactions")
-        return;
+        ErrorScreen("Add a category to become able to add transactions")
+        return
     }
 
     var expandedCategory by remember { mutableStateOf(false) }
@@ -208,14 +234,16 @@ fun AddTransaction(
 
         OutlinedTextField(
             value = receiver,
-            onValueChange = { receiver = it },
+            onValueChange = { if (  it.length < MAX_RECEIVER_LENGTH) receiver = it },
             label = { Text("Receiver") },
+            singleLine = true,
             modifier = Modifier.fillMaxWidth()
         )
 
         OutlinedTextField(
             value = sum,
-            onValueChange = { sum = it },
+            onValueChange = { if (  it.length < MAX_MONEY_LENGTH) sum = it },
+            singleLine = true,
             label = { Text("Money") },
             modifier = Modifier.fillMaxWidth()
         )

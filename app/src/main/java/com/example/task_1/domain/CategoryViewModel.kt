@@ -15,6 +15,8 @@ class CategoryViewModel(private val dataService: DataService) : ViewModel() {
 
     private val _categories = MutableStateFlow<List<Category>>(listOf())
     val categories: StateFlow<List<Category>> = _categories
+    private val _transactions = MutableStateFlow(Transactions(mutableListOf()))
+    val transactions: StateFlow<Transactions> = _transactions
 
 
 
@@ -25,10 +27,26 @@ class CategoryViewModel(private val dataService: DataService) : ViewModel() {
     fun loadData() {
         viewModelScope.launch {
             _uiState.value = UiState.Loading
+
+            _transactions.value = Transactions(
+                dataService.getTransactionsObject().getTransactions().reversed().toMutableList()
+            )
             _categories.value = dataService.getCategories()
-            _uiState.value = UiState.Success(categories.value)
+
+            _uiState.value = UiState.Success(transactions.value)
+
         }
     }
+
+    fun noTransactionsInCategory() : Boolean {
+        for ( transaction in transactions.value.getTransactions()) {
+            if ( transaction.category == categories.value[indexForDeletion]) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     fun removeCategory(index: Int){
         viewModelScope.launch {
         _uiState.value = UiState.Loading

@@ -10,7 +10,7 @@ import androidx.compose.ui.unit.sp
 val Typography = Typography(
 
     bodySmall = TextStyle(
-        fontFamily = FontFamily.Default,
+        fontFamily = FontFamily.Serif,
         fontWeight = FontWeight.Normal,
         fontSize = 10.sp,
         lineHeight = 15.sp,
@@ -19,14 +19,14 @@ val Typography = Typography(
      //titles
 
     titleLarge = TextStyle(
-        fontFamily = FontFamily.Default,
+        fontFamily = FontFamily.Serif,
         fontWeight = FontWeight.ExtraBold,
-        fontSize = 45.sp,
+        fontSize = 40.sp,
         lineHeight = 50.sp,
         letterSpacing = 5.sp
     ),
     titleMedium = TextStyle(
-        fontFamily = FontFamily.Default,
+        fontFamily = FontFamily.Serif,
         fontWeight = FontWeight.ExtraBold,
         fontSize = 25.sp,
         lineHeight = 30.sp,
@@ -35,7 +35,7 @@ val Typography = Typography(
 
     //labels
     labelLarge = TextStyle(
-        fontFamily = FontFamily.Default,
+        fontFamily = FontFamily.Serif,
         fontWeight = FontWeight.Normal,
         fontSize = 20.sp,
         lineHeight = 25.sp,
@@ -43,7 +43,7 @@ val Typography = Typography(
     )
     ,
     labelMedium = TextStyle(
-        fontFamily = FontFamily.Default,
+        fontFamily = FontFamily.Serif,
         fontWeight = FontWeight.Medium,
         fontSize = 16.sp,
         lineHeight = 20.sp,

@@ -1,12 +1,15 @@
 package com.example.task_1.ui.category
 
-import android.R.attr.onClick
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.Button
@@ -27,11 +30,16 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.TextUnit
+import androidx.room.util.getColumnIndex
+import androidx.room.util.performInTransactionSuspending
 import com.example.task_1.domain.Category
 import com.example.task_1.domain.CategoryViewModel
+import com.example.task_1.domain.MAX_CATEGORY_LENGTH
+import com.example.task_1.domain.MAX_RECEIVER_LENGTH
 import com.example.task_1.domain.UiState
 import com.example.task_1.ui.LoadingScreen
 import com.example.task_1.ui.theme.border
+import com.example.task_1.ui.theme.spacing
 
 @Composable
 fun CategoriesScreen(
@@ -58,157 +66,209 @@ fun CategoriesScreen(
             is UiState.Error ->
                 Text((uiState as UiState.Error).message)
 
-            is UiState.Success<*> -> LazyColumn(modifier= Modifier.fillMaxSize()) {
+            is UiState.Success<*> -> LazyColumn(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(start = MaterialTheme.spacing.medium)
+            ) {
                 item {
-                    Row() {
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.medium),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
                         Text(
                             "Categories",
                             modifier = modifier,
                             style = style,
                             color = MaterialTheme.colorScheme.primary
                         )
-                        Button(onClick = addCategoryOnClick) {
+                        Button(onClick = addCategoryOnClick, Modifier
+                            .clip(MaterialTheme.shapes.small)
+                          ,
+                            shape = MaterialTheme.shapes.small) {
                             Text("+", style = MaterialTheme.typography.bodyLarge)
                         }
                     }
+                    Spacer(Modifier.padding(MaterialTheme.spacing.medium))
 
-                    Column() {
-                        categories.forEachIndexed { index, category ->
-                            Row() {
-                                Text(category.text + " " + category.icon)
-                                Button(onClick = {
-                                    viewModel.indexForEdit = index; editCategoryOnClick()
-                                }) { Text("edit") }
+                    Row (horizontalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.medium),
+                        modifier = Modifier.fillMaxWidth()){
+                        Column {
+                            categories.forEachIndexed { index, category ->
+                                Box(
+                                    modifier = Modifier.padding(vertical = MaterialTheme.spacing.small),
+                                    contentAlignment = Alignment.CenterStart
+                                ) {
+                                    Text(
+                                        text = "${category.text} ${category.icon}",
+                                        style = MaterialTheme.typography.titleMedium
+                                    )
+                                    Spacer(Modifier.padding(MaterialTheme.spacing.medium))
+                                }
+
+                            }
+                        }
+                        Column {
+                            categories.forEachIndexed { index, _ ->
+                                Button(
+                                    onClick = {
+                                        viewModel.indexForEdit = index
+                                        editCategoryOnClick()
+                                    }
+                                ) {
+                                    Text("Edit")
+                                }
+                                Spacer(Modifier.padding(MaterialTheme.spacing.small))
+                            }
+                        }
+
+                        Column {
+                            categories.forEachIndexed { index, category ->
                                 Button(onClick = {
                                     viewModel.indexForDeletion = index; categoryDeleteDialog()
                                 })
-                                { Text("X") }
+                                {
+                                    Text("X")
+                                }
+                                Spacer(Modifier.padding(MaterialTheme.spacing.small))
                             }
-                        }
-                    }
 
+                        }
+
+                    }
                 }
             }
         }
     }
 }
-    @Composable
-    fun CategoryDeleteDialog(returnToCategoryScreen: () -> Unit, viewModel: CategoryViewModel) {
 
-        val categories by viewModel.categories.collectAsState()
+@Composable
+fun CategoryDeleteDialog(returnToCategoryScreen: () -> Unit, viewModel: CategoryViewModel) {
+
+    val categories by viewModel.categories.collectAsState()
+    Box(
+        modifier = Modifier.fillMaxSize(),
+        contentAlignment = Alignment.Center
+    ) {
         Box(
-            modifier = Modifier.fillMaxSize(),
-            contentAlignment = Alignment.Center
+            Modifier.border(
+                width = MaterialTheme.border.medium,
+                color = MaterialTheme.colorScheme.primary,
+                shape = MaterialTheme.shapes.large
+            ), contentAlignment = Alignment.Center
         ) {
-            Box(
-                Modifier.border(
-                    width = MaterialTheme.border.medium,
-                    color = MaterialTheme.colorScheme.primary,
-                    shape = MaterialTheme.shapes.large
-                ), contentAlignment = Alignment.Center
-            ) {
-                Column() {
+            Column {
+                if (viewModel.noTransactionsInCategory()) {
+                    Text("Category ${categories[viewModel.indexForDeletion].text} is active. You cannot delete it.")
+                    Button(onClick = { returnToCategoryScreen() }) {
+                        Text("Return")
+                    }
+                } else {
                     Text("Are you sure that you want to delete ${categories[viewModel.indexForDeletion].text}")
-                    Row() {
+                    Row {
                         Button(onClick = { viewModel.removeCategory(viewModel.indexForDeletion); returnToCategoryScreen() }) {
                             Text("OK")
                         }
                         Button(onClick = { returnToCategoryScreen() }) {
                             Text("Cancel")
                         }
-                    }}
-            }//@formatter:on
+                    }
+                }
+            }
         }
     }
+}
 
-    @Composable
-    fun EditCategory(returnToCategoryScreen: () -> Unit, viewModel: CategoryViewModel) {
+@Composable
+fun EditCategory(returnToCategoryScreen: () -> Unit, viewModel: CategoryViewModel) {
 
-        val categories by viewModel.categories.collectAsState()
-        var categoryText by remember { mutableStateOf(categories[viewModel.indexForEdit].text) }
-        var categoryIcon by remember { mutableStateOf(categories[viewModel.indexForEdit].icon) }
+    val categories by viewModel.categories.collectAsState()
+    var categoryText by remember { mutableStateOf(categories[viewModel.indexForEdit].text) }
+    var categoryIcon by remember { mutableStateOf(categories[viewModel.indexForEdit].icon) }
 
-        Column(
-            modifier = Modifier
-                .clip(MaterialTheme.shapes.large)
-                .border(
-                    BorderStroke(
-                        width = MaterialTheme.border.medium,
-                        color = MaterialTheme.colorScheme.primary
-                    )
+    Column(
+        modifier = Modifier
+            .clip(MaterialTheme.shapes.large)
+            .border(
+                BorderStroke(
+                    width = MaterialTheme.border.medium,
+                    color = MaterialTheme.colorScheme.primary
                 )
-        ) {
+            )
+    ) {
 
-            Text("Edit Category", style = MaterialTheme.typography.titleMedium)
-            Row() {
-                OutlinedTextField(
-                    value = categoryText,
-                    onValueChange = {
-                        categoryText = it
-                    },
-                    label = { Text("Text") }
-                )
-                OutlinedTextField(
-                    value = categoryIcon,
-                    onValueChange = {
-                        categoryIcon = it
-                    },
-                    label = { Text("Icon") }
-                )
-            }
-            Button(onClick = {
-                viewModel.editCategory(
-                    viewModel.indexForEdit,
-                    Category(categoryText, categoryIcon)
-                ); returnToCategoryScreen()
-            }) {
-                Text("Save", style = MaterialTheme.typography.bodyLarge)
-            }
-
+        Text("Edit Category", style = MaterialTheme.typography.titleMedium)
+        Row() {
+            OutlinedTextField(
+                value = categoryText,
+                onValueChange = {
+                     if ( categoryText.length < MAX_CATEGORY_LENGTH) categoryText = it
+                },
+                label = { Text("Text") }
+            )
+            OutlinedTextField(
+                value = categoryIcon,
+                onValueChange = {
+                    if ( categoryIcon.length < MAX_CATEGORY_LENGTH) categoryIcon= it
+                },
+                label = { Text("Icon") }
+            )
         }
+        Button(onClick = {
+            viewModel.editCategory(
+                viewModel.indexForEdit,
+                Category(categoryText, categoryIcon)
+            ); returnToCategoryScreen()
+        }) {
+            Text("Save", style = MaterialTheme.typography.bodyLarge)
+        }
+
     }
 
-    @Composable
-    fun AddCategory(returnToCategoryScreen: () -> Unit, viewModel: CategoryViewModel) {
-        var categoryText by remember { mutableStateOf("") }
-        var categoryIcon by remember { mutableStateOf("") }
+}
 
-        Column(
-            modifier = Modifier
-                .clip(MaterialTheme.shapes.large)
-                .border(
-                    BorderStroke(
-                        width = MaterialTheme.border.medium,
-                        color = MaterialTheme.colorScheme.primary
-                    )
-                )
-        ) {
+@Composable
+fun AddCategory(returnToCategoryScreen: () -> Unit, viewModel: CategoryViewModel) {
+    var categoryText by remember { mutableStateOf("") }
+    var categoryIcon by remember { mutableStateOf("") }
 
-            Text("New Category", style = MaterialTheme.typography.titleMedium)
-            Row() {
-                OutlinedTextField(
-                    value = categoryText,
-                    onValueChange = {
-                        categoryText = it
-                    },
-                    label = { Text("Text") }
+    Column(
+        modifier = Modifier
+            .clip(MaterialTheme.shapes.large)
+            .border(
+                BorderStroke(
+                    width = MaterialTheme.border.medium,
+                    color = MaterialTheme.colorScheme.primary
                 )
-                OutlinedTextField(
-                    value = categoryIcon,
-                    onValueChange = {
-                        categoryIcon = it
-                    },
-                    label = { Text("Icon") }
-                )
-            }
-            Button(onClick = {
-                viewModel.addCategory(
-                    categoryText,
-                    categoryIcon
-                ); returnToCategoryScreen()
-            }) {
-                Text("Add this category", style = MaterialTheme.typography.bodyLarge)
-            }
+            )
+    ) {
 
+        Text("New Category", style = MaterialTheme.typography.titleMedium)
+        Row() {
+            OutlinedTextField(
+                value = categoryText,
+                onValueChange = {
+                    if (  it.length < MAX_CATEGORY_LENGTH)  categoryText = it
+                },
+                label = { Text("Text") }
+            )
+            OutlinedTextField(
+                value = categoryIcon,
+                onValueChange = {
+                    if (  it.length < MAX_CATEGORY_LENGTH) categoryIcon = it
+                },
+                label = { Text("Icon") }
+            )
         }
+        Button(onClick = {
+            viewModel.addCategory(
+                categoryText,
+                categoryIcon
+            ); returnToCategoryScreen()
+        }) {
+            Text("Add this category", style = MaterialTheme.typography.bodyLarge)
+        }
+
     }
+
+}

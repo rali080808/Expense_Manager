@@ -21,7 +21,11 @@ class DashboardViewModel(private val dataService: DataService) : ViewModel() {
 
     fun loadData() {
         viewModelScope.launch {
-            _transactions.value = dataService.getTransactions()
+            _uiState.value = UiState.Loading
+            _transactions.value = Transactions(
+                dataService.getTransactionsObject().getTransactions()
+                    .reversed().toMutableList()
+            )
             _uiState.value = UiState.Success(transactions.value)
         }
     }

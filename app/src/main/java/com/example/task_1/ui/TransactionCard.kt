@@ -28,6 +28,9 @@ fun TransactionCard(transaction: Transaction, showDescription: (String)-> Unit){
      .clickable(onClick = {showDescription(transaction.description)})
     ){
         Row {
+            Text(transaction.category.icon
+                ,style = MaterialTheme.typography.labelLarge,
+                modifier = Modifier.padding(MaterialTheme.spacing.medium))
             Text(transaction.sender
                     + " -> "
                     + transaction.receiver,

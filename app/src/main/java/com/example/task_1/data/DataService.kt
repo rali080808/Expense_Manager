@@ -50,7 +50,7 @@ public object DataService : IDataService {
         delay(700)
         return categories;
     }
-    override suspend fun getTransactions() : Transactions {
+    override suspend fun getTransactionsObject() : Transactions {
         delay(700)
         return transactions;
     }

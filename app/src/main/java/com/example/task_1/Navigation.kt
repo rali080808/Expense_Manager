@@ -8,6 +8,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteScaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -24,14 +25,14 @@ import com.example.task_1.data.DataService
 import com.example.task_1.domain.CategoryViewModel
 import com.example.task_1.domain.DashboardViewModel
 import com.example.task_1.domain.TransactionViewModel
-import com.example.task_1.ui.category.AddCategory
 import com.example.task_1.ui.category.CategoriesScreen
-import com.example.task_1.ui.category.CategoryDeleteDialog
-import com.example.task_1.ui.category.EditCategory
 import com.example.task_1.ui.dashboard.DashboardScreen
 import com.example.task_1.ui.ShowDescription
 import com.example.task_1.ui.transaction.AddTransaction
 import com.example.task_1.ui.transaction.TransactionsScreen
+import com.example.task_1.ui.category.AddCategory
+import com.example.task_1.ui.category.EditCategory
+import com.example.task_1.ui.category.CategoryDeleteDialog
 
 @Serializable
 data class ShowDescriptionRoute(
@@ -66,7 +67,6 @@ fun Navigation() {
         }
     ) {
         Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-
             NavHost(
                 navController = navController,
                 startDestination = AppDestinations.DASHBOARD.name,
@@ -75,6 +75,9 @@ fun Navigation() {
             ) {
 
                 composable(AppDestinations.DASHBOARD.name) {
+                    LaunchedEffect(Unit) {
+                        dashboardViewModel.loadData()
+                    }
                     DashboardScreen(
                         modifier = Modifier,
                         style = MaterialTheme.typography.titleLarge,
@@ -87,6 +90,9 @@ fun Navigation() {
                 }
 
                 composable(AppDestinations.TRANSACTIONS.name) {
+                    LaunchedEffect(Unit) {
+                        transactionViewModel.loadData()
+                    }
                     TransactionsScreen(
                         modifier = Modifier,
                         style = MaterialTheme.typography.titleLarge,
@@ -116,6 +122,9 @@ fun Navigation() {
                 }
 
                 composable(AppDestinations.CATEGORIES.name) {
+                    LaunchedEffect(Unit) {
+                        categoryViewModel.loadData()
+                    }
                     CategoriesScreen(
                         modifier = Modifier,
                         style = MaterialTheme.typography.titleLarge,

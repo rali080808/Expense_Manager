@@ -14,6 +14,6 @@ interface IDataService {
     suspend fun editCategory(index: Int, editedCategory: Category): List<Category>
 
     suspend fun getCategories(): List<Category>
-    suspend fun getTransactions(): Transactions
+    suspend fun getTransactionsObject(): Transactions
     suspend fun addTransaction(transaction: Transaction)
 }
