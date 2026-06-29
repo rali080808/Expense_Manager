@@ -22,7 +22,7 @@ import com.example.task_1.domain.UiState
 import com.example.task_1.ui.theme.spacing
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import com.example.task_1.domain.DashboardViewModel
+import com.example.task_1.ui.dashboard.DashboardViewModel
 import com.example.task_1.ui.LoadingScreen
 import com.example.task_1.ui.TransactionCard
 
@@ -67,7 +67,7 @@ fun DashboardScreen(modifier : Modifier, style: TextStyle, viewModel: DashboardV
                         SummaryCard("Total sum", transactions.totalExpenses())
                         SummaryCard(
                             "Biggest expense",
-                            transactions.getTransactions()[transactions.indexOfBiggestExpense()].money
+                            transactions.getBiggestExpense()
                         )
                     }
 

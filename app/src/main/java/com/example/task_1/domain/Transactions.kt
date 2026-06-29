@@ -17,17 +17,19 @@ class Transactions(private var transactions : MutableList<Transaction> ) {
         }
         return sum;
     }
-    fun indexOfBiggestExpense():Int {
+
+
+    fun getBiggestExpense() : Double {
+        if (transactions.isEmpty()) return 0.0;
+
         var indexOfTheBiggest: Int = 0;
         for ( transaction in transactions) {
             if ( transaction.money > transactions[indexOfTheBiggest].money ) {
                 indexOfTheBiggest = transactions.indexOf(transaction)
             }
         }
-        return indexOfTheBiggest;
+        return transactions[indexOfTheBiggest].money;
     }
-
-
     fun getCategories() : List<Category> {
         val set: MutableSet<Category> = mutableSetOf()
         for ( transaction in transactions  ) {

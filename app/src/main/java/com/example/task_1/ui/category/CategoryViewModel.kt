@@ -1,8 +1,11 @@
-package com.example.task_1.domain
+package com.example.task_1.ui.category
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.task_1.data.DataService
+import com.example.task_1.domain.Category
+import com.example.task_1.domain.Transactions
+import com.example.task_1.domain.UiState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -11,7 +14,7 @@ class CategoryViewModel(private val dataService: DataService) : ViewModel() {
     var indexForDeletion: Int = -1
     var indexForEdit: Int = -1
     private val _uiState = MutableStateFlow<UiState>(UiState.Loading)
-    val uiState: StateFlow<UiState>  get() = _uiState
+    val uiState: StateFlow<UiState> get() = _uiState
 
     private val _categories = MutableStateFlow<List<Category>>(listOf())
     val categories: StateFlow<List<Category>> = _categories
@@ -38,7 +41,7 @@ class CategoryViewModel(private val dataService: DataService) : ViewModel() {
         }
     }
 
-    fun noTransactionsInCategory() : Boolean {
+    fun transactionsInCategory() : Boolean {
         for ( transaction in transactions.value.getTransactions()) {
             if ( transaction.category == categories.value[indexForDeletion]) {
                 return true;
@@ -69,10 +72,10 @@ class CategoryViewModel(private val dataService: DataService) : ViewModel() {
     fun addCategory(text: String, icon: String) {
         viewModelScope.launch {
             _uiState.value = UiState.Loading
-            val result  = DataService.addCategory(text, icon)
+            val result = dataService.addCategory(text, icon)
 
             if (result.isSuccess) {
-                _categories.value = DataService.getCategories()
+                _categories.value = dataService.getCategories()
                 _uiState.value = UiState.Success(categories.value)
             }else {
                 _uiState.value = UiState.Error("Failed to add category")

@@ -1,15 +1,15 @@
-package com.example.task_1.domain
+package com.example.task_1.ui.transaction
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.room.util.copy
 import com.example.task_1.data.DataService
+import com.example.task_1.domain.Category
+import com.example.task_1.domain.NoFilter
+import com.example.task_1.domain.Transaction
+import com.example.task_1.domain.Transactions
+import com.example.task_1.domain.UiState
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 enum class SortTypes(val displayName: String) {
@@ -90,7 +90,9 @@ class TransactionViewModel(private val dataService: DataService) : ViewModel() {
 
             if (category == NoFilter)
                 _transactions.value =
-                    Transactions(dataService.getTransactionsObject().getTransactions().toMutableList())
+                    Transactions(
+                        dataService.getTransactionsObject().getTransactions().toMutableList()
+                    )
             else
                 _transactions.value = Transactions(
                     dataService.getTransactionsObject().getTransactions()

@@ -22,9 +22,9 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
 import kotlinx.serialization.Serializable
 import com.example.task_1.data.DataService
-import com.example.task_1.domain.CategoryViewModel
-import com.example.task_1.domain.DashboardViewModel
-import com.example.task_1.domain.TransactionViewModel
+import com.example.task_1.ui.category.CategoryViewModel
+import com.example.task_1.ui.dashboard.DashboardViewModel
+import com.example.task_1.ui.transaction.TransactionViewModel
 import com.example.task_1.ui.category.CategoriesScreen
 import com.example.task_1.ui.dashboard.DashboardScreen
 import com.example.task_1.ui.ShowDescription

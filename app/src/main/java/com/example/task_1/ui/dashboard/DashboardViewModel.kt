@@ -1,17 +1,17 @@
-package com.example.task_1.domain
+package com.example.task_1.ui.dashboard
 
-import androidx.compose.runtime.collectAsState
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.task_1.data.DataService
+import com.example.task_1.domain.Transactions
+import com.example.task_1.domain.UiState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
-import kotlin.collections.emptyList
 
 class DashboardViewModel(private val dataService: DataService) : ViewModel() {
     private val _uiState = MutableStateFlow<UiState>(UiState.Loading)
-    val uiState: StateFlow<UiState>  get() = _uiState
+    val uiState: StateFlow<UiState> get() = _uiState
     private val _transactions = MutableStateFlow(Transactions(mutableListOf()))
     val transactions: StateFlow<Transactions> = _transactions
 

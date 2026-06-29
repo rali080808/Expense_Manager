@@ -33,7 +33,7 @@ import androidx.compose.ui.unit.TextUnit
 import androidx.room.util.getColumnIndex
 import androidx.room.util.performInTransactionSuspending
 import com.example.task_1.domain.Category
-import com.example.task_1.domain.CategoryViewModel
+import com.example.task_1.ui.category.CategoryViewModel
 import com.example.task_1.domain.MAX_CATEGORY_LENGTH
 import com.example.task_1.domain.MAX_RECEIVER_LENGTH
 import com.example.task_1.domain.UiState
@@ -158,8 +158,8 @@ fun CategoryDeleteDialog(returnToCategoryScreen: () -> Unit, viewModel: Category
             ), contentAlignment = Alignment.Center
         ) {
             Column {
-                if (viewModel.noTransactionsInCategory()) {
-                    Text("Category ${categories[viewModel.indexForDeletion].text} is active. You cannot delete it.")
+                if (viewModel.transactionsInCategory()) {
+                    Text("Category ${categories[viewModel.indexForDeletion].text} ${categories[viewModel.indexForDeletion].icon} is active. You cannot delete it.")
                     Button(onClick = { returnToCategoryScreen() }) {
                         Text("Return")
                     }
