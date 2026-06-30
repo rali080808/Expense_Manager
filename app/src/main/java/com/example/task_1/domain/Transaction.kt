@@ -12,8 +12,7 @@ class Transaction(val sender : String,
                   val date: LocalDate ,
                   val category: Category,
                   val description:String="",
-                  val payMethod: PayMethod   ) {
-}
+                  val payMethod: PayMethod   )
 
 val MAX_RECEIVER_LENGTH  = 16
 val MAX_MONEY_LENGTH  = 16

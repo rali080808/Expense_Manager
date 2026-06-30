@@ -3,6 +3,7 @@ package com.example.task_1.ui.transaction
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.task_1.data.DataService
+import com.example.task_1.data.IDataService
 import com.example.task_1.domain.Category
 import com.example.task_1.domain.NoFilter
 import com.example.task_1.domain.Transaction
@@ -20,7 +21,7 @@ enum class SortTypes(val displayName: String) {
 }
 
 
-class TransactionViewModel(private val dataService: DataService) : ViewModel() {
+class TransactionViewModel(private val dataService: IDataService) : ViewModel() {
     private val _uiState = MutableStateFlow<UiState>(UiState.Loading)
     val uiState: StateFlow<UiState> get() = _uiState
     private val _transactions = MutableStateFlow(Transactions(mutableListOf()))

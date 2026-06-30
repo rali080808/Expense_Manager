@@ -18,12 +18,11 @@ class Transactions(private var transactions : MutableList<Transaction> ) {
         return sum;
     }
 
-
     fun getBiggestExpense() : Double {
         if (transactions.isEmpty()) return 0.0;
 
         var indexOfTheBiggest: Int = 0;
-        for ( transaction in transactions) {
+        for ( transaction in transactions ) {
             if ( transaction.money > transactions[indexOfTheBiggest].money ) {
                 indexOfTheBiggest = transactions.indexOf(transaction)
             }
@@ -41,7 +40,9 @@ class Transactions(private var transactions : MutableList<Transaction> ) {
     fun categoriesOverview() : List<CategoriesOverview> {
         val categoryExpenses = getCategories().associateWith { 0.0 }.toMutableMap()
         for (transaction in transactions) {
-            categoryExpenses.merge(transaction.category, transaction.money, Double::plus)
+            categoryExpenses.merge(transaction.category,
+                                   transaction.money,
+                                   Double::plus)
         }
         return categoryExpenses.map { (category, expense) ->
             CategoriesOverview(category, expense)
