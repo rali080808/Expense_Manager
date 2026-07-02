@@ -11,8 +11,12 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.lifecycle.ViewModel
+import com.example.task_1.domain.Category
 import com.example.task_1.domain.Transaction
 import com.example.task_1.ui.theme.Money
 import com.example.task_1.ui.theme.border
@@ -20,7 +24,8 @@ import com.example.task_1.ui.theme.spacing
 
 
 @Composable
-fun TransactionCard(transaction: Transaction, showDescription: (String)-> Unit){
+fun TransactionCard(transaction: Transaction, showDescription: (String)-> Unit, category: Category){
+
     Column(modifier = Modifier
         .border(width = MaterialTheme.border.medium,
             shape= MaterialTheme.shapes.large,
@@ -28,7 +33,7 @@ fun TransactionCard(transaction: Transaction, showDescription: (String)-> Unit){
      .clickable(onClick = {showDescription(transaction.description)})
     ){
         Row {
-            Text(transaction.category.icon
+            Text(category.icon
                 ,style = MaterialTheme.typography.labelLarge,
                 modifier = Modifier.padding(MaterialTheme.spacing.medium))
             Text(transaction.sender

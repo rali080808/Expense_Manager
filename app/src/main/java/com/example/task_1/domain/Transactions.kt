@@ -29,23 +29,7 @@ class Transactions(private var transactions : MutableList<Transaction> ) {
         }
         return transactions[indexOfTheBiggest].money;
     }
-    fun getCategories() : List<Category> {
-        val set: MutableSet<Category> = mutableSetOf()
-        for ( transaction in transactions  ) {
-            set.add(transaction.category)
-        }
-        return set.toList()
-    }
 
-    fun categoriesOverview() : List<CategoriesOverview> {
-        val categoryExpenses = getCategories().associateWith { 0.0 }.toMutableMap()
-        for (transaction in transactions) {
-            categoryExpenses.merge(transaction.category,
-                                   transaction.money,
-                                   Double::plus)
-        }
-        return categoryExpenses.map { (category, expense) ->
-            CategoriesOverview(category, expense)
-        }
-    }
+
+
 }

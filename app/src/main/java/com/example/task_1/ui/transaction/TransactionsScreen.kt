@@ -29,6 +29,7 @@ import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -36,8 +37,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
+import com.example.task_1.domain.Category
 import com.example.task_1.domain.MAX_MONEY_LENGTH
 import com.example.task_1.domain.MAX_RECEIVER_LENGTH
 import com.example.task_1.domain.NoFilter
@@ -62,7 +65,7 @@ fun TransactionsScreen(
     onAddClick: () -> Unit,
     onNavigateToDescription: (String) -> Unit
 ) {
-    val transactions by viewModel.transactions.collectAsState()
+    val transactions by viewModel.filteredTransactions.collectAsState()
     val categories by viewModel.categories.collectAsState()
     val uiState by viewModel.uiState.collectAsState()
     var expandedSortTypes by remember { mutableStateOf(false) }
@@ -126,12 +129,12 @@ fun TransactionsScreen(
                                                 }
                                             }
                                         )
-                                        categories.forEach { filter ->
+                                        categories.forEach { (id,filter) ->
                                             DropdownMenuItem(
-                                                text = { Text(filter.text) },
+                                                text = { Text(filter.text + " " + filter.icon, color=filter.color) },
                                                 onClick = {
                                                     scope.launch {
-                                                        viewModel.filterByCategory(filter)
+                                                        viewModel.filterByCategory(id)
                                                         expandedCategoryFilter = false
                                                     }
                                                 }
@@ -177,7 +180,12 @@ fun TransactionsScreen(
                                 if (viewModel.currentSortType == SortTypes.SORTBY_DATE_ASCENDING || viewModel.currentSortType == SortTypes.SORTBY_DATE_DESCENDING)
                                     if (lastDate != transaction.date)
                                         Text(transaction.date.toString())
-                                TransactionCard(transaction, onNavigateToDescription)
+                                TransactionCard(transaction, onNavigateToDescription, categories[transaction.categoryID]?: Category(
+                                    "developer bug: wrong category id in transaction",
+                                    "🐜",
+                                    Color.Red
+                                )
+                                )
                                 lastDate = transaction.date
                                 if (index == transactions.getTransactions().size - 1) lastDate = null
                             }
@@ -208,7 +216,7 @@ fun AddTransaction(
 
     var receiver by remember { mutableStateOf("") }
     var sum by remember { mutableStateOf("0.0") }
-    var category by remember { mutableStateOf(if (categories.isNotEmpty()) categories[0] else null) }
+    var categoryID by remember { mutableIntStateOf(NoFilter) }
     var date by remember { mutableStateOf(LocalDate.now()) }
     var description by remember { mutableStateOf("") }
     var payMethod by remember { mutableStateOf(PayMethod.DEBIT) }
@@ -283,7 +291,7 @@ fun AddTransaction(
 
 
         Row {
-            Text("Category: ${category?.text}  ${category?.icon} ")
+            Text("Category: ${categories[categoryID]?.text}  ${categories[categoryID]?.icon} ")
             IconButton(onClick = { expandedCategory = !expandedCategory }) {
                 Icon(
                     androidx.compose.ui.res.painterResource(id = com.example.task_1.R.drawable.ic_home),
@@ -296,17 +304,16 @@ fun AddTransaction(
             expanded = expandedCategory,
             onDismissRequest = { expandedCategory = false }
         ) {
-            categories.forEach { option ->
+            categories.forEach { (id,option) ->
                 DropdownMenuItem(
-                    text = { Text(option.text + " " + option.icon) },
+                    text = { Text(option.text + " " + option.icon, color=option.color) },
                     onClick = {
-                        category = option
+                        categoryID = id
                         expandedCategory = false
                     }
                 )
             }
         }
-
 
         Box(modifier = Modifier.fillMaxWidth()) {
             OutlinedTextField(
@@ -348,20 +355,21 @@ fun AddTransaction(
         Button(
             onClick = {
                 val amount = sum.toDoubleOrNull() ?: 0.0
-                category?.let { cat ->
+             //   if ( categoryID != NoFilter) {
                     viewModel.addTransaction(
                         Transaction(
                             sender = "Me",
                             receiver = receiver,
                             money = amount,
                             date = date,
-                            category = cat,
+                            categoryID = categoryID,
                             description = description,
                             payMethod = payMethod
                         )
                     )
                     returnToTransactionScreen()
-                }
+               // }
+                //else ErrorScreen("Please select a category before submitting")
             },
             modifier = Modifier.fillMaxWidth()
         ) {

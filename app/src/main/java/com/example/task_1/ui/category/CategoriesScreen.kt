@@ -97,7 +97,7 @@ fun CategoriesScreen(
                     Row (horizontalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.medium),
                         modifier = Modifier.fillMaxWidth()){
                         Column {
-                            categories.forEachIndexed { index, category ->
+                            categories.forEach { (categoryID, category) ->
                                 Box(
                                     modifier = Modifier.padding(vertical = MaterialTheme.spacing.small),
                                     contentAlignment = Alignment.CenterStart
@@ -112,10 +112,10 @@ fun CategoriesScreen(
                             }
                         }
                         Column {
-                            categories.forEachIndexed { index, _ ->
+                            categories.forEach { (categoryID, _) ->
                                 Button(
                                     onClick = {
-                                        viewModel.indexForEdit = index
+                                        viewModel.categoryIDForEdit = categoryID
                                         editCategoryOnClick()
                                     }
                                 ) {
@@ -126,9 +126,9 @@ fun CategoriesScreen(
                         }
 
                         Column {
-                            categories.forEachIndexed { index, category ->
+                            categories.forEach { (categoryID, category) ->
                                 Button(onClick = {
-                                    viewModel.indexForDeletion = index;
+                                    viewModel.categoryIDForDeletion = categoryID;
                                     categoryDeleteDialog()
                                 }) {
                                     Text("X") }
@@ -157,15 +157,16 @@ fun CategoryDeleteDialog(returnToCategoryScreen: () -> Unit, viewModel: Category
             ), contentAlignment = Alignment.Center
         ) {
             Column {
-                if (viewModel.transactionsInCategory()) {
-                    Text("Category ${categories[viewModel.indexForDeletion].text} ${categories[viewModel.indexForDeletion].icon} is active. You cannot delete it.")
+                // TODO these ifs should be only in the viewmodel
+                if (viewModel.transactionsInCategory(viewModel.categoryIDForDeletion)) {
+                    Text("Category ${categories[viewModel.categoryIDForDeletion]?.text} ${categories[viewModel.categoryIDForDeletion]?.icon} is active. You cannot delete it.")
                     Button(onClick = { returnToCategoryScreen() }) {
                         Text("Return")
                     }
                 } else {
-                    Text("Are you sure that you want to delete ${categories[viewModel.indexForDeletion].text}")
+                    Text("Are you sure that you want to delete ${categories[viewModel.categoryIDForDeletion]?.text}")
                     Row {
-                        Button(onClick = { viewModel.removeCategory(viewModel.indexForDeletion); returnToCategoryScreen() }) {
+                        Button(onClick = { viewModel.removeCategory(viewModel.categoryIDForDeletion); returnToCategoryScreen() }) {
                             Text("OK")
                         }
                         Button(onClick = { returnToCategoryScreen() }) {
@@ -181,12 +182,15 @@ fun CategoryDeleteDialog(returnToCategoryScreen: () -> Unit, viewModel: Category
 @Composable
 fun EditCategory(returnToCategoryScreen: () -> Unit, viewModel: CategoryViewModel) {
 
+
     val categories by viewModel.categories.collectAsState()
-    var categoryText by remember { mutableStateOf(categories[viewModel.indexForEdit].text) }
-    var categoryIcon by remember { mutableStateOf(categories[viewModel.indexForEdit].icon) }
-    val colorOptions = listOf("Blue" to Color.Blue, "Green" to Color.Green, "Red" to Color.Red)
+    val currentCategory = categories[viewModel.categoryIDForEdit] ?: Category(text = "", icon = "", color=Color.Black)
+
+    var categoryText by remember { mutableStateOf(currentCategory.text) }
+    var categoryIcon by remember { mutableStateOf(currentCategory.icon)}
+    val colorOptions = listOf("Blue" to Color.Blue, "Green" to Color.Green, "Red" to Color.Red) // TODO more colors, not hardcoded
     var colorExpanded by remember { mutableStateOf(false) }
-    var categoryColor by remember { mutableStateOf("current" to categories[viewModel.indexForEdit].color) }
+    var categoryColor by remember { mutableStateOf("current" to currentCategory.color) }
 
     Column(
         modifier = Modifier
@@ -236,7 +240,7 @@ fun EditCategory(returnToCategoryScreen: () -> Unit, viewModel: CategoryViewMode
 
         Button(onClick = {
             viewModel.editCategory(
-                viewModel.indexForEdit,
+                viewModel.categoryIDForEdit,
                 Category(categoryText,
                                         categoryIcon,
                                 categoryColor.second)
@@ -267,28 +271,33 @@ fun AddCategory(returnToCategoryScreen: () -> Unit, viewModel: CategoryViewModel
     ) {
 
         Text("New Category", style = MaterialTheme.typography.titleMedium)
-        Row() {
-            OutlinedTextField(
-                value = categoryText,
-                onValueChange = {
-                    if (  it.length < MAX_CATEGORY_LENGTH)  categoryText = it
-                },
-                label = { Text("Text") }
-            )
-            OutlinedTextField(
-                value = categoryIcon,
-                onValueChange = {
-                    if (  it.length < MAX_CATEGORY_LENGTH) categoryIcon = it
-                },
-                label = { Text("Icon") }
-            )
-            Box() {
+        Column {
+            Row() {
+                OutlinedTextField(
+                    value = categoryText,
+                    onValueChange = {
+                        if (it.length < MAX_CATEGORY_LENGTH) categoryText = it
+                    },
+                    label = { Text("Text") }
+                )
+                OutlinedTextField(
+                    value = categoryIcon,
+                    onValueChange = {
+                        if (it.length < MAX_CATEGORY_LENGTH) categoryIcon = it
+                    },
+                    label = { Text("Icon") }
+                )
+            }
+            Box {
                 Text(
                     text = "Color: ${categoryColor.first}",
                     color = categoryColor.second,
-                    modifier = Modifier.clickable { colorExpanded = true }.padding(MaterialTheme.spacing.small)
+                    modifier = Modifier.clickable { colorExpanded = true }
+                        .padding(MaterialTheme.spacing.medium)
                 )
-                DropdownMenu(expanded = colorExpanded, onDismissRequest = { colorExpanded = false }) {
+                DropdownMenu(
+                    expanded = colorExpanded,
+                    onDismissRequest = { colorExpanded = false }) {
                     colorOptions.forEach { item ->
                         DropdownMenuItem(
                             text = { Text(item.first, color = item.second) },
@@ -297,15 +306,24 @@ fun AddCategory(returnToCategoryScreen: () -> Unit, viewModel: CategoryViewModel
                     }
                 }
             }
+
+
         }
         Button(onClick = {
-            viewModel.addCategory(Category(
-                categoryText,
-                categoryIcon,
-                categoryColor.second
-            )); returnToCategoryScreen()
+            viewModel.addCategory(
+                Category(
+                    categoryText,
+                    categoryIcon,
+                    categoryColor.second
+                )
+            ); returnToCategoryScreen()
         }) {
             Text("Add this category", style = MaterialTheme.typography.bodyLarge)
+        }
+        Button(onClick = {
+            returnToCategoryScreen()
+        }) {
+            Text("Cancel", style = MaterialTheme.typography.bodyLarge)
         }
     }
 }

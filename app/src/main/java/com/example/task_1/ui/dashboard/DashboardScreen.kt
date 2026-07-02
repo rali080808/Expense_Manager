@@ -22,6 +22,8 @@ import com.example.task_1.domain.UiState
 import com.example.task_1.ui.theme.spacing
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.graphics.Color
+import com.example.task_1.domain.Category
 import com.example.task_1.ui.dashboard.DashboardViewModel
 import com.example.task_1.ui.LoadingScreen
 import com.example.task_1.ui.TransactionCard
@@ -29,6 +31,8 @@ import com.example.task_1.ui.TransactionCard
 @Composable
 fun DashboardScreen(modifier : Modifier, style: TextStyle, viewModel: DashboardViewModel, onNavigateToDescription: (String) -> Unit) {
     val transactions by viewModel.transactions.collectAsState()
+    val categories by viewModel.categories.collectAsState()
+
 
     val uiState by viewModel.uiState.collectAsState()
     val isRefreshing = uiState is UiState.Loading
@@ -80,7 +84,12 @@ fun DashboardScreen(modifier : Modifier, style: TextStyle, viewModel: DashboardV
 
                     Column() {
                         transactions.getTransactions().forEach { transaction ->
-                            TransactionCard(transaction, onNavigateToDescription)
+                            TransactionCard(transaction, onNavigateToDescription, categories[transaction.categoryID] ?: Category(
+                                "developer bug: transaction with a wrong category id",
+                                "",
+                                Color.Red
+                            )
+                            )
                         }
                     }
                     Text(
@@ -91,10 +100,10 @@ fun DashboardScreen(modifier : Modifier, style: TextStyle, viewModel: DashboardV
                     )
 
                     val categoryExpenses: List<CategoriesOverview> =
-                        transactions.categoriesOverview();
+                        viewModel.categoriesOverview();
                     Column {
                         categoryExpenses.forEach { item ->
-                            CategoryOverviewCard(item, transactions)
+                            CategoryOverviewCard(item, viewModel)
                         }
                     }
                 }

@@ -4,6 +4,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.task_1.data.DataService
 import com.example.task_1.data.IDataService
+import com.example.task_1.domain.CategoriesOverview
+import com.example.task_1.domain.Category
 import com.example.task_1.domain.Transactions
 import com.example.task_1.domain.UiState
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -16,6 +18,9 @@ class DashboardViewModel(private val dataService: IDataService) : ViewModel() {
     private val _transactions = MutableStateFlow(Transactions(mutableListOf()))
     val transactions: StateFlow<Transactions> = _transactions
 
+    private val _categories = MutableStateFlow<Map<Int,Category>>(mapOf())
+    val categories: StateFlow<Map<Int,Category>> = _categories
+
     init {
         loadData()
     }
@@ -23,6 +28,7 @@ class DashboardViewModel(private val dataService: IDataService) : ViewModel() {
     fun loadData() {
         viewModelScope.launch {
             _uiState.value = UiState.Loading
+            _categories.value = dataService.getCategories()
             _transactions.value = Transactions(
                 dataService .getTransactionsObject()
                             .getTransactions()
@@ -30,6 +36,18 @@ class DashboardViewModel(private val dataService: IDataService) : ViewModel() {
                             .toMutableList()
             )
             _uiState.value = UiState.Success(transactions.value)
+        }
+    }
+
+    fun categoriesOverview() : List<CategoriesOverview> {
+        val categoryExpenses = categories.value.keys.associateWith { 0.0 }.toMutableMap()
+        for (transaction in transactions.value.getTransactions()) {
+            categoryExpenses.merge(transaction.categoryID,
+                transaction.money,
+                Double::plus)
+        }
+        return categoryExpenses.map { (categoryID, expense) ->
+            CategoriesOverview(categoryID, expense)
         }
     }
 }

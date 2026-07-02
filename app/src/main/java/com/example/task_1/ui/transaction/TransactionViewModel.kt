@@ -24,11 +24,15 @@ enum class SortTypes(val displayName: String) {
 class TransactionViewModel(private val dataService: IDataService) : ViewModel() {
     private val _uiState = MutableStateFlow<UiState>(UiState.Loading)
     val uiState: StateFlow<UiState> get() = _uiState
-    private val _transactions = MutableStateFlow(Transactions(mutableListOf()))
-    val transactions: StateFlow<Transactions> = _transactions
+    private val _allTransactions = MutableStateFlow(Transactions(mutableListOf()))
+    val allTransactions: StateFlow<Transactions> = _allTransactions
 
-    private val _categories = MutableStateFlow<List<Category>>(listOf())
-    val categories: StateFlow<List<Category>> = _categories
+    private val _filteredTransactions = MutableStateFlow(Transactions(mutableListOf()))
+    val filteredTransactions: StateFlow<Transactions> = _filteredTransactions
+
+
+    private val _categories = MutableStateFlow<Map<Int,Category>>(mapOf())
+    val categories: StateFlow<Map<Int,Category>> = _categories
 
     var currentSortType = SortTypes.SORTBY_DATE_DESCENDING
      private set
@@ -43,12 +47,16 @@ class TransactionViewModel(private val dataService: IDataService) : ViewModel() 
         viewModelScope.launch {
             _uiState.value = UiState.Loading
 
-            _transactions.value = Transactions(
-                dataService.getTransactionsObject().getTransactions().reversed().toMutableList()
+            _allTransactions.value = Transactions(
+                dataService.getTransactionsObject()
+                            .getTransactions()
+                            .reversed()
+                            .toMutableList()
             )
+            _filteredTransactions.value = allTransactions.value
             _categories.value = dataService.getCategories()
 
-            _uiState.value = UiState.Success(transactions.value)
+            _uiState.value = UiState.Success(allTransactions.value)
 
         }
     }
@@ -61,17 +69,15 @@ class TransactionViewModel(private val dataService: IDataService) : ViewModel() 
             filterByCategory(currentCategoryFilter)
             sortTransactions(currentSortType)
 
-            _uiState.value = UiState.Success(transactions.value)
+            _uiState.value = UiState.Success(allTransactions.value)
         }
     }
-
-
 
     fun sortTransactions(sortType: SortTypes) {
       //  if (sortType == currentSortType) return;
         currentSortType = sortType;
 
-        val currentList = _transactions.value.getTransactions()
+        val currentList = filteredTransactions.value.getTransactions()
 
         val sortedList = when (sortType) {
             SortTypes.SORTBY_SUM_ASCENDING -> currentList.sortedBy { it.money }
@@ -80,27 +86,28 @@ class TransactionViewModel(private val dataService: IDataService) : ViewModel() 
             SortTypes.SORTBY_DATE_DESCENDING -> currentList.sortedByDescending { it.date }
         }.toMutableList()
 
-        _transactions.value = Transactions(sortedList)
+        _filteredTransactions.value = Transactions(sortedList)
 
     }
 
-    suspend fun filterByCategory(category: Category) {
+    suspend fun filterByCategory(categoryID: Int) {
         //viewModelScope.launch {
             _uiState.value = UiState.Loading
-            currentCategoryFilter = category
+            currentCategoryFilter = categoryID
 
-            if (category == NoFilter)
-                _transactions.value =
+            if (categoryID == NoFilter)
+                _filteredTransactions.value =
                     Transactions(
-                        dataService.getTransactionsObject().getTransactions().toMutableList()
+                        allTransactions.value.getTransactions().toMutableList()
                     )
             else
-                _transactions.value = Transactions(
-                    dataService.getTransactionsObject().getTransactions()
-                        .filter { it.category == category }.toMutableList()
+                _filteredTransactions.value = Transactions(
+                    allTransactions.value.getTransactions()
+                        .filter { it.categoryID == categoryID }
+                        .toMutableList()
                 )
             sortTransactions(currentSortType)
-            _uiState.value = UiState.Success(transactions.value)
+            _uiState.value = UiState.Success(filteredTransactions.value)
         //}
     }
 }

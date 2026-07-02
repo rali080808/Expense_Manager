@@ -12,13 +12,13 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
 class CategoryViewModel(private val dataService: IDataService) : ViewModel() {
-    var indexForDeletion: Int = -1
-    var indexForEdit: Int = -1
+    var categoryIDForDeletion: Int = -1
+    var categoryIDForEdit: Int = -1
     private val _uiState = MutableStateFlow<UiState>(UiState.Loading)
     val uiState: StateFlow<UiState> get() = _uiState
 
-    private val _categories = MutableStateFlow<List<Category>>(listOf())
-    val categories: StateFlow<List<Category>> = _categories
+    private val _categories = MutableStateFlow<Map<Int, Category>>(mapOf())
+    val categories: StateFlow<Map<Int, Category>> = _categories
     private val _transactions = MutableStateFlow(Transactions(mutableListOf()))
     val transactions: StateFlow<Transactions> = _transactions
 
@@ -40,39 +40,50 @@ class CategoryViewModel(private val dataService: IDataService) : ViewModel() {
         }
     }
 
-    fun transactionsInCategory() : Boolean {
-        for ( transaction in transactions.value.getTransactions()) {
-            if ( transaction.category == categories.value[indexForDeletion]) {
+     fun transactionsInCategory(categoryID: Int): Boolean {  //TODO should be private
+        for (transaction in transactions.value.getTransactions()) {
+            if (transaction.categoryID == categoryID) {
                 return true;
             }
         }
         return false;
     }
 
-    fun removeCategory(index: Int){
-        viewModelScope.launch {
-        _uiState.value = UiState.Loading
-        _categories.value = dataService.removeCategory(index)
-        _uiState.value = UiState.Success(categories.value)
-    }}
-
-    fun editCategory(index: Int, editedCategory: Category) {
+    fun removeCategory(categoryID: Int) {
         viewModelScope.launch {
             _uiState.value = UiState.Loading
-            _categories.value = dataService.editCategory(index, editedCategory)
-            _uiState.value = UiState.Success(categories.value)
+            if (transactionsInCategory(categoryID))
+                _uiState.value =
+                    UiState.Error("Category ${categories.value[categoryID]?.text} is still active and cannot be deleted. Edit it instead.")
+            else {
+                _categories.value = dataService.removeCategory(categoryID)
+                _uiState.value = UiState.Success(categories.value)
+            }
+        }
+    }
+
+    fun editCategory(categoryID: Int, editedCategory: Category) {
+        viewModelScope.launch {
+            _uiState.value = UiState.Loading
+            if (categories.value.containsKey(categoryID)) {
+                _categories.value = dataService.editCategory(categoryID, editedCategory)
+                _uiState.value = UiState.Success(categories.value)
+            } else {
+                _uiState.value = UiState.Error("Developer bug: categoryID $categoryID does not exist.")
+            }
         }
     }
 
     fun addCategory(category: Category) {
         viewModelScope.launch {
             _uiState.value = UiState.Loading
-            val result = dataService.addCategory(Category(category.text, category.icon, category.color))
+            val result =
+                dataService.addCategory(Category(category.text, category.icon, category.color))
 
             if (result.isSuccess) {
-                _categories.value = dataService.getCategories()
+                _categories.value = dataService.getCategories().toMap()
                 _uiState.value = UiState.Success(categories.value)
-            }else {
+            } else {
                 _uiState.value = UiState.Error("Failed to add category")
             }
         }

@@ -5,5 +5,5 @@ import androidx.core.util.Predicate.not
 import com.example.task_1.data.DataService
 
 class Category (val text: String, val icon: String, val color: Color)
-val NoFilter: Category = Category("", "", Color.Gray)
+const val NoFilter: Int = -1
 val MAX_CATEGORY_LENGTH  = 16
