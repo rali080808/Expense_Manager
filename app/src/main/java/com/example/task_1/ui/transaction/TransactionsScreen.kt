@@ -13,19 +13,24 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.rememberDatePickerState
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -58,13 +63,14 @@ import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TransactionsScreen(
     modifier: Modifier,
     style: TextStyle,
     viewModel: TransactionViewModel,
     onAddClick: () -> Unit,
-    onNavigateToDescription: (Int) -> Unit
+    onNavigateToDescription: (String) -> Unit
 ) {
     val transactions by viewModel.filteredTransactions.collectAsState()
     val categories by viewModel.categories.collectAsState()
@@ -73,146 +79,174 @@ fun TransactionsScreen(
     var expandedCategoryFilter by remember { mutableStateOf(false) }
     val categoryFilter = remember { NoFilter }
     val isRefreshing = uiState is UiState.Loading
-    var lastDate: LocalDate? = null
+    var lastDate: String? = null
     val scope = rememberCoroutineScope()
+    var showAddTransactionSheet by remember { mutableStateOf(false) }
 
     PullToRefreshBox(
         isRefreshing = isRefreshing,
         onRefresh = { viewModel.loadData() }
     ) {
-        when (uiState) {
-            UiState.Loading -> LoadingScreen()
-            is UiState.Error -> Text("error")
-            is UiState.Success<*> -> {
-                LazyColumn(Modifier.padding(start = MaterialTheme.spacing.medium)) {
-                    item {
-                        Row(
-                            horizontalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.medium),
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
+
+
+        //   UiState.Loading -> LoadingScreen()
+        if (uiState is UiState.Error) {
+            AlertDialog(
+                onDismissRequest = { viewModel.loadData() },
+                confirmButton = {
+                    TextButton(onClick = { viewModel.loadData() }) {
+                        Text("OK")
+                    }
+                },
+                title = { Text("Attention") },
+                text = { Text((uiState as UiState.Error).message) }
+            )//ErrorScreen((uiState as UiState.Error).message)
+        }
+        if (showAddTransactionSheet) {
+            ModalBottomSheet(
+                onDismissRequest = { showAddTransactionSheet = false },
+                sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+            ) {
+                // Call your input screen form composable directly inside the sheet wrapper
+                AddTransaction(
+                    returnToTransactionScreen = {
+                        showAddTransactionSheet = false;
+                        viewModel.loadData()
+                    },
+                    viewModel = viewModel
+                )
+            }
+        }
+        LazyColumn(Modifier.padding(start = MaterialTheme.spacing.medium)) {
+            item {
+
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.medium),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(
+                        "Transactions",
+                        modifier = modifier,
+                        style = style,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                    Button(
+                        onClick = {
+                            showAddTransactionSheet = true
+                            //onAddClick
+                        }, Modifier
+                            .clip(MaterialTheme.shapes.small),
+                        shape = MaterialTheme.shapes.small
+                    ) {
+                        Text("+", style = MaterialTheme.typography.bodyLarge)
+                    }
+                }
+                Box(
+                    contentAlignment = Alignment.Center,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Row(horizontalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.medium)) {
+                        Box {
                             Text(
-                                "Transactions",
-                                modifier = modifier,
-                                style = style,
-                                color = MaterialTheme.colorScheme.primary
-                            )
-                            Button(
-                                onClick = onAddClick, Modifier
-                                    .clip(MaterialTheme.shapes.small),
-                                shape = MaterialTheme.shapes.small
-                            ) {
-                                Text("+", style = MaterialTheme.typography.bodyLarge)
-                            }
-                        }
-                        Box(
-                            contentAlignment = Alignment.Center,
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            Row(horizontalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.medium)) {
-                                Box {
-                                    Text(
-                                        text = if (categoryFilter == NoFilter) "Filter Categories" else "Filter: $categoryFilter",
-                                        modifier = Modifier
-                                            .clickable {
-                                                expandedCategoryFilter = !expandedCategoryFilter
-                                            }
-                                            .border(
-                                                BorderStroke(
-                                                    width = MaterialTheme.border.small,
-                                                    color = MaterialTheme.colorScheme.primary
-                                                )
-                                            )
-                                            .background(color = MaterialTheme.colorScheme.secondary)
-                                            .padding(MaterialTheme.spacing.small),
-                                        style = MaterialTheme.typography.titleSmall
-                                    )
-                                    DropdownMenu(
-                                        expanded = expandedCategoryFilter,
-                                        onDismissRequest = { expandedCategoryFilter = false }
-                                    ) {
-                                        DropdownMenuItem(
-                                            text = { Text("All") },
-                                            onClick = {
-                                                scope.launch {
-                                                    viewModel.filterByCategory(NoFilter)
-                                                    expandedCategoryFilter = false
-                                                }
-                                            }
+                                text = if (categoryFilter == NoFilter) "Filter Categories" else "Filter: $categoryFilter",
+                                modifier = Modifier
+                                    .clickable {
+                                        expandedCategoryFilter = !expandedCategoryFilter
+                                    }
+                                    .border(
+                                        BorderStroke(
+                                            width = MaterialTheme.border.small,
+                                            color = MaterialTheme.colorScheme.primary
                                         )
-                                        categories.forEach { (id, filter) ->
-                                            DropdownMenuItem(
-                                                text = {
-                                                    Text(
-                                                        filter.text + " " + filter.icon,
-                                                        color = filter.color
-                                                    )
-                                                },
-                                                onClick = {
-                                                    scope.launch {
-                                                        viewModel.filterByCategory(id)
-                                                        expandedCategoryFilter = false
-                                                    }
-                                                }
-                                            )
-                                        }
-                                    }
-                                }
-                                Box {
-                                    Text(
-                                        text = "Sort Transactions",
-                                        modifier = Modifier
-                                            .clickable { expandedSortTypes = !expandedSortTypes }
-                                            .border(
-                                                BorderStroke(
-                                                    width = MaterialTheme.border.small,
-                                                    color = MaterialTheme.colorScheme.primary
-                                                )
-                                            )
-                                            .background(color = MaterialTheme.colorScheme.secondary)
-                                            .padding(MaterialTheme.spacing.small),
-                                        style = MaterialTheme.typography.titleSmall
                                     )
-                                    DropdownMenu(
-                                        expanded = expandedSortTypes,
-                                        onDismissRequest = { expandedSortTypes = false }
-                                    ) {
-                                        SortTypes.entries.forEach { option ->
-                                            DropdownMenuItem(
-                                                text = { Text(option.displayName) },
-                                                onClick = {
-                                                    viewModel.sortTransactions(option)
-                                                    expandedSortTypes = false
-                                                }
-                                            )
+                                    .background(color = MaterialTheme.colorScheme.secondary)
+                                    .padding(MaterialTheme.spacing.small),
+                                style = MaterialTheme.typography.titleSmall
+                            )
+                            DropdownMenu(
+                                expanded = expandedCategoryFilter,
+                                onDismissRequest = { expandedCategoryFilter = false }
+                            ) {
+                                DropdownMenuItem(
+                                    text = { Text("All") },
+                                    onClick = {
+                                        scope.launch {
+                                            viewModel.filterByCategory(NoFilter)
+                                            expandedCategoryFilter = false
                                         }
                                     }
+                                )
+                                categories.forEach { (id, filter) ->
+                                    DropdownMenuItem(
+                                        text = {
+                                            Text(
+                                                filter.text + " " + filter.icon,
+                                                color = Color(filter.color)
+                                            )
+                                        },
+                                        onClick = {
+                                            scope.launch {
+                                                viewModel.filterByCategory(id)
+                                                expandedCategoryFilter = false
+                                            }
+                                        }
+                                    )
                                 }
                             }
                         }
-                        Spacer(Modifier.padding(MaterialTheme.spacing.small))
-                        Column {
-                            transactions.getTransactions().forEachIndexed { index, transaction ->
-                                if (viewModel.currentSortType == SortTypes.SORTBY_DATE_ASCENDING || viewModel.currentSortType == SortTypes.SORTBY_DATE_DESCENDING)
-                                    if (lastDate != transaction.date)
-                                        Text(transaction.date.toString())
-                                TransactionCard(
-                                    transactionIndex = index,
-                                    getTransaction = { index -> viewModel.getTransaction(index) },
-                                    categoryID = transaction.categoryID,
-                                    getCategory = { id -> viewModel.getCategory(id) },
-                                    showDescription = onNavigateToDescription
-                                )
-                                lastDate = transaction.date
-                                if (index == transactions.getTransactions().size - 1) lastDate =
-                                    null
+                        Box {
+                            Text(
+                                text = "Sort Transactions",
+                                modifier = Modifier
+                                    .clickable { expandedSortTypes = !expandedSortTypes }
+                                    .border(
+                                        BorderStroke(
+                                            width = MaterialTheme.border.small,
+                                            color = MaterialTheme.colorScheme.primary
+                                        )
+                                    )
+                                    .background(color = MaterialTheme.colorScheme.secondary)
+                                    .padding(MaterialTheme.spacing.small),
+                                style = MaterialTheme.typography.titleSmall
+                            )
+                            DropdownMenu(
+                                expanded = expandedSortTypes,
+                                onDismissRequest = { expandedSortTypes = false }
+                            ) {
+                                SortTypes.entries.forEach { option ->
+                                    DropdownMenuItem(
+                                        text = { Text(option.displayName) },
+                                        onClick = {
+                                            viewModel.sortTransactions(option)
+                                            expandedSortTypes = false
+                                        }
+                                    )
+                                }
                             }
                         }
+                    }
+                }
+                Spacer(Modifier.padding(MaterialTheme.spacing.small))
+                Column {
+                    transactions.getTransactions().forEachIndexed { index, transaction ->
+                        if (viewModel.currentSortType == SortTypes.SORTBY_DATE_ASCENDING || viewModel.currentSortType == SortTypes.SORTBY_DATE_DESCENDING)
+                            if (lastDate != transaction.date)
+                                Text(transaction.date)
+                        TransactionCard(
+                            transaction = transaction,
+                            category = categories[transaction.categoryID] ?: ErrorCategory,
+                            showDescription = onNavigateToDescription
+                        )
+                        lastDate = transaction.date
+                        if (index == transactions.getTransactions().size - 1) lastDate =
+                            null
                     }
                 }
             }
         }
     }
 }
+
 
 @Composable
 fun AddTransaction(
@@ -307,7 +341,7 @@ fun AddTransaction(
         }
 
 
-        Row {
+        Row { // TODO here it shows null when nofilter
             Text("Category: ${categories[categoryID]?.text}  ${categories[categoryID]?.icon} ")
             IconButton(onClick = { expandedCategory = !expandedCategory }) {
                 Icon(
@@ -323,7 +357,7 @@ fun AddTransaction(
         ) {
             categories.forEach { (id, option) ->
                 DropdownMenuItem(
-                    text = { Text(option.text + " " + option.icon, color = option.color) },
+                    text = { Text(option.text + " " + option.icon, color = Color(option.color)) },
                     onClick = {
                         categoryID = id
                         expandedCategory = false
@@ -372,19 +406,19 @@ fun AddTransaction(
         Button(
             onClick = {
                 val amount = sum.toDoubleOrNull() ?: 0.0
-                //   if ( categoryID != NoFilter) {
+                // if ( categoryID != NoFilter) {
                 viewModel.addTransaction(
                     Transaction(
                         sender = "Me",
                         receiver = receiver,
                         money = amount,
-                        date = date,
+                        date = date.toString(),
                         categoryID = categoryID,
                         description = description,
                         payMethod = payMethod
                     )
                 )
-                returnToTransactionScreen()
+                if (categoryID != NoFilter) returnToTransactionScreen()
                 // }
                 //else ErrorScreen("Please select a category before submitting")
             },

@@ -31,9 +31,7 @@ fun DashboardContent(
     totalExpenses: Double,
     biggestExpense: Double,
     categories: Map<Int, Category>,
-    onNavigateToDescription: (Int) -> Unit,
-    getTransaction: (Int) -> Transaction,
-    getCategory: (Int) -> Category
+    onNavigateToDescription: (String) -> Unit,
 ) {
     LazyColumn(Modifier
         .fillMaxSize()
@@ -79,10 +77,8 @@ fun DashboardContent(
             Column() {
                 transactions.forEachIndexed { index, transaction ->
                     TransactionCard(
-                        index,
-                        getTransaction,
-                        transaction.categoryID,
-                        getCategory,
+                        transaction,
+                        categories[transaction.categoryID]?: ErrorCategory,
                         onNavigateToDescription
                     )
                 }
@@ -96,8 +92,8 @@ fun DashboardContent(
 
 
             Column {
-                categories.forEach { (id, _) ->
-                    CategoryOverviewCard(id, getCategory, totalExpenses)
+                categories.forEach { (_, category) ->
+                    CategoryOverviewCard(category, totalExpenses)
                 }
             }
         }

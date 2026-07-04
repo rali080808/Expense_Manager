@@ -21,6 +21,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
 import kotlinx.serialization.Serializable
+
 import com.example.task_1.data.DataService
 import com.example.task_1.domain.Category
 import com.example.task_1.domain.ErrorCategory
@@ -49,7 +50,7 @@ data class TransactionCardRoute(
 
 @Serializable
 data class ShowDescriptionRoute(
-    val transactionIndex: Int,
+    val description: String,
 )
 
 @Serializable
@@ -86,17 +87,18 @@ fun Navigation() {
                     onClick = {
                         currentDestination = destination
                         navController.navigate(destination.route)
+
                     }
                 )
             }
         }
-    ) {
-        Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-            NavHost(
+    ) {Scaffold(
+        modifier = Modifier.fillMaxSize()
+    ) { paddingValues ->
+             NavHost(
                 navController = navController,
                 startDestination = AppDestinations.DASHBOARD.route,
-                modifier = Modifier
-                    .padding(innerPadding)
+modifier = Modifier.padding(paddingValues)
             ) {
 
                 composable<DashboardScreenRoute> {
@@ -108,9 +110,9 @@ fun Navigation() {
                         style = MaterialTheme.typography.titleLarge,
                         viewModel = dashboardViewModel,
 
-                        onNavigateToDescription = { transactionIndex ->
+                        onNavigateToDescription = { description ->
                             navController.navigate(
-                                ShowDescriptionRoute(transactionIndex = transactionIndex))
+                                ShowDescriptionRoute(description = description))
                         }
                     )
                 }
@@ -149,11 +151,9 @@ fun Navigation() {
                             dashboardViewModel.getCategory(id)
                         }
                     TransactionCard(
-                        transactionIndex = route.transactionIndex,
-                        getTransaction = getTransaction,
-                        categoryID = route.categoryID,
-                        getCategory = getCategory,
-                        showDescription = { transactionIndex ->
+                        transaction = getTransaction(route.transactionIndex),
+                         category = getCategory(route.categoryID),
+                         showDescription = { transactionIndex ->
                             navController.navigate(ShowDescriptionRoute(transactionIndex))
                         },
                     )
@@ -169,19 +169,9 @@ fun Navigation() {
                 composable<ShowDescriptionRoute> { backStackEntry ->
                     val route = backStackEntry.toRoute<ShowDescriptionRoute>()
 
-                    // Check if we came from Transactions Screen or Dashboard Screen
-                    val previousRoute = navController.previousBackStackEntry?.destination?.route
-
-                    val getTransaction: (Int) -> Transaction =
-                        if (previousRoute?.contains("TransactionsScreenRoute") == true) { index ->
-                            transactionViewModel.getTransaction(index)
-                        } else { index ->
-                            dashboardViewModel.getTransaction(index)
-                        }
 
                     ShowDescription(
-                        transactionIndex = route.transactionIndex,
-                        getTransaction = getTransaction,
+                       description = route.description,
                         returnToMainScreen = { navController.popBackStack() },
                     )
                 }
@@ -235,8 +225,8 @@ fun Navigation() {
                     )
                 }
             }
-        }
-    }
+        }}
+
 }
 
 enum class AppDestinations(

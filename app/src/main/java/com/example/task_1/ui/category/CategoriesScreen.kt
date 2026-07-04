@@ -32,6 +32,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.TextUnit
 import androidx.room.util.getColumnIndex
@@ -245,7 +246,7 @@ fun AddCategory(returnToCategoryScreen: () -> Unit, viewModel: CategoryViewModel
                 Category(
                     categoryText,
                     categoryIcon,
-                    categoryColor.second,
+                    categoryColor.second.toArgb(),
                     0.0
                 )
             ); returnToCategoryScreen()

@@ -21,6 +21,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
 import com.example.task_1.domain.Category
 import com.example.task_1.domain.MAX_CATEGORY_LENGTH
 import com.example.task_1.ui.theme.border
@@ -31,7 +32,7 @@ fun EditCategory(categoryIDForEdit: Int, currentCategory: Category, returnToCate
 
     var categoryText by remember { mutableStateOf(currentCategory.text) }
     var categoryIcon by remember { mutableStateOf(currentCategory.icon)}
-    val colorOptions = listOf("Blue" to Color.Blue, "Green" to Color.Green, "Red" to Color.Red) // TODO more colors, not hardcoded
+    val colorOptions = listOf("Blue" to Color.Blue.toArgb(), "Green" to Color.Green.toArgb(), "Red" to Color.Red.toArgb()) // TODO more colors, not hardcoded
     var colorExpanded by remember { mutableStateOf(false) }
     var categoryColor by remember { mutableStateOf("current" to currentCategory.color) }
 
@@ -66,14 +67,14 @@ fun EditCategory(categoryIDForEdit: Int, currentCategory: Category, returnToCate
             Box{
                 Text(
                     text = "Color: ${categoryColor.first}",
-                    color = categoryColor.second,
+                    color = Color(categoryColor.second),
                     modifier = Modifier.clickable { colorExpanded = true }
                         .padding(MaterialTheme.spacing.medium)
                 )
                 DropdownMenu(expanded = colorExpanded, onDismissRequest = { colorExpanded = false }) {
                     colorOptions.forEach { item ->
                         DropdownMenuItem(
-                            text = { Text(item.first, color = item.second) },
+                            text = { Text(item.first, color = Color(item.second)) },
                             onClick = { categoryColor = item; colorExpanded = false }
                         )
                     }

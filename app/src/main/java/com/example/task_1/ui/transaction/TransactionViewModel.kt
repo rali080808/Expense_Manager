@@ -62,18 +62,23 @@ class TransactionViewModel(private val dataService: IDataService) : ViewModel() 
         }
     }
 
-    fun addTransaction(transaction: Transaction) {
+    fun addTransaction(transaction: Transaction)  {
         viewModelScope.launch {
-            _uiState.value = UiState.Loading
 
-            dataService.addTransaction(transaction)
-            filterByCategory(currentCategoryFilter)
-            sortTransactions(currentSortType)
 
-            _uiState.value = UiState.Success(allTransactions.value)
+            if (transaction.categoryID == NoFilter) {
+                _uiState.value = UiState.Error("Please, choose a category!")
+                return@launch
+            } else {
+                _uiState.value = UiState.Loading
+                dataService.addTransaction(transaction)
+                filterByCategory(currentCategoryFilter)
+                sortTransactions(currentSortType)
+
+                _uiState.value = UiState.Success(allTransactions.value)
+            }
         }
     }
-
     fun sortTransactions(sortType: SortTypes) {
       //  if (sortType == currentSortType) return;
         currentSortType = sortType;

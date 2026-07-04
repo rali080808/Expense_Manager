@@ -27,14 +27,11 @@ import com.example.task_1.ui.theme.spacing
 @Composable
 //                    TransactionCard(index, getTransaction, transaction.categoryID, getCategory,onNavigateToDescription
 fun TransactionCard(
-    transactionIndex: Int,
-    getTransaction: (Int) -> Transaction,
-    categoryID: Int,
-    getCategory: (Int) -> Category,
-    showDescription: (Int) -> Unit,
+    transaction: Transaction,
+    category: Category,
+    showDescription: (String) -> Unit,
 ) {
-    val transaction: Transaction = getTransaction(transactionIndex)
-    val category: Category = getCategory(categoryID)
+
     Column(
         modifier = Modifier
             .border(
@@ -42,7 +39,7 @@ fun TransactionCard(
                 shape = MaterialTheme.shapes.large,
                 color = MaterialTheme.colorScheme.primary
             )
-            .clickable(onClick = { showDescription(transactionIndex) })
+            .clickable(onClick = { showDescription(transaction.description) })
     ) {
         Row {
             Text(
@@ -88,18 +85,16 @@ fun TransactionCard(
 
 @Composable
 fun ShowDescription(
-    transactionIndex: Int,
-    getTransaction: (Int) -> Transaction,
+    description: String,
     returnToMainScreen: () -> Unit
 ) {
-    val transaction: Transaction = getTransaction(transactionIndex)
 
     Box(
         modifier = Modifier.fillMaxSize(),
         contentAlignment = Alignment.Center
     ) {
         Column {
-            Text(transaction.description)
+            Text(description)
             Button(onClick = returnToMainScreen) {
                 Text("Return")
             }

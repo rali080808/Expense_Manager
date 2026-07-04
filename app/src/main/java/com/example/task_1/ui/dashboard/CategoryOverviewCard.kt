@@ -11,9 +11,8 @@ import com.example.task_1.domain.Category
 import com.example.task_1.domain.Transactions
 import com.example.task_1.ui.theme.spacing
 @Composable
-fun CategoryOverviewCard(categoryID: Int, getCategory: (Int)-> Category, totalExpenses:  Double) {
-    val category: Category = getCategory(categoryID)
-    Text( (category.icon ?: "❓")
+fun CategoryOverviewCard(category: Category, totalExpenses:  Double) {
+     Text( (category.icon ?: "❓")
             + " "
             + "🟦".repeat(category.percentage(totalExpenses)*16/100)
             + category.percentage(totalExpenses)

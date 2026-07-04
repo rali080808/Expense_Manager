@@ -1,5 +1,6 @@
 package com.example.task_1.domain
 
+import kotlinx.serialization.Serializable
 import java.time.LocalDate
 import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
@@ -10,11 +11,12 @@ enum class PayMethod (){
 enum class Currency(val sign: String) {
     EURO("€"), DOLLAR("$")
 }
-class Transaction @OptIn(ExperimentalUuidApi::class) constructor(val sender : String,
+@Serializable
+data class Transaction @OptIn(ExperimentalUuidApi::class) constructor(val sender : String,
                                                                  val receiver: String,
                                                                  val money: Double,
                                                                  val currency: Currency = Currency.EURO,
-                                                                 val date: LocalDate,
+                                                                 val date: String,
                                                                  val categoryID: Int,
                                                                  val description:String="",
                                                                  val payMethod: PayMethod)
