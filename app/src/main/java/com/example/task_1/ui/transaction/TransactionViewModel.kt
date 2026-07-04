@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.task_1.data.DataService
 import com.example.task_1.data.IDataService
 import com.example.task_1.domain.Category
+import com.example.task_1.domain.DashboardUiState
 import com.example.task_1.domain.NoFilter
 import com.example.task_1.domain.Transaction
 import com.example.task_1.domain.Transactions
@@ -109,5 +110,20 @@ class TransactionViewModel(private val dataService: IDataService) : ViewModel() 
             sortTransactions(currentSortType)
             _uiState.value = UiState.Success(filteredTransactions.value)
         //}
+    }
+
+    fun getCategory(categoryID: Int): Category {
+        return categories.value[categoryID] ?: run {
+            _uiState.value = UiState.Error("Developer bug: Category ID not found")
+            throw IllegalArgumentException("No category found with ID: $categoryID")
+        }
+    }
+    fun getTransaction(transactionIndex: Int): Transaction {
+        if (transactionIndex < 0 || transactionIndex >= filteredTransactions.value.getTransactions().size) {
+            _uiState.value = UiState.Error("Developer bug: Transaction index out of bounds")
+            throw IndexOutOfBoundsException("Transaction index $transactionIndex is out of bounds")
+        }
+
+        return filteredTransactions.value.getTransactions()[transactionIndex]
     }
 }

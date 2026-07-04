@@ -78,7 +78,7 @@ class CategoryViewModel(private val dataService: IDataService) : ViewModel() {
         viewModelScope.launch {
             _uiState.value = UiState.Loading
             val result =
-                dataService.addCategory(Category(category.text, category.icon, category.color))
+                dataService.addCategory(Category(category.text, category.icon, category.color, 0.0))
 
             if (result.isSuccess) {
                 _categories.value = dataService.getCategories().toMap()

@@ -37,6 +37,7 @@ import androidx.compose.ui.unit.TextUnit
 import androidx.room.util.getColumnIndex
 import androidx.room.util.performInTransactionSuspending
 import com.example.task_1.domain.Category
+import com.example.task_1.domain.ErrorCategory
 import com.example.task_1.ui.category.CategoryViewModel
 import com.example.task_1.domain.MAX_CATEGORY_LENGTH
 import com.example.task_1.domain.MAX_RECEIVER_LENGTH
@@ -51,7 +52,7 @@ fun CategoriesScreen(
     style: TextStyle,
     viewModel: CategoryViewModel,
     addCategoryOnClick: () -> Unit,
-    editCategoryOnClick: () -> Unit,
+    editCategoryOnClick: (Int) -> Unit,
     categoryDeleteDialog: () -> Unit
 ) {
 
@@ -115,8 +116,8 @@ fun CategoriesScreen(
                             categories.forEach { (categoryID, _) ->
                                 Button(
                                     onClick = {
-                                        viewModel.categoryIDForEdit = categoryID
-                                        editCategoryOnClick()
+                                    //    viewModel.categoryIDForEdit = categoryID
+                                        editCategoryOnClick(categoryID)
                                     }
                                 ) {
                                     Text("Edit")
@@ -179,77 +180,7 @@ fun CategoryDeleteDialog(returnToCategoryScreen: () -> Unit, viewModel: Category
     }
 }
 
-@Composable
-fun EditCategory(returnToCategoryScreen: () -> Unit, viewModel: CategoryViewModel) {
 
-
-    val categories by viewModel.categories.collectAsState()
-    val currentCategory = categories[viewModel.categoryIDForEdit] ?: Category(text = "", icon = "", color=Color.Black)
-
-    var categoryText by remember { mutableStateOf(currentCategory.text) }
-    var categoryIcon by remember { mutableStateOf(currentCategory.icon)}
-    val colorOptions = listOf("Blue" to Color.Blue, "Green" to Color.Green, "Red" to Color.Red) // TODO more colors, not hardcoded
-    var colorExpanded by remember { mutableStateOf(false) }
-    var categoryColor by remember { mutableStateOf("current" to currentCategory.color) }
-
-    Column(
-        modifier = Modifier
-            .clip(MaterialTheme.shapes.large)
-            .border(
-                BorderStroke(
-                    width = MaterialTheme.border.medium,
-                    color = MaterialTheme.colorScheme.primary
-                )
-            )
-          ) {
-        Text("Edit Category", style = MaterialTheme.typography.titleMedium)
-      Column {
-        Row {
-            OutlinedTextField(
-                value = categoryText,
-                onValueChange = {
-                    if (it.length < MAX_CATEGORY_LENGTH) categoryText = it
-                },
-                label = { Text("Text") }
-            )
-            OutlinedTextField(
-                value = categoryIcon,
-                onValueChange = {
-                    if (it.length < MAX_CATEGORY_LENGTH) categoryIcon = it
-                },
-                label = { Text("Icon") }
-            )
-        }
-            Box{
-                Text(
-                    text = "Color: ${categoryColor.first}",
-                    color = categoryColor.second,
-                    modifier = Modifier.clickable { colorExpanded = true }
-                                       .padding(MaterialTheme.spacing.medium)
-                )
-                 DropdownMenu(expanded = colorExpanded, onDismissRequest = { colorExpanded = false }) {
-                    colorOptions.forEach { item ->
-                        DropdownMenuItem(
-                            text = { Text(item.first, color = item.second) },
-                            onClick = { categoryColor = item; colorExpanded = false }
-                        )
-                    }
-                }
-            }
-        }
-
-        Button(onClick = {
-            viewModel.editCategory(
-                viewModel.categoryIDForEdit,
-                Category(categoryText,
-                                        categoryIcon,
-                                categoryColor.second)
-            ); returnToCategoryScreen()
-        }) {
-            Text("Save", style = MaterialTheme.typography.bodyLarge)
-        }
-    }
-}
 
 @Composable
 fun AddCategory(returnToCategoryScreen: () -> Unit, viewModel: CategoryViewModel) {
@@ -314,7 +245,8 @@ fun AddCategory(returnToCategoryScreen: () -> Unit, viewModel: CategoryViewModel
                 Category(
                     categoryText,
                     categoryIcon,
-                    categoryColor.second
+                    categoryColor.second,
+                    0.0
                 )
             ); returnToCategoryScreen()
         }) {

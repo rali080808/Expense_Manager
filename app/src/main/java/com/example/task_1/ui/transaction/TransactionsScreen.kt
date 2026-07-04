@@ -41,6 +41,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import com.example.task_1.domain.Category
+import com.example.task_1.domain.ErrorCategory
 import com.example.task_1.domain.MAX_MONEY_LENGTH
 import com.example.task_1.domain.MAX_RECEIVER_LENGTH
 import com.example.task_1.domain.NoFilter
@@ -63,7 +64,7 @@ fun TransactionsScreen(
     style: TextStyle,
     viewModel: TransactionViewModel,
     onAddClick: () -> Unit,
-    onNavigateToDescription: (String) -> Unit
+    onNavigateToDescription: (Int) -> Unit
 ) {
     val transactions by viewModel.filteredTransactions.collectAsState()
     val categories by viewModel.categories.collectAsState()
@@ -85,28 +86,37 @@ fun TransactionsScreen(
             is UiState.Success<*> -> {
                 LazyColumn(Modifier.padding(start = MaterialTheme.spacing.medium)) {
                     item {
-                        Row(horizontalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.medium), modifier = Modifier.fillMaxWidth()) {
+                        Row(
+                            horizontalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.medium),
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
                             Text(
                                 "Transactions",
                                 modifier = modifier,
                                 style = style,
                                 color = MaterialTheme.colorScheme.primary
                             )
-                            Button(onClick = onAddClick, Modifier
-                                .clip(MaterialTheme.shapes.small),
-                                shape = MaterialTheme.shapes.small){
+                            Button(
+                                onClick = onAddClick, Modifier
+                                    .clip(MaterialTheme.shapes.small),
+                                shape = MaterialTheme.shapes.small
+                            ) {
                                 Text("+", style = MaterialTheme.typography.bodyLarge)
                             }
                         }
-                        Box(contentAlignment = Alignment.Center, modifier=Modifier.fillMaxWidth()) {
-                            Row ( horizontalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.medium)){
+                        Box(
+                            contentAlignment = Alignment.Center,
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Row(horizontalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.medium)) {
                                 Box {
                                     Text(
                                         text = if (categoryFilter == NoFilter) "Filter Categories" else "Filter: $categoryFilter",
                                         modifier = Modifier
                                             .clickable {
                                                 expandedCategoryFilter = !expandedCategoryFilter
-                                            }.border(
+                                            }
+                                            .border(
                                                 BorderStroke(
                                                     width = MaterialTheme.border.small,
                                                     color = MaterialTheme.colorScheme.primary
@@ -129,9 +139,14 @@ fun TransactionsScreen(
                                                 }
                                             }
                                         )
-                                        categories.forEach { (id,filter) ->
+                                        categories.forEach { (id, filter) ->
                                             DropdownMenuItem(
-                                                text = { Text(filter.text + " " + filter.icon, color=filter.color) },
+                                                text = {
+                                                    Text(
+                                                        filter.text + " " + filter.icon,
+                                                        color = filter.color
+                                                    )
+                                                },
                                                 onClick = {
                                                     scope.launch {
                                                         viewModel.filterByCategory(id)
@@ -180,14 +195,16 @@ fun TransactionsScreen(
                                 if (viewModel.currentSortType == SortTypes.SORTBY_DATE_ASCENDING || viewModel.currentSortType == SortTypes.SORTBY_DATE_DESCENDING)
                                     if (lastDate != transaction.date)
                                         Text(transaction.date.toString())
-                                TransactionCard(transaction, onNavigateToDescription, categories[transaction.categoryID]?: Category(
-                                    "developer bug: wrong category id in transaction",
-                                    "🐜",
-                                    Color.Red
-                                )
+                                TransactionCard(
+                                    transactionIndex = index,
+                                    getTransaction = { index -> viewModel.getTransaction(index) },
+                                    categoryID = transaction.categoryID,
+                                    getCategory = { id -> viewModel.getCategory(id) },
+                                    showDescription = onNavigateToDescription
                                 )
                                 lastDate = transaction.date
-                                if (index == transactions.getTransactions().size - 1) lastDate = null
+                                if (index == transactions.getTransactions().size - 1) lastDate =
+                                    null
                             }
                         }
                     }
@@ -237,7 +254,7 @@ fun AddTransaction(
 
         OutlinedTextField(
             value = receiver,
-            onValueChange = { if (  it.length < MAX_RECEIVER_LENGTH) receiver = it },
+            onValueChange = { if (it.length < MAX_RECEIVER_LENGTH) receiver = it },
             label = { Text("Receiver") },
             singleLine = true,
             modifier = Modifier.fillMaxWidth()
@@ -245,7 +262,7 @@ fun AddTransaction(
 
         OutlinedTextField(
             value = sum,
-            onValueChange = { if (  it.length < MAX_MONEY_LENGTH) sum = it },
+            onValueChange = { if (it.length < MAX_MONEY_LENGTH) sum = it },
             singleLine = true,
             label = { Text("Money") },
             modifier = Modifier.fillMaxWidth()
@@ -304,9 +321,9 @@ fun AddTransaction(
             expanded = expandedCategory,
             onDismissRequest = { expandedCategory = false }
         ) {
-            categories.forEach { (id,option) ->
+            categories.forEach { (id, option) ->
                 DropdownMenuItem(
-                    text = { Text(option.text + " " + option.icon, color=option.color) },
+                    text = { Text(option.text + " " + option.icon, color = option.color) },
                     onClick = {
                         categoryID = id
                         expandedCategory = false
@@ -355,20 +372,20 @@ fun AddTransaction(
         Button(
             onClick = {
                 val amount = sum.toDoubleOrNull() ?: 0.0
-             //   if ( categoryID != NoFilter) {
-                    viewModel.addTransaction(
-                        Transaction(
-                            sender = "Me",
-                            receiver = receiver,
-                            money = amount,
-                            date = date,
-                            categoryID = categoryID,
-                            description = description,
-                            payMethod = payMethod
-                        )
+                //   if ( categoryID != NoFilter) {
+                viewModel.addTransaction(
+                    Transaction(
+                        sender = "Me",
+                        receiver = receiver,
+                        money = amount,
+                        date = date,
+                        categoryID = categoryID,
+                        description = description,
+                        payMethod = payMethod
                     )
-                    returnToTransactionScreen()
-               // }
+                )
+                returnToTransactionScreen()
+                // }
                 //else ErrorScreen("Please select a category before submitting")
             },
             modifier = Modifier.fillMaxWidth()

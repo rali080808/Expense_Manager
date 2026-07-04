@@ -8,6 +8,7 @@ import com.example.task_1.domain.Transactions;
 
 
 import com.example.task_1.domain.Category;
+import com.example.task_1.domain.Currency
 import com.example.task_1.domain.PayMethod
 import kotlinx.coroutines.delay
 import java.time.LocalDate
@@ -16,17 +17,17 @@ import kotlin.uuid.Uuid
 const val WAIT_TIME: Long = 200
 public object DataService : IDataService {
     private  val  categories: MutableMap<Int, Category> = mutableMapOf(
-        1 to Category("icecream", "🍦", Color.Yellow),
-        2 to Category("dresses", "👗", Color.Blue))
+        1 to Category("icecream", "🍦", Color.Yellow, 8.0),
+        2 to Category("dresses", "👗", Color.Blue, 61.0))
     private var nextCategoryID = 3
     private val transactions : Transactions = Transactions(mutableListOf(
-        Transaction("Az", "Ti", 6.0, "€", LocalDate.of(2026, 6, 10), 1, "description",
+        Transaction("Az", "Ti", 6.0, Currency.EURO, LocalDate.of(2026, 6, 10), 1, "description",
             PayMethod.CASH),
 
-        Transaction("Az", "Ti", 61.0, "€", LocalDate.of(2026, 6, 20), 2, "description",
+        Transaction("Az", "Ti", 61.0, Currency.EURO, LocalDate.of(2026, 6, 20), 2, "description",
             PayMethod.CASH),
 
-        Transaction("Az", "Ti", 2.0, "€", LocalDate.of(2026, 6, 27), 1, "description",
+        Transaction("Az", "Ti", 2.0, Currency.EURO, LocalDate.of(2026, 6, 27), 1, "description",
             PayMethod.CASH)))
 
     override suspend fun addCategory(category: Category): Result<Category>{
@@ -39,7 +40,18 @@ public object DataService : IDataService {
     override suspend fun addTransaction(transaction: Transaction) {
         delay(WAIT_TIME)
         transactions.addTransaction(transaction)
-    }//TODO how can I make DataService be the only one able to add a transaction to transactions?
+
+        val currentCategory = categories[transaction.categoryID]
+            ?: throw IllegalArgumentException("Category ID ${transaction.categoryID} not found")
+
+        categories[transaction.categoryID] = Category(
+            text = currentCategory.text,
+            icon = currentCategory.icon,
+            color = currentCategory.color,
+            expenseOnThisCategory = currentCategory.expenseOnThisCategory + transaction.money
+        )
+    }
+//TODO how can I make DataService be the only one able to add a transaction to transactions?
 
     override suspend fun removeCategory(id: Int): Map<Int,Category> {
         delay(WAIT_TIME)
