@@ -55,6 +55,7 @@ import com.example.task_1.domain.PayMethod
 import com.example.task_1.domain.Transaction
 import com.example.task_1.domain.TransactionUiState
 import com.example.task_1.domain.Transactions
+import com.example.task_1.ui.ErrorDialog
 import com.example.task_1.ui.ErrorScreen
 import com.example.task_1.ui.LoadingScreen
 import com.example.task_1.ui.TransactionCard
@@ -94,17 +95,9 @@ fun TransactionsScreen(
 
         if (uiState is TransactionUiState.Loading) LoadingScreen()
         if (uiState is TransactionUiState.Error) {
-            AlertDialog(
-                modifier = Modifier.background(color = ErrorColor),
-                onDismissRequest = { viewModel.loadData() },
-                confirmButton = {
-                    TextButton(onClick = { viewModel.loadData() }) {
-                        Text("OK", color = ErrorColor)
-                    }
-                },
-                title = { Text("Error", color = ErrorColor) },
-                text = { Text((uiState as TransactionUiState.Error).message) }
-            )
+            ErrorDialog(
+                message = (uiState as TransactionUiState.Error).message,
+                loadData = { viewModel.loadData() } )
         }
 
         if (showAddTransactionSheet) {

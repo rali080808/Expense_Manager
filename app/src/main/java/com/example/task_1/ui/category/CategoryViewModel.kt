@@ -94,7 +94,7 @@ class CategoryViewModel(private val dataService: IDataService) : ViewModel() {
             _uiState.value = CategoryUiState.Error("Developer bug. Invalid id"); return false
         } else if (transactionsInCategory(categoryID)) {
             _uiState.value =
-                CategoryUiState.Error("Category ${categories[categoryID]?.text} is active. You cannot delete it."); return false
+                CategoryUiState.Error("Category ${categories[categoryID]?.text} ${categories[categoryID]?.icon} is active. You cannot delete it."); return false
         }
         return true
     }

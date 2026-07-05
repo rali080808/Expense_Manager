@@ -37,6 +37,8 @@ import androidx.compose.ui.text.TextStyle
 import com.example.task_1.domain.Category
 import com.example.task_1.domain.CategoryUiState
 import com.example.task_1.domain.MAX_CATEGORY_LENGTH
+import com.example.task_1.domain.TransactionUiState
+import com.example.task_1.ui.ErrorDialog
 import com.example.task_1.ui.LoadingScreen
 import com.example.task_1.ui.theme.border
 import com.example.task_1.ui.theme.spacing
@@ -64,7 +66,9 @@ fun CategoriesScreen(
                 LoadingScreen()
 
             is CategoryUiState.Error ->
-                Text((uiState as CategoryUiState.Error).message)
+                ErrorDialog(
+                    message = (uiState as CategoryUiState.Error).message,
+                    loadData = { viewModel.loadData() } )
 
             is CategoryUiState.Success -> LazyColumn(
                 modifier = Modifier
