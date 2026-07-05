@@ -126,10 +126,10 @@ modifier = Modifier.padding(paddingValues)
                         style = MaterialTheme.typography.titleLarge,
                         viewModel = transactionViewModel,
                         onAddClick = { navController.navigate("addTransaction") },
-                        onNavigateToDescription = { index ->
+                        onNavigateToDescription = { index, func ->
                             navController.navigate(ShowDescriptionRoute(index))
-                        }
-                    )
+                        },
+                         )
                 }
 
                 composable<TransactionCardRoute> { backStackEntry ->
@@ -153,18 +153,12 @@ modifier = Modifier.padding(paddingValues)
                     TransactionCard(
                         transaction = getTransaction(route.transactionIndex),
                          category = getCategory(route.categoryID),
-                         showDescription = { transactionIndex ->
-                            navController.navigate(ShowDescriptionRoute(transactionIndex))
+                         showDescription = { description, func ->
+                            navController.navigate(ShowDescriptionRoute(description))
                         },
                     )
                 }
 
-                composable("addTransaction") {
-                    AddTransaction(
-                        returnToTransactionScreen = { navController.popBackStack() },
-                        viewModel = transactionViewModel,
-                    )
-                }
 
                 composable<ShowDescriptionRoute> { backStackEntry ->
                     val route = backStackEntry.toRoute<ShowDescriptionRoute>()

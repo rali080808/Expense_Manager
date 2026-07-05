@@ -52,7 +52,7 @@ fun DashboardScreen(modifier : Modifier,
                 totalExpenses = (dashboardUiState as DashboardUiState.Success).totalExpenses,
                 biggestExpense = (dashboardUiState as DashboardUiState.Success).biggestExpense,
                 categories = (dashboardUiState as DashboardUiState.Success).categories,
-                onNavigateToDescription = { description -> onNavigateToDescription(description) },
+                onNavigateToDescription = { description, func -> onNavigateToDescription(description) },
                 )
         }
 

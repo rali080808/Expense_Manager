@@ -53,7 +53,8 @@ import com.example.task_1.domain.MAX_RECEIVER_LENGTH
 import com.example.task_1.domain.NoFilter
 import com.example.task_1.domain.PayMethod
 import com.example.task_1.domain.Transaction
-import com.example.task_1.domain.UiState
+import com.example.task_1.domain.TransactionUiState
+import com.example.task_1.domain.Transactions
 import com.example.task_1.ui.ErrorScreen
 import com.example.task_1.ui.LoadingScreen
 import com.example.task_1.ui.TransactionCard
@@ -72,18 +73,18 @@ fun TransactionsScreen(
     style: TextStyle,
     viewModel: TransactionViewModel,
     onAddClick: () -> Unit,
-    onNavigateToDescription: (String) -> Unit
+    onNavigateToDescription: (String, () -> Unit) -> Unit,
 ) {
-    val transactions by viewModel.filteredTransactions.collectAsState()
-    val categories by viewModel.categories.collectAsState()
     val uiState by viewModel.uiState.collectAsState()
     var expandedSortTypes by remember { mutableStateOf(false) }
     var expandedCategoryFilter by remember { mutableStateOf(false) }
     val categoryFilter = remember { NoFilter }
-    val isRefreshing = uiState is UiState.Loading
+    val isRefreshing = uiState is TransactionUiState.Loading
     var lastDate: String? = null
     val scope = rememberCoroutineScope()
     var showAddTransactionSheet by remember { mutableStateOf(false) }
+    val categories = (uiState as? TransactionUiState.Success)?.categories ?: mapOf()
+    val transactions = (uiState as? TransactionUiState.Success)?.transactions ?: listOf()
 
     PullToRefreshBox(
         isRefreshing = isRefreshing,
@@ -91,33 +92,35 @@ fun TransactionsScreen(
     ) {
 
 
-        if (uiState is UiState.Loading )  LoadingScreen()
-        if (uiState is UiState.Error) {
+        if (uiState is TransactionUiState.Loading) LoadingScreen()
+        if (uiState is TransactionUiState.Error) {
             AlertDialog(
-                modifier= Modifier.background(color=ErrorColor),
+                modifier = Modifier.background(color = ErrorColor),
                 onDismissRequest = { viewModel.loadData() },
                 confirmButton = {
                     TextButton(onClick = { viewModel.loadData() }) {
-                        Text("OK", color=ErrorColor)
+                        Text("OK", color = ErrorColor)
                     }
                 },
-                title = { Text("Error", color=ErrorColor) },
-                text = { Text((uiState as UiState.Error).message) }
+                title = { Text("Error", color = ErrorColor) },
+                text = { Text((uiState as TransactionUiState.Error).message) }
             )
         }
+
         if (showAddTransactionSheet) {
             ModalBottomSheet(
                 onDismissRequest = { showAddTransactionSheet = false },
                 sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
             ) {
-                // Call your input screen form composable directly inside the sheet wrapper
                 AddTransaction(
                     returnToTransactionScreen = {
                         showAddTransactionSheet = false;
                         viewModel.loadData()
                     },
-                    viewModel = viewModel
-                )
+                    categories = categories,
+                    addTransaction = { transaction -> viewModel.addTransaction(transaction) },
+
+                    )
             }
         }
         LazyColumn(Modifier.padding(start = MaterialTheme.spacing.medium)) {
@@ -135,7 +138,8 @@ fun TransactionsScreen(
                     )
                     Button(
                         onClick = {
-                            showAddTransactionSheet = true
+                            if (categories.isEmpty()) viewModel.showError("Add a category to become able to add transactions")
+                            else showAddTransactionSheet = true
                             //onAddClick
                         }, Modifier
                             .clip(MaterialTheme.shapes.small),
@@ -231,7 +235,7 @@ fun TransactionsScreen(
                 }
                 Spacer(Modifier.padding(MaterialTheme.spacing.small))
                 Column {
-                    transactions.getTransactions().forEachIndexed { index, transaction ->
+                    transactions.forEachIndexed { index, transaction ->
                         if (viewModel.currentSortType == SortTypes.SORTBY_DATE_ASCENDING || viewModel.currentSortType == SortTypes.SORTBY_DATE_DESCENDING)
                             if (lastDate != transaction.date)
                                 Text(transaction.date)
@@ -241,7 +245,7 @@ fun TransactionsScreen(
                             showDescription = onNavigateToDescription
                         )
                         lastDate = transaction.date
-                        if (index == transactions.getTransactions().size - 1) lastDate =
+                        if (index == transactions.size - 1) lastDate =
                             null
                     }
                 }
@@ -254,16 +258,9 @@ fun TransactionsScreen(
 @Composable
 fun AddTransaction(
     returnToTransactionScreen: () -> Unit,
-    viewModel: TransactionViewModel
+    categories: Map<Int, Category>,
+    addTransaction: (Transaction) -> Unit
 ) {
-
-    val categories by viewModel.categories.collectAsState()
-
-    if (categories.isEmpty()) {
-        ErrorScreen("Add a category to become able to add transactions")
-        return
-    }
-
     var expandedCategory by remember { mutableStateOf(false) }
     var expandedPayMethod by remember { mutableStateOf(false) }
     var showDatePicker by remember { mutableStateOf(false) }
@@ -410,7 +407,7 @@ fun AddTransaction(
             onClick = {
                 val amount = sum.toDoubleOrNull() ?: 0.0
                 // if ( categoryID != NoFilter) {
-                viewModel.addTransaction(
+                addTransaction(
                     Transaction(
                         sender = "Me",
                         receiver = receiver,

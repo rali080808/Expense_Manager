@@ -31,7 +31,7 @@ fun DashboardContent(
     totalExpenses: Double,
     biggestExpense: Double,
     categories: Map<Int, Category>,
-    onNavigateToDescription: (String) -> Unit,
+    onNavigateToDescription: (String, ()->Unit) -> Unit,
 ) {
     LazyColumn(Modifier
         .fillMaxSize()

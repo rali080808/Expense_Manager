@@ -2,14 +2,12 @@ package com.example.task_1.ui.transaction
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.task_1.data.DataService
 import com.example.task_1.data.IDataService
 import com.example.task_1.domain.Category
-import com.example.task_1.domain.DashboardUiState
 import com.example.task_1.domain.NoFilter
 import com.example.task_1.domain.Transaction
+import com.example.task_1.domain.TransactionUiState
 import com.example.task_1.domain.Transactions
-import com.example.task_1.domain.UiState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -23,22 +21,16 @@ enum class SortTypes(val displayName: String) {
 
 
 class TransactionViewModel(private val dataService: IDataService) : ViewModel() {
-    private val _uiState = MutableStateFlow<UiState>(UiState.Loading)
-    val uiState: StateFlow<UiState> get() = _uiState
-    private val _allTransactions = MutableStateFlow(Transactions(mutableListOf()))
-    val allTransactions: StateFlow<Transactions> = _allTransactions
-
-    private val _filteredTransactions = MutableStateFlow(Transactions(mutableListOf()))
-    val filteredTransactions: StateFlow<Transactions> = _filteredTransactions
-
-
-    private val _categories = MutableStateFlow<Map<Int,Category>>(mapOf())
-    val categories: StateFlow<Map<Int,Category>> = _categories
+    private val _uiState = MutableStateFlow<TransactionUiState>(TransactionUiState.Loading)
+    val uiState: StateFlow<TransactionUiState> get() = _uiState
+    private var allTransactions = Transactions(mutableListOf())
+    private var filteredTransactions = Transactions(mutableListOf())
+    private var categories = mutableMapOf<Int, Category>()
 
     var currentSortType = SortTypes.SORTBY_DATE_DESCENDING
-     private set
+        private set
     var currentCategoryFilter = NoFilter
-    private set
+        private set
 
     init {
         loadData()
@@ -46,44 +38,56 @@ class TransactionViewModel(private val dataService: IDataService) : ViewModel() 
 
     fun loadData() {
         viewModelScope.launch {
-            _uiState.value = UiState.Loading
+            _uiState.value = TransactionUiState.Loading
 
-            _allTransactions.value = Transactions(
+            allTransactions = Transactions(
                 dataService.getTransactionsObject()
-                            .getTransactions()
-                            .reversed()
-                            .toMutableList()
+                    .getTransactions()
+                    .reversed()
+                    .toMutableList()
             )
-            _filteredTransactions.value = allTransactions.value
-            _categories.value = dataService.getCategories()
+            filteredTransactions = allTransactions
+            categories = dataService.getCategories().toMutableMap()
 
-            _uiState.value = UiState.Success(allTransactions.value)
+            _uiState.value = TransactionUiState.Success(
+                filteredTransactions.getTransactions(),
+                categories
+            )
 
         }
     }
 
-    fun addTransaction(transaction: Transaction)  {
+    fun showError(message: String) {
+        _uiState.value = TransactionUiState.Error(message)
+    }
+
+    fun addTransaction(transaction: Transaction) {
         viewModelScope.launch {
 
 
             if (transaction.categoryID == NoFilter) {
-                _uiState.value = UiState.Error("Please, choose a category!")
-                return@launch
+                _uiState.value = TransactionUiState.Error("Please, choose a category!")
+                return@launch // may be unnecessary
             } else {
-                _uiState.value = UiState.Loading
+                _uiState.value = TransactionUiState.Loading
                 dataService.addTransaction(transaction)
                 filterByCategory(currentCategoryFilter)
                 sortTransactions(currentSortType)
 
-                _uiState.value = UiState.Success(allTransactions.value)
+                _uiState.value = TransactionUiState.Success(
+                    filteredTransactions.getTransactions(),
+                    categories
+                )
             }
         }
     }
+
     fun sortTransactions(sortType: SortTypes) {
-      //  if (sortType == currentSortType) return;
+        _uiState.value = TransactionUiState.Loading
+
         currentSortType = sortType;
 
-        val currentList = filteredTransactions.value.getTransactions()
+        val currentList = filteredTransactions.getTransactions()
 
         val sortedList = when (sortType) {
             SortTypes.SORTBY_SUM_ASCENDING -> currentList.sortedBy { it.money }
@@ -92,43 +96,49 @@ class TransactionViewModel(private val dataService: IDataService) : ViewModel() 
             SortTypes.SORTBY_DATE_DESCENDING -> currentList.sortedByDescending { it.date }
         }.toMutableList()
 
-        _filteredTransactions.value = Transactions(sortedList)
+        filteredTransactions = Transactions(sortedList)
 
+        _uiState.value =
+            TransactionUiState.Success(filteredTransactions.getTransactions(), categories)
     }
 
-    suspend fun filterByCategory(categoryID: Int) {
-        //viewModelScope.launch {
-            _uiState.value = UiState.Loading
-            currentCategoryFilter = categoryID
+    fun filterByCategory(categoryID: Int) {
+        _uiState.value = TransactionUiState.Loading
+        currentCategoryFilter = categoryID
 
-            if (categoryID == NoFilter)
-                _filteredTransactions.value =
-                    Transactions(
-                        allTransactions.value.getTransactions().toMutableList()
-                    )
-            else
-                _filteredTransactions.value = Transactions(
-                    allTransactions.value.getTransactions()
-                        .filter { it.categoryID == categoryID }
-                        .toMutableList()
+        if (categoryID == NoFilter)
+            filteredTransactions =
+                Transactions(
+                    allTransactions.getTransactions().toMutableList()
                 )
-            sortTransactions(currentSortType)
-            _uiState.value = UiState.Success(filteredTransactions.value)
-        //}
+        else
+            filteredTransactions = Transactions(
+                allTransactions.getTransactions()
+                    .filter { it.categoryID == categoryID }
+                    .toMutableList()
+            )
+        sortTransactions(currentSortType)
+        _uiState.value = TransactionUiState.Success(
+            filteredTransactions.getTransactions(),
+            categories
+        )
+
     }
 
     fun getCategory(categoryID: Int): Category {
-        return categories.value[categoryID] ?: run {
-            _uiState.value = UiState.Error("Developer bug: Category ID not found")
+        return categories[categoryID] ?: run {
+            _uiState.value = TransactionUiState.Error("Developer bug: Category ID not found")
             throw IllegalArgumentException("No category found with ID: $categoryID")
         }
     }
+
     fun getTransaction(transactionIndex: Int): Transaction {
-        if (transactionIndex < 0 || transactionIndex >= filteredTransactions.value.getTransactions().size) {
-            _uiState.value = UiState.Error("Developer bug: Transaction index out of bounds")
+        if (transactionIndex < 0 || transactionIndex >= filteredTransactions.getTransactions().size) {
+            _uiState.value =
+                TransactionUiState.Error("Developer bug: Transaction index out of bounds")
             throw IndexOutOfBoundsException("Transaction index $transactionIndex is out of bounds")
         }
 
-        return filteredTransactions.value.getTransactions()[transactionIndex]
+        return filteredTransactions.getTransactions()[transactionIndex]
     }
 }

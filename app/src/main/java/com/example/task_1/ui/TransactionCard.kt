@@ -37,10 +37,10 @@ import com.example.task_1.ui.theme.spacing
 fun TransactionCard(
     transaction: Transaction,
     category: Category,
-    showDescription: (String) -> Unit,
+    showDescription: (String, ()->Unit) -> Unit,
 ) {
     var activeDescriptionDialog by remember { mutableStateOf(false) }
-    if (activeDescriptionDialog) showDescription(transaction.description)
+    if (activeDescriptionDialog) showDescription(transaction.description, {activeDescriptionDialog=false})
 
     Column(
         modifier = Modifier
