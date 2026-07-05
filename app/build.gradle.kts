@@ -42,7 +42,8 @@ android {
 
 dependencies {
 
-//        implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.8.0"),
+implementation(libs.androidx.material3)
+    //        implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.8.0"),
 
     implementation(libs.kotlinx.datetime)
 

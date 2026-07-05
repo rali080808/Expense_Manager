@@ -13,7 +13,6 @@ import androidx.compose.ui.graphics.Color
 import com.example.task_1.domain.Category
 import com.example.task_1.domain.DashboardUiState
 import com.example.task_1.domain.ErrorCategory
-import com.example.task_1.domain.UiState
 import com.example.task_1.ui.ErrorScreen
 import com.example.task_1.ui.dashboard.DashboardViewModel
 import com.example.task_1.ui.LoadingScreen

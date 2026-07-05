@@ -1,5 +1,6 @@
 package com.example.task_1.ui.category
 
+import android.app.Dialog
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -11,17 +12,16 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Scaffold
 import androidx.compose.ui.graphics.Color
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextFieldColors
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -34,15 +34,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.unit.TextUnit
-import androidx.room.util.getColumnIndex
-import androidx.room.util.performInTransactionSuspending
 import com.example.task_1.domain.Category
-import com.example.task_1.domain.ErrorCategory
-import com.example.task_1.ui.category.CategoryViewModel
+import com.example.task_1.domain.CategoryUiState
 import com.example.task_1.domain.MAX_CATEGORY_LENGTH
-import com.example.task_1.domain.MAX_RECEIVER_LENGTH
-import com.example.task_1.domain.UiState
 import com.example.task_1.ui.LoadingScreen
 import com.example.task_1.ui.theme.border
 import com.example.task_1.ui.theme.spacing
@@ -54,25 +48,25 @@ fun CategoriesScreen(
     viewModel: CategoryViewModel,
     addCategoryOnClick: () -> Unit,
     editCategoryOnClick: (Int) -> Unit,
-    categoryDeleteDialog: () -> Unit
+    categoryDeleteDialog: (Int) -> Unit
 ) {
 
-    val categories by viewModel.categories.collectAsState()
     val uiState by viewModel.uiState.collectAsState()
-    val isRefreshing = uiState is UiState.Loading
+    val isRefreshing = uiState is CategoryUiState.Loading
+    val categories = (uiState as? CategoryUiState.Success)?.categories ?: mapOf()
 
     PullToRefreshBox(
         isRefreshing = isRefreshing,
         onRefresh = { viewModel.loadData() }
     ) {
         when (uiState) {
-            UiState.Loading ->
+            is CategoryUiState.Loading ->
                 LoadingScreen()
 
-            is UiState.Error ->
-                Text((uiState as UiState.Error).message)
+            is CategoryUiState.Error ->
+                Text((uiState as CategoryUiState.Error).message)
 
-            is UiState.Success<*> -> LazyColumn(
+            is CategoryUiState.Success -> LazyColumn(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(start = MaterialTheme.spacing.medium)
@@ -88,16 +82,20 @@ fun CategoriesScreen(
                             style = style,
                             color = MaterialTheme.colorScheme.primary
                         )
-                        Button(onClick = addCategoryOnClick, Modifier
-                            .clip(MaterialTheme.shapes.small)
-                            ,shape = MaterialTheme.shapes.small) {
+                        Button(
+                            onClick = addCategoryOnClick,
+                            Modifier.clip(MaterialTheme.shapes.small),
+                            shape = MaterialTheme.shapes.small
+                        ) {
                             Text("+", style = MaterialTheme.typography.bodyLarge)
                         }
                     }
                     Spacer(Modifier.padding(MaterialTheme.spacing.medium))
 
-                    Row (horizontalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.medium),
-                        modifier = Modifier.fillMaxWidth()){
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.medium),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
                         Column {
                             categories.forEach { (categoryID, category) ->
                                 Box(
@@ -117,7 +115,7 @@ fun CategoriesScreen(
                             categories.forEach { (categoryID, _) ->
                                 Button(
                                     onClick = {
-                                    //    viewModel.categoryIDForEdit = categoryID
+                                        //    viewModel.categoryIDForEdit = categoryID
                                         editCategoryOnClick(categoryID)
                                     }
                                 ) {
@@ -130,10 +128,11 @@ fun CategoriesScreen(
                         Column {
                             categories.forEach { (categoryID, category) ->
                                 Button(onClick = {
-                                    viewModel.categoryIDForDeletion = categoryID;
-                                    categoryDeleteDialog()
+                                    if ( viewModel.validateIDForDeletion(categoryID) )
+                                    categoryDeleteDialog(categoryID)
                                 }) {
-                                    Text("X") }
+                                    Text("X")
+                                }
                                 Spacer(Modifier.padding(MaterialTheme.spacing.small))
                             }
                         }
@@ -143,44 +142,30 @@ fun CategoriesScreen(
         }
     }
 }
+ @Composable
+fun CategoryDeleteDialog(categoryIDForDeletion: Int,currentCategory: Category ,returnToCategoryScreen: () -> Unit, removeCategory: (Int) -> Unit) {
 
-@Composable
-fun CategoryDeleteDialog(returnToCategoryScreen: () -> Unit, viewModel: CategoryViewModel) {
-    val categories by viewModel.categories.collectAsState()
-    Box(
-        modifier = Modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center
-    ) {
-        Box(
-            Modifier.border(
-                width = MaterialTheme.border.medium,
-                color = MaterialTheme.colorScheme.primary,
-                shape = MaterialTheme.shapes.large
-            ), contentAlignment = Alignment.Center
-        ) {
-            Column {
-                // TODO these ifs should be only in the viewmodel
-                if (viewModel.transactionsInCategory(viewModel.categoryIDForDeletion)) {
-                    Text("Category ${categories[viewModel.categoryIDForDeletion]?.text} ${categories[viewModel.categoryIDForDeletion]?.icon} is active. You cannot delete it.")
-                    Button(onClick = { returnToCategoryScreen() }) {
-                        Text("Return")
-                    }
-                } else {
-                    Text("Are you sure that you want to delete ${categories[viewModel.categoryIDForDeletion]?.text}")
-                    Row {
-                        Button(onClick = { viewModel.removeCategory(viewModel.categoryIDForDeletion); returnToCategoryScreen() }) {
-                            Text("OK")
-                        }
-                        Button(onClick = { returnToCategoryScreen() }) {
-                            Text("Cancel")
-                        }
-                    }
+    AlertDialog(
+        onDismissRequest = returnToCategoryScreen,
+        title = { Text("Delete Category") },
+        text = { Text("Are you sure that you want to delete ${currentCategory.text}?") },
+        confirmButton = {
+            TextButton(
+                onClick = {
+                    removeCategory( categoryIDForDeletion)
+                    returnToCategoryScreen()
                 }
+            ) {
+                Text("OK")
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = returnToCategoryScreen) {
+                Text("Cancel")
             }
         }
-    }
+    )
 }
-
 
 
 @Composable
@@ -224,7 +209,8 @@ fun AddCategory(returnToCategoryScreen: () -> Unit, viewModel: CategoryViewModel
                 Text(
                     text = "Color: ${categoryColor.first}",
                     color = categoryColor.second,
-                    modifier = Modifier.clickable { colorExpanded = true }
+                    modifier = Modifier
+                        .clickable { colorExpanded = true }
                         .padding(MaterialTheme.spacing.medium)
                 )
                 DropdownMenu(

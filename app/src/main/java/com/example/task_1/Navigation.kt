@@ -54,6 +54,10 @@ data class ShowDescriptionRoute(
 )
 
 @Serializable
+data class CategoryDeleteDialogRoute(
+    val categoryIDForDeletion: Int,
+)
+@Serializable
 data class EditCategoryRoute(
     val categoryIDForEdit: Int,
 )
@@ -184,7 +188,7 @@ modifier = Modifier.padding(paddingValues)
                                 EditCategoryRoute(categoryIDForEdit)
                             )
                         },
-                        categoryDeleteDialog = { navController.navigate("categoryDeleteDialog") }
+                        categoryDeleteDialog = {  categoryIDForDeletion -> navController.navigate(CategoryDeleteDialogRoute(categoryIDForDeletion)) }
                     )
                 }
 
@@ -198,7 +202,7 @@ modifier = Modifier.padding(paddingValues)
                 composable<EditCategoryRoute> { backStackEntry ->
                     val route = backStackEntry.toRoute<EditCategoryRoute>()
                     val currentCategory =
-                        categoryViewModel.categories.value[route.categoryIDForEdit] ?: ErrorCategory
+                        categoryViewModel.getCategory( route.categoryIDForEdit) ?: ErrorCategory
                     EditCategory(
                         categoryIDForEdit = route.categoryIDForEdit,
                         returnToCategoryScreen = { navController.popBackStack() },
@@ -212,10 +216,16 @@ modifier = Modifier.padding(paddingValues)
                     )
                 }
 
-                composable("categoryDeleteDialog") {
+                composable<CategoryDeleteDialogRoute> {backStackEntry ->
+                    val route = backStackEntry.toRoute<CategoryDeleteDialogRoute>()
+                    val currentCategory =
+                        categoryViewModel.getCategory( route.categoryIDForDeletion) ?: ErrorCategory
+
                     CategoryDeleteDialog(
+                        categoryIDForDeletion = route.categoryIDForDeletion,
+                        currentCategory=currentCategory,
                         returnToCategoryScreen = { navController.popBackStack() },
-                        viewModel = categoryViewModel
+                        removeCategory = { id -> categoryViewModel.removeCategory(id) }
                     )
                 }
             }
