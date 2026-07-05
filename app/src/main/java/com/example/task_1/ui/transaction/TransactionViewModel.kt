@@ -2,6 +2,7 @@ package com.example.task_1.ui.transaction
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.task_1.R
 import com.example.task_1.data.IDataService
 import com.example.task_1.domain.Category
 import com.example.task_1.domain.NoFilter
@@ -57,8 +58,11 @@ class TransactionViewModel(private val dataService: IDataService) : ViewModel() 
         }
     }
 
-    fun showError(message: String) {
-        _uiState.value = TransactionUiState.Error(message)
+    fun showError(messageResId: Int, args: List<Any> = emptyList()) {
+        _uiState.value = TransactionUiState.Error(
+            message = messageResId,
+            args = args
+        )
     }
 
     fun addTransaction(transaction: Transaction) {
@@ -66,7 +70,7 @@ class TransactionViewModel(private val dataService: IDataService) : ViewModel() 
 
 
             if (transaction.categoryID == NoFilter) {
-                _uiState.value = TransactionUiState.Error("Please, choose a category!")
+                _uiState.value = TransactionUiState.Error(R.string.please_choose_a_category)
                 return@launch // may be unnecessary
             } else {
                 _uiState.value = TransactionUiState.Loading
@@ -127,15 +131,19 @@ class TransactionViewModel(private val dataService: IDataService) : ViewModel() 
 
     fun getCategory(categoryID: Int): Category {
         return categories[categoryID] ?: run {
-            _uiState.value = TransactionUiState.Error("Developer bug: Category ID not found")
+            _uiState.value = TransactionUiState.Error(
+                R.string.developer_bug_categoryid_does_not_exist, args = listOf(categoryID)
+            )
             throw IllegalArgumentException("No category found with ID: $categoryID")
         }
     }
 
     fun getTransaction(transactionIndex: Int): Transaction {
         if (transactionIndex < 0 || transactionIndex >= filteredTransactions.getTransactions().size) {
-            _uiState.value =
-                TransactionUiState.Error("Developer bug: Transaction index out of bounds")
+            _uiState.value = TransactionUiState.Error(
+                R.string.developer_bug_transaction_index_out_of_bounds,
+                args = listOf(transactionIndex)
+            )
             throw IndexOutOfBoundsException("Transaction index $transactionIndex is out of bounds")
         }
 

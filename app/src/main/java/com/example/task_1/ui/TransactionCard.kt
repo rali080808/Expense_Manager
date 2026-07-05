@@ -22,12 +22,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
- import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
-import androidx.lifecycle.ViewModel
+import com.example.task_1.R
 import com.example.task_1.domain.Category
-import com.example.task_1.domain.ErrorCategory
-import com.example.task_1.domain.Transaction
+ import com.example.task_1.domain.Transaction
 import com.example.task_1.ui.theme.Money
 import com.example.task_1.ui.theme.border
 import com.example.task_1.ui.theme.spacing
@@ -78,13 +78,19 @@ fun TransactionCard(
         }
         Text(
             transaction.sender
-                    + " gave "
+                    + " "
+                    + stringResource(R.string.gave)
+                    + " "
                     + transaction.money
                     + " "
                     + transaction.currency
-                    + " to "
+                    + " "
+                    + stringResource(R.string.to)
+                    + " "
                     + transaction.receiver
-                    + " on "
+                    + " "
+                    + stringResource(R.string.on)
+                    + " "
                     + transaction.date
                     + ".",
             style = MaterialTheme.typography.bodySmall,
@@ -106,12 +112,12 @@ fun ShowDescription(
             shape = MaterialTheme.shapes.large,
             color = MaterialTheme.colorScheme.surface,
              modifier = Modifier
-                .fillMaxWidth()
-                .padding(MaterialTheme.spacing.large)
+                 .fillMaxWidth()
+                 .padding(MaterialTheme.spacing.large)
         ) {
             Column(modifier = Modifier.padding(MaterialTheme.spacing.medium)) {
                 Text(
-                    text = "Description",
+                    text = stringResource(R.string.description),
                     style = MaterialTheme.typography.titleSmall,
                     color = MaterialTheme.colorScheme.primary
                 )
@@ -126,7 +132,7 @@ fun ShowDescription(
                 Spacer(modifier = Modifier.height(MaterialTheme.spacing.medium))
 
                 Text(
-                    text = "Dismiss",
+                    text = stringResource(R.string.dismiss),
                     style = MaterialTheme.typography.labelLarge,
                     color = MaterialTheme.colorScheme.secondary,
                     modifier = Modifier
@@ -137,15 +143,5 @@ fun ShowDescription(
         }
     }
 
-//    Box(
-//        modifier = Modifier.fillMaxSize(),
-//        contentAlignment = Alignment.Center
-//    ) {
-//        Column {
-//            Text(description)
-//            Button(onClick = returnToMainScreen) {
-//                Text("Return")
-//            }
-//        }
-//    }
+
 }

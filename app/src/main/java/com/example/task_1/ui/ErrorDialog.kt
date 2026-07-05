@@ -6,20 +6,22 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
+import com.example.task_1.R
 import com.example.task_1.domain.TransactionUiState
 import com.example.task_1.ui.theme.ErrorColor
 
 @Composable
-fun ErrorDialog( message: String, loadData: ()-> Unit ) {
+fun ErrorDialog( message: Int, args:List<Any>, loadData: ()-> Unit ) {
     AlertDialog(
         modifier = Modifier.background(color = ErrorColor),
         onDismissRequest = { loadData() },
         confirmButton = {
             TextButton(onClick = { loadData() }) {
-                Text("OK", color = ErrorColor)
+                Text(stringResource(R.string.ok), color = ErrorColor)
             }
         },
-        title = { Text("Error", color = ErrorColor) },
-        text = { Text(message) }
+        title = { Text(stringResource(R.string.error), color = ErrorColor) },
+        text = { Text(stringResource(message, *args.toTypedArray())) }
     )
 }

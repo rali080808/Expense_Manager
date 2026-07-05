@@ -9,6 +9,8 @@ sealed class CategoryUiState {
 
     ) : CategoryUiState()
 
-    data class Error(val message: String) : CategoryUiState()
+    data class Error(val message: Int,
+                     val args: List<Any> = emptyList()
+    ) : CategoryUiState()
     // TODO developer bug state
 }

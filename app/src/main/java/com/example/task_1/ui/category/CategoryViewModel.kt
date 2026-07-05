@@ -1,5 +1,6 @@
 package com.example.task_1.ui.category
 
+import com.example.task_1.R
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.task_1.data.DataService
@@ -51,13 +52,10 @@ class CategoryViewModel(private val dataService: IDataService) : ViewModel() {
     fun removeCategory(categoryID: Int) {
         viewModelScope.launch {
             _uiState.value = CategoryUiState.Loading
-            if (transactionsInCategory(categoryID))
-                _uiState.value =
-                    CategoryUiState.Error("Category ${categories[categoryID]?.text} is still active and cannot be deleted. Edit it instead.")
-            else {
-                categories = dataService.removeCategory(categoryID).toMutableMap()
-                _uiState.value = CategoryUiState.Success(transactions.getTransactions(), categories)
-            }
+
+            categories = dataService.removeCategory(categoryID).toMutableMap()
+            _uiState.value = CategoryUiState.Success(transactions.getTransactions(), categories)
+
         }
     }
 
@@ -69,7 +67,11 @@ class CategoryViewModel(private val dataService: IDataService) : ViewModel() {
                 _uiState.value = CategoryUiState.Success(transactions.getTransactions(), categories)
             } else {
                 _uiState.value =
-                    CategoryUiState.Error("Developer bug: categoryID $categoryID does not exist.")
+                    CategoryUiState.Error(
+
+                        R.string.developer_bug_categoryid_does_not_exist,
+                        args = listOf(categoryID)
+                    )
             }
         }
     }
@@ -84,31 +86,45 @@ class CategoryViewModel(private val dataService: IDataService) : ViewModel() {
                 categories = dataService.getCategories().toMutableMap()
                 _uiState.value = CategoryUiState.Success(transactions.getTransactions(), categories)
             } else {
-                _uiState.value = CategoryUiState.Error("Failed to add category")
+                _uiState.value = CategoryUiState.Error(
+                    R.string.failed_to_add_category, args = listOf(category.text)
+                )
             }
         }
     }
 
     fun validateIDForDeletion(categoryID: Int): Boolean {
         if (!categories.containsKey(categoryID)) {
-            _uiState.value = CategoryUiState.Error("Developer bug. Invalid id"); return false
-        } else if (transactionsInCategory(categoryID)) {
             _uiState.value =
-                CategoryUiState.Error("Category ${categories[categoryID]?.text} ${categories[categoryID]?.icon} is active. You cannot delete it."); return false
+                CategoryUiState.Error(
+                    R.string.developer_bug_categoryid_does_not_exist,
+                    args = listOf(categoryID)
+                ); return false
+        } else if (transactionsInCategory(categoryID)) {
+            _uiState.value = CategoryUiState.Error(
+                R.string.category_is_active_you_cannot_delete_it, args = listOf(
+                    categories[categoryID]?.text ?: "", categories[categoryID]?.icon ?: ""
+                )
+            ); return false
         }
         return true
     }
 
     fun getCategory(categoryID: Int): Category {
         return categories[categoryID] ?: run {
-            _uiState.value = CategoryUiState.Error("Developer bug: Category ID not found")
+            _uiState.value = CategoryUiState.Error(
+                R.string.developer_bug_categoryid_does_not_exist, args = listOf(categoryID)
+            )
             throw IllegalArgumentException("No category found with ID: $categoryID")
         }
     }
 
     fun getTransaction(transactionIndex: Int): Transaction {
         if (transactionIndex < 0 || transactionIndex >= transactions.getTransactions().size) {
-            _uiState.value = CategoryUiState.Error("Developer bug: Transaction index out of bounds")
+            _uiState.value = CategoryUiState.Error(
+                R.string.developer_bug_transaction_index_out_of_bounds,
+                args = listOf(transactionIndex)
+            )
             throw IndexOutOfBoundsException("Transaction index $transactionIndex is out of bounds")
         }
 

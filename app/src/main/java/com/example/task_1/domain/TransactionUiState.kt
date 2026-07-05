@@ -9,5 +9,8 @@ sealed class TransactionUiState {
         val categories: Map<Int, Category>,
     ) : TransactionUiState()
 
-    data class Error(val message: String) : TransactionUiState()
+    data class Error(
+        val message: Int,
+        val args: List<Any> = emptyList()
+    ) : TransactionUiState()
 }

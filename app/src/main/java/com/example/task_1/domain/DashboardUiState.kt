@@ -10,5 +10,8 @@ sealed class DashboardUiState {
         val biggestExpense: Double,
     ) : DashboardUiState()
 
-    data class Error(val message: String) : DashboardUiState()
+    data class Error(
+        val message: Int,
+        val args: List<Any> = emptyList()
+    ) : DashboardUiState()
 }

@@ -44,6 +44,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import com.example.task_1.domain.Category
@@ -56,7 +57,6 @@ import com.example.task_1.domain.Transaction
 import com.example.task_1.domain.TransactionUiState
 import com.example.task_1.domain.Transactions
 import com.example.task_1.ui.ErrorDialog
-import com.example.task_1.ui.ErrorScreen
 import com.example.task_1.ui.LoadingScreen
 import com.example.task_1.ui.TransactionCard
 import com.example.task_1.ui.theme.ErrorColor
@@ -96,8 +96,9 @@ fun TransactionsScreen(
         if (uiState is TransactionUiState.Loading) LoadingScreen()
         if (uiState is TransactionUiState.Error) {
             ErrorDialog(
-                message = (uiState as TransactionUiState.Error).message,
-                loadData = { viewModel.loadData() } )
+                message = (uiState as TransactionUiState.Error).message ,
+                args = (uiState as TransactionUiState.Error).args,
+                loadData = { viewModel.loadData() })
         }
 
         if (showAddTransactionSheet) {
@@ -131,14 +132,17 @@ fun TransactionsScreen(
                     )
                     Button(
                         onClick = {
-                            if (categories.isEmpty()) viewModel.showError("Add a category to become able to add transactions")
+                            if (categories.isEmpty()) viewModel.showError(com.example.task_1.R.string.add_a_category_to_become_able_to_add_transactions)
                             else showAddTransactionSheet = true
-                            //onAddClick
+
                         }, Modifier
                             .clip(MaterialTheme.shapes.small),
                         shape = MaterialTheme.shapes.small
                     ) {
-                        Text("+", style = MaterialTheme.typography.bodyLarge)
+                        Text(
+                            stringResource(com.example.task_1.R.string.plus_sign),
+                            style = MaterialTheme.typography.bodyLarge
+                        )
                     }
                 }
                 Box(
@@ -148,7 +152,10 @@ fun TransactionsScreen(
                     Row(horizontalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.medium)) {
                         Box {
                             Text(
-                                text = if (categoryFilter == NoFilter) "Filter Categories" else "Filter: $categoryFilter",
+                                text = if (categoryFilter == NoFilter) stringResource(com.example.task_1.R.string.filter_categories) else stringResource(
+                                    com.example.task_1.R.string.filter_cat,
+                                    categoryFilter
+                                ),
                                 modifier = Modifier
                                     .clickable {
                                         expandedCategoryFilter = !expandedCategoryFilter
@@ -168,7 +175,7 @@ fun TransactionsScreen(
                                 onDismissRequest = { expandedCategoryFilter = false }
                             ) {
                                 DropdownMenuItem(
-                                    text = { Text("All") },
+                                    text = { Text(stringResource(com.example.task_1.R.string.all)) },
                                     onClick = {
                                         scope.launch {
                                             viewModel.filterByCategory(NoFilter)
@@ -196,7 +203,7 @@ fun TransactionsScreen(
                         }
                         Box {
                             Text(
-                                text = "Sort Transactions",
+                                text = stringResource(com.example.task_1.R.string.sort_transactions),
                                 modifier = Modifier
                                     .clickable { expandedSortTypes = !expandedSortTypes }
                                     .border(
@@ -257,6 +264,7 @@ fun AddTransaction(
     var expandedCategory by remember { mutableStateOf(false) }
     var expandedPayMethod by remember { mutableStateOf(false) }
     var showDatePicker by remember { mutableStateOf(false) }
+    var sender by remember { mutableStateOf("") }
 
     var receiver by remember { mutableStateOf("") }
     var sum by remember { mutableStateOf("0.0") }
@@ -279,10 +287,19 @@ fun AddTransaction(
     ) {
         Text("New Transaction", style = MaterialTheme.typography.titleLarge)
 
+
+        OutlinedTextField(
+            value = sender,
+            onValueChange = { if (it.length < MAX_RECEIVER_LENGTH) sender = it },
+            label = { Text(stringResource(com.example.task_1.R.string.sender)) },
+            singleLine = true,
+            modifier = Modifier.fillMaxWidth()
+        )
+
         OutlinedTextField(
             value = receiver,
             onValueChange = { if (it.length < MAX_RECEIVER_LENGTH) receiver = it },
-            label = { Text("Receiver") },
+            label = { Text(stringResource(com.example.task_1.R.string.receiver)) },
             singleLine = true,
             modifier = Modifier.fillMaxWidth()
         )
@@ -291,17 +308,17 @@ fun AddTransaction(
             value = sum,
             onValueChange = { if (it.length < MAX_MONEY_LENGTH) sum = it },
             singleLine = true,
-            label = { Text("Money") },
+            label = { Text(stringResource(com.example.task_1.R.string.money)) },
             modifier = Modifier.fillMaxWidth()
         )
 
-        Spacer(modifier = Modifier.height(8.dp))
+        Spacer(modifier = Modifier.height(MaterialTheme.spacing.small))
 
         Box(modifier = Modifier.fillMaxWidth()) {
             OutlinedTextField(
                 value = date.toString(),
                 onValueChange = { },
-                label = { Text("Date") },
+                label = { Text(stringResource(com.example.task_1.R.string.date)) },
                 readOnly = true,
                 modifier = Modifier.fillMaxWidth()
             )
@@ -323,10 +340,12 @@ fun AddTransaction(
                                 .toLocalDate()
                         }
                         showDatePicker = false
-                    }) { Text("OK") }
+                    }) { Text(stringResource(R.string.ok)) }
                 },
                 dismissButton = {
-                    TextButton(onClick = { showDatePicker = false }) { Text("Cancel") }
+                    TextButton(onClick = {
+                        showDatePicker = false
+                    }) { Text(stringResource(com.example.task_1.R.string.cancel)) }
                 }
             ) {
                 DatePicker(state = datePickerState)
@@ -335,11 +354,22 @@ fun AddTransaction(
 
 
         Row { // TODO here it shows null when nofilter
-            Text("Category: ${categories[categoryID]?.text}  ${categories[categoryID]?.icon} ")
+
+            val category = categories[categoryID]
+
+            if (category != null) {
+                Text(
+                    text = stringResource(
+                        com.example.task_1.R.string.category,
+                        category.text,
+                        category.icon
+                    )
+                )
+            }
             IconButton(onClick = { expandedCategory = !expandedCategory }) {
                 Icon(
                     androidx.compose.ui.res.painterResource(id = com.example.task_1.R.drawable.ic_home),
-                    contentDescription = "Select Category"
+                    contentDescription = stringResource(com.example.task_1.R.string.select_category)
                 )
             }
         }
@@ -363,7 +393,7 @@ fun AddTransaction(
             OutlinedTextField(
                 value = payMethod.name,
                 onValueChange = { },
-                label = { Text("Payment Method") },
+                label = { Text(stringResource(com.example.task_1.R.string.payment_method)) },
                 readOnly = true,
                 modifier = Modifier.fillMaxWidth()
             )
@@ -393,16 +423,15 @@ fun AddTransaction(
         OutlinedTextField(
             value = description,
             onValueChange = { description = it },
-            label = { Text("Description") },
+            label = { Text(stringResource(com.example.task_1.R.string.description)) },
             modifier = Modifier.fillMaxWidth()
         )
         Button(
             onClick = {
                 val amount = sum.toDoubleOrNull() ?: 0.0
-                // if ( categoryID != NoFilter) {
                 addTransaction(
                     Transaction(
-                        sender = "Me",
+                        sender = sender,
                         receiver = receiver,
                         money = amount,
                         date = date.toString(),
@@ -412,12 +441,10 @@ fun AddTransaction(
                     )
                 )
                 if (categoryID != NoFilter) returnToTransactionScreen()
-                // }
-                //else ErrorScreen("Please select a category before submitting")
             },
             modifier = Modifier.fillMaxWidth()
         ) {
-            Text("Save")
+            Text(stringResource(com.example.task_1.R.string.save))
         }
     }
 }

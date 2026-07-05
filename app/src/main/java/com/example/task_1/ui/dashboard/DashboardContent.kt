@@ -12,9 +12,11 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
+import com.example.task_1.R
 import com.example.task_1.domain.Category
 import com.example.task_1.domain.ErrorCategory
 import com.example.task_1.domain.Transaction
@@ -38,13 +40,13 @@ fun DashboardContent(
         .padding(start = MaterialTheme.spacing.medium)) {
         item {
             Text(
-                "Dashboard",
+                stringResource(R.string.dashboard),
                 modifier = modifier,
                 style = style,
                 color = MaterialTheme.colorScheme.primary
             )
             Text(
-                "Total", fontWeight = FontWeight.Bold,
+                stringResource(R.string.total), fontWeight = FontWeight.Bold,
                 style = MaterialTheme.typography.titleMedium,
                 fontStyle = FontStyle.Italic,
                 modifier = Modifier.padding(MaterialTheme.spacing.small)
@@ -60,15 +62,16 @@ fun DashboardContent(
                 ),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                SummaryCard("Total sum", totalExpenses)
+                SummaryCard(stringResource(R.string.total_sum), totalExpenses)
                 SummaryCard(
-                    "Biggest expense",
+                    stringResource(R.string.biggest_expense),
                     biggestExpense
                 )
             }
 
             Text(
-                "Recent Transactions", fontWeight = FontWeight.Bold,
+                stringResource(R.string.recent_transactions),
+                fontWeight = FontWeight.Bold,
                 style = MaterialTheme.typography.titleMedium,
                 fontStyle = FontStyle.Italic,
                 modifier = Modifier.padding(MaterialTheme.spacing.small)
@@ -84,7 +87,7 @@ fun DashboardContent(
                 }
             }
             Text(
-                "Categories Overview", fontWeight = FontWeight.Bold,
+                stringResource(R.string.categories_overview), fontWeight = FontWeight.Bold,
                 style = MaterialTheme.typography.titleMedium,
                 fontStyle = FontStyle.Italic,
                 modifier = Modifier.padding(top = MaterialTheme.spacing.small)
