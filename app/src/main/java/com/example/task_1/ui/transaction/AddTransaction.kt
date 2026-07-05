@@ -111,7 +111,7 @@ fun AddTransaction(
             modifier = Modifier.fillMaxWidth()
         )
 
-        Spacer(modifier = Modifier.height(MaterialTheme.spacing.small))
+      //  Spacer(modifier = Modifier.height(MaterialTheme.spacing.small))
 
         Box(modifier = Modifier.fillMaxWidth()) {
             OutlinedTextField(
@@ -155,7 +155,7 @@ fun AddTransaction(
             OutlinedTextField(
                 value = categories[categoryID]?.text ?: "",
                 onValueChange = { },
-                label = { Text( stringResource(com.example.task_1.R.string.select_category)) },
+                label = { Text(stringResource(com.example.task_1.R.string.select_category)) },
                 readOnly = true,
                 modifier = Modifier.fillMaxWidth(),
                 leadingIcon = {
@@ -166,93 +166,54 @@ fun AddTransaction(
                         )
                     }
                 },
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = MaterialTheme.colorScheme.primary,
-                    unfocusedBorderColor = MaterialTheme.colorScheme.outline,
-                    focusedLabelColor = MaterialTheme.colorScheme.primary,
-                    unfocusedLabelColor = MaterialTheme.colorScheme.onSurfaceVariant
+
                 )
-            )
             Box(
                 modifier = Modifier
                     .matchParentSize()
                     .clickable { expandedCategory = !expandedCategory }
             )
-        }
 
-        DropdownMenu(
-            expanded = expandedCategory,
-            onDismissRequest = { expandedCategory = false },
-            modifier = Modifier
-                .clip(MaterialTheme.shapes.small)
-                .background(MaterialTheme.colorScheme.surface)
-        ) {
-            categories.forEach { (id, option) ->
-                DropdownMenuItem(
-                    text = {
-                        Row(
-                            horizontalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.small),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text(
-                                text = option.icon,
-                                style = MaterialTheme.typography.titleMedium
-                            )
-                            Text(
-                                text = option.text,
-                                style = MaterialTheme.typography.bodyLarge,
-                                color = Color(option.color)
-                            )
+
+            DropdownMenu(
+                expanded = expandedCategory,
+                onDismissRequest = { expandedCategory = false },
+                modifier = Modifier
+                    .clip(MaterialTheme.shapes.small)
+                    .background(MaterialTheme.colorScheme.surface),
+                offset = androidx.compose.ui.unit.DpOffset(0.dp, 0.dp) // This anchors it to the Box
+
+            ) {
+                categories.forEach { (id, option) ->
+                    DropdownMenuItem(
+                        text = {
+                            Row(
+                                horizontalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.small),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    text = option.icon,
+                                    style = MaterialTheme.typography.titleMedium
+                                )
+                                Text(
+                                    text = option.text,
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    color = Color(option.color)
+                                )
+                            }
+                        },
+                        onClick = {
+                            categoryID = id
+                            expandedCategory = false
                         }
-                    },
-                    onClick = {
-                        categoryID = id
-                        expandedCategory = false
-                    }
-                )
+                    )
+                }
             }
         }
 
-//// TODO here it shows null when nofilter
-//        Row {
-//
-//            val category = categories[categoryID]
-//
-//            if (category != null) {
-//                Text(
-//                    text = stringResource(
-//                        com.example.task_1.R.string.category,
-//                        category.text,
-//                        category.icon
-//                    )
-//                )
-//            }
-//            IconButton(onClick = { expandedCategory = !expandedCategory }) {
-//                Icon(
-//                    androidx.compose.ui.res.painterResource(id = com.example.task_1.R.drawable.ic_home),
-//                    contentDescription = stringResource(com.example.task_1.R.string.select_category)
-//                )
-//            }
-//        }
-//
-//        DropdownMenu(
-//            expanded = expandedCategory,
-//            onDismissRequest = { expandedCategory = false }
-//        ) {
-//            categories.forEach { (id, option) ->
-//                DropdownMenuItem(
-//                    text = { Text(option.text + " " + option.icon, color = Color(option.color)) },
-//                    onClick = {
-//                        categoryID = id
-//                        expandedCategory = false
-//                    }
-//                )
-//            }
-//        }
-
         Box(modifier = Modifier.fillMaxWidth()) {
             OutlinedTextField(
-                value = payMethod.name,
+                value = payMethod.text,
                 onValueChange = { },
                 label = { Text(stringResource(com.example.task_1.R.string.payment_method)) },
                 readOnly = true,
@@ -263,7 +224,7 @@ fun AddTransaction(
                     .matchParentSize()
                     .clickable { expandedPayMethod = true }
             )
-        }
+
 
         DropdownMenu(
             expanded = expandedPayMethod,
@@ -271,16 +232,16 @@ fun AddTransaction(
         ) {
             PayMethod.entries.forEach { method ->
                 DropdownMenuItem(
-                    text = { Text(method.name) },
+                    text = { Text(method.text) },
                     onClick = {
                         payMethod = method
                         expandedPayMethod = false
                     }
                 )
             }
-        }
+        }}
 
-        Spacer(modifier = Modifier.height(8.dp))
+//Spacer(modifier = Modifier.height(MaterialTheme.spacing.small))
         OutlinedTextField(
             value = description,
             onValueChange = { description = it },

@@ -5,8 +5,8 @@ import java.time.LocalDate
 import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 
-enum class PayMethod (){
-    CASH, DEBIT, CREDIT
+enum class PayMethod (val text: String){
+    CASH("💵 Cash"), DEBIT("💳 Debit"), CREDIT("💰 Credit")
 }
 enum class Currency(val sign: String) {
     EURO("€"), DOLLAR("$")

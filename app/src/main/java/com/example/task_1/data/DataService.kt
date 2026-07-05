@@ -18,17 +18,17 @@ import kotlin.uuid.Uuid
 const val WAIT_TIME: Long = 700
 public object DataService : IDataService {
     private  val  categories: MutableMap<Int, Category> = mutableMapOf(
-        1 to Category("icecream", "🍦", Color.Yellow.toArgb(), 8.0),
+        1 to Category("ice cream", "🍦", Color.Magenta.toArgb(), 8.0),
         2 to Category("dresses", "👗", Color.Blue.toArgb(), 61.0))
     private var nextCategoryID = 3
     private val transactions : Transactions = Transactions(mutableListOf(
-        Transaction("Az", "Ti", 6.0, Currency.EURO, LocalDate.of(2026, 6, 10).toString(), 1, "description",
+        Transaction("Rali", "LIDL", 6.0, Currency.EURO, LocalDate.of(2026, 6, 10).toString(), 1, "Vanilla ice cream for everyone!",
             PayMethod.CASH),
 
-        Transaction("Az", "Ti", 61.0, Currency.EURO, LocalDate.of(2026, 6, 20).toString(), 2, "description",
+        Transaction("Rali", "Stradivarius", 61.0, Currency.EURO, LocalDate.of(2026, 6, 20).toString(), 2, "Numerous new dresses!",
             PayMethod.CASH),
 
-        Transaction("Az", "Ti", 2.0, Currency.EURO, LocalDate.of(2026, 6, 27).toString(), 1, "description",
+        Transaction("Rali", "Billa", 2.0, Currency.EURO, LocalDate.of(2026, 6, 27).toString(), 1, "Another ice cream!",
             PayMethod.CASH)))
 
     override suspend fun addCategory(category: Category): Result<Category>{
