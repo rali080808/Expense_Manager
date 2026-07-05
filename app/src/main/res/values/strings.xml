@@ -27,8 +27,8 @@
     <string name="add_a_category_to_become_able_to_add_transactions">Add a category to become able to add transactions</string>
     <string name="delete_category">Delete Category</string>
     <string name="are_you_sure_that_you_want_to_delete">Are you sure that you want to delete %1$s?</string>
-    <string name="gave">" gave "</string>
-    <string name="to">" to "</string>
+    <string name="gave">gave</string>
+    <string name="to">to</string>
     <string name="on">on</string>
     <string name="dismiss">Dismiss</string>
     <string name="dashboard">Dashboard</string>

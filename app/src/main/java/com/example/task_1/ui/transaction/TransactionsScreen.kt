@@ -70,8 +70,8 @@ import java.time.ZoneId
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TransactionsScreen(
-    modifier: Modifier,
-    style: TextStyle,
+//    modifier: Modifier,
+//    style: TextStyle,
     viewModel: TransactionViewModel,
     onAddClick: () -> Unit,
     onNavigateToDescription: (String, () -> Unit) -> Unit,
@@ -117,7 +117,7 @@ fun TransactionsScreen(
                     )
             }
         }
-        LazyColumn(Modifier.padding(start = MaterialTheme.spacing.medium)) {
+        LazyColumn(Modifier.padding(horizontal = MaterialTheme.spacing.small)) {
             item {
 
                 Row(
@@ -126,8 +126,7 @@ fun TransactionsScreen(
                 ) {
                     Text(
                         "Transactions",
-                        modifier = modifier,
-                        style = style,
+                         style = MaterialTheme.typography.titleLarge,
                         color = MaterialTheme.colorScheme.primary
                     )
                     Button(
@@ -254,197 +253,197 @@ fun TransactionsScreen(
     }
 }
 
-
-@Composable
-fun AddTransaction(
-    returnToTransactionScreen: () -> Unit,
-    categories: Map<Int, Category>,
-    addTransaction: (Transaction) -> Unit
-) {
-    var expandedCategory by remember { mutableStateOf(false) }
-    var expandedPayMethod by remember { mutableStateOf(false) }
-    var showDatePicker by remember { mutableStateOf(false) }
-    var sender by remember { mutableStateOf("") }
-
-    var receiver by remember { mutableStateOf("") }
-    var sum by remember { mutableStateOf("0.0") }
-    var categoryID by remember { mutableIntStateOf(NoFilter) }
-    var date by remember { mutableStateOf(LocalDate.now()) }
-    var description by remember { mutableStateOf("") }
-    var payMethod by remember { mutableStateOf(PayMethod.DEBIT) }
-
-    val datePickerState = rememberDatePickerState()
-
-    Column(
-        modifier = Modifier
-            .clip(MaterialTheme.shapes.large)
-            .border(
-                BorderStroke(
-                    width = MaterialTheme.border.medium,
-                    color = MaterialTheme.colorScheme.primary
-                )
-            )
-    ) {
-        Text("New Transaction", style = MaterialTheme.typography.titleLarge)
-
-
-        OutlinedTextField(
-            value = sender,
-            onValueChange = { if (it.length < MAX_RECEIVER_LENGTH) sender = it },
-            label = { Text(stringResource(com.example.task_1.R.string.sender)) },
-            singleLine = true,
-            modifier = Modifier.fillMaxWidth()
-        )
-
-        OutlinedTextField(
-            value = receiver,
-            onValueChange = { if (it.length < MAX_RECEIVER_LENGTH) receiver = it },
-            label = { Text(stringResource(com.example.task_1.R.string.receiver)) },
-            singleLine = true,
-            modifier = Modifier.fillMaxWidth()
-        )
-
-        OutlinedTextField(
-            value = sum,
-            onValueChange = { if (it.length < MAX_MONEY_LENGTH) sum = it },
-            singleLine = true,
-            label = { Text(stringResource(com.example.task_1.R.string.money)) },
-            modifier = Modifier.fillMaxWidth()
-        )
-
-        Spacer(modifier = Modifier.height(MaterialTheme.spacing.small))
-
-        Box(modifier = Modifier.fillMaxWidth()) {
-            OutlinedTextField(
-                value = date.toString(),
-                onValueChange = { },
-                label = { Text(stringResource(com.example.task_1.R.string.date)) },
-                readOnly = true,
-                modifier = Modifier.fillMaxWidth()
-            )
-            Box(
-                modifier = Modifier
-                    .matchParentSize()
-                    .clickable { showDatePicker = true }
-            )
-        }
-
-        if (showDatePicker) {
-            DatePickerDialog(
-                onDismissRequest = { showDatePicker = false },
-                confirmButton = {
-                    TextButton(onClick = {
-                        datePickerState.selectedDateMillis?.let { millis ->
-                            date = Instant.ofEpochMilli(millis)
-                                .atZone(ZoneId.systemDefault())
-                                .toLocalDate()
-                        }
-                        showDatePicker = false
-                    }) { Text(stringResource(R.string.ok)) }
-                },
-                dismissButton = {
-                    TextButton(onClick = {
-                        showDatePicker = false
-                    }) { Text(stringResource(com.example.task_1.R.string.cancel)) }
-                }
-            ) {
-                DatePicker(state = datePickerState)
-            }
-        }
-
-
-        Row { // TODO here it shows null when nofilter
-
-            val category = categories[categoryID]
-
-            if (category != null) {
-                Text(
-                    text = stringResource(
-                        com.example.task_1.R.string.category,
-                        category.text,
-                        category.icon
-                    )
-                )
-            }
-            IconButton(onClick = { expandedCategory = !expandedCategory }) {
-                Icon(
-                    androidx.compose.ui.res.painterResource(id = com.example.task_1.R.drawable.ic_home),
-                    contentDescription = stringResource(com.example.task_1.R.string.select_category)
-                )
-            }
-        }
-
-        DropdownMenu(
-            expanded = expandedCategory,
-            onDismissRequest = { expandedCategory = false }
-        ) {
-            categories.forEach { (id, option) ->
-                DropdownMenuItem(
-                    text = { Text(option.text + " " + option.icon, color = Color(option.color)) },
-                    onClick = {
-                        categoryID = id
-                        expandedCategory = false
-                    }
-                )
-            }
-        }
-
-        Box(modifier = Modifier.fillMaxWidth()) {
-            OutlinedTextField(
-                value = payMethod.name,
-                onValueChange = { },
-                label = { Text(stringResource(com.example.task_1.R.string.payment_method)) },
-                readOnly = true,
-                modifier = Modifier.fillMaxWidth()
-            )
-            Box(
-                modifier = Modifier
-                    .matchParentSize()
-                    .clickable { expandedPayMethod = true }
-            )
-        }
-
-        DropdownMenu(
-            expanded = expandedPayMethod,
-            onDismissRequest = { expandedPayMethod = false }
-        ) {
-            PayMethod.entries.forEach { method ->
-                DropdownMenuItem(
-                    text = { Text(method.name) },
-                    onClick = {
-                        payMethod = method
-                        expandedPayMethod = false
-                    }
-                )
-            }
-        }
-
-        Spacer(modifier = Modifier.height(8.dp))
-        OutlinedTextField(
-            value = description,
-            onValueChange = { description = it },
-            label = { Text(stringResource(com.example.task_1.R.string.description)) },
-            modifier = Modifier.fillMaxWidth()
-        )
-        Button(
-            onClick = {
-                val amount = sum.toDoubleOrNull() ?: 0.0
-                addTransaction(
-                    Transaction(
-                        sender = sender,
-                        receiver = receiver,
-                        money = amount,
-                        date = date.toString(),
-                        categoryID = categoryID,
-                        description = description,
-                        payMethod = payMethod
-                    )
-                )
-                if (categoryID != NoFilter) returnToTransactionScreen()
-            },
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Text(stringResource(com.example.task_1.R.string.save))
-        }
-    }
-}
+//
+//@Composable
+//fun AddTransaction(
+//    returnToTransactionScreen: () -> Unit,
+//    categories: Map<Int, Category>,
+//    addTransaction: (Transaction) -> Unit
+//) {
+//    var expandedCategory by remember { mutableStateOf(false) }
+//    var expandedPayMethod by remember { mutableStateOf(false) }
+//    var showDatePicker by remember { mutableStateOf(false) }
+//    var sender by remember { mutableStateOf("") }
+//
+//    var receiver by remember { mutableStateOf("") }
+//    var sum by remember { mutableStateOf("0.0") }
+//    var categoryID by remember { mutableIntStateOf(NoFilter) }
+//    var date by remember { mutableStateOf(LocalDate.now()) }
+//    var description by remember { mutableStateOf("") }
+//    var payMethod by remember { mutableStateOf(PayMethod.DEBIT) }
+//
+//    val datePickerState = rememberDatePickerState()
+//
+//    Column(
+//        modifier = Modifier
+//            .clip(MaterialTheme.shapes.large)
+//            .border(
+//                BorderStroke(
+//                    width = MaterialTheme.border.medium,
+//                    color = MaterialTheme.colorScheme.primary
+//                )
+//            )
+//    ) {
+//        Text("New Transaction", style = MaterialTheme.typography.titleLarge)
+//
+//
+//        OutlinedTextField(
+//            value = sender,
+//            onValueChange = { if (it.length < MAX_RECEIVER_LENGTH) sender = it },
+//            label = { Text(stringResource(com.example.task_1.R.string.sender)) },
+//            singleLine = true,
+//            modifier = Modifier.fillMaxWidth()
+//        )
+//
+//        OutlinedTextField(
+//            value = receiver,
+//            onValueChange = { if (it.length < MAX_RECEIVER_LENGTH) receiver = it },
+//            label = { Text(stringResource(com.example.task_1.R.string.receiver)) },
+//            singleLine = true,
+//            modifier = Modifier.fillMaxWidth()
+//        )
+//
+//        OutlinedTextField(
+//            value = sum,
+//            onValueChange = { if (it.length < MAX_MONEY_LENGTH) sum = it },
+//            singleLine = true,
+//            label = { Text(stringResource(com.example.task_1.R.string.money)) },
+//            modifier = Modifier.fillMaxWidth()
+//        )
+//
+//        Spacer(modifier = Modifier.height(MaterialTheme.spacing.small))
+//
+//        Box(modifier = Modifier.fillMaxWidth()) {
+//            OutlinedTextField(
+//                value = date.toString(),
+//                onValueChange = { },
+//                label = { Text(stringResource(com.example.task_1.R.string.date)) },
+//                readOnly = true,
+//                modifier = Modifier.fillMaxWidth()
+//            )
+//            Box(
+//                modifier = Modifier
+//                    .matchParentSize()
+//                    .clickable { showDatePicker = true }
+//            )
+//        }
+//
+//        if (showDatePicker) {
+//            DatePickerDialog(
+//                onDismissRequest = { showDatePicker = false },
+//                confirmButton = {
+//                    TextButton(onClick = {
+//                        datePickerState.selectedDateMillis?.let { millis ->
+//                            date = Instant.ofEpochMilli(millis)
+//                                .atZone(ZoneId.systemDefault())
+//                                .toLocalDate()
+//                        }
+//                        showDatePicker = false
+//                    }) { Text(stringResource(R.string.ok)) }
+//                },
+//                dismissButton = {
+//                    TextButton(onClick = {
+//                        showDatePicker = false
+//                    }) { Text(stringResource(com.example.task_1.R.string.cancel)) }
+//                }
+//            ) {
+//                DatePicker(state = datePickerState)
+//            }
+//        }
+//
+//
+//        Row { // TODO here it shows null when nofilter
+//
+//            val category = categories[categoryID]
+//
+//            if (category != null) {
+//                Text(
+//                    text = stringResource(
+//                        com.example.task_1.R.string.category,
+//                        category.text,
+//                        category.icon
+//                    )
+//                )
+//            }
+//            IconButton(onClick = { expandedCategory = !expandedCategory }) {
+//                Icon(
+//                    androidx.compose.ui.res.painterResource(id = com.example.task_1.R.drawable.ic_home),
+//                    contentDescription = stringResource(com.example.task_1.R.string.select_category)
+//                )
+//            }
+//        }
+//
+//        DropdownMenu(
+//            expanded = expandedCategory,
+//            onDismissRequest = { expandedCategory = false }
+//        ) {
+//            categories.forEach { (id, option) ->
+//                DropdownMenuItem(
+//                    text = { Text(option.text + " " + option.icon, color = Color(option.color)) },
+//                    onClick = {
+//                        categoryID = id
+//                        expandedCategory = false
+//                    }
+//                )
+//            }
+//        }
+//
+//        Box(modifier = Modifier.fillMaxWidth()) {
+//            OutlinedTextField(
+//                value = payMethod.name,
+//                onValueChange = { },
+//                label = { Text(stringResource(com.example.task_1.R.string.payment_method)) },
+//                readOnly = true,
+//                modifier = Modifier.fillMaxWidth()
+//            )
+//            Box(
+//                modifier = Modifier
+//                    .matchParentSize()
+//                    .clickable { expandedPayMethod = true }
+//            )
+//        }
+//
+//        DropdownMenu(
+//            expanded = expandedPayMethod,
+//            onDismissRequest = { expandedPayMethod = false }
+//        ) {
+//            PayMethod.entries.forEach { method ->
+//                DropdownMenuItem(
+//                    text = { Text(method.name) },
+//                    onClick = {
+//                        payMethod = method
+//                        expandedPayMethod = false
+//                    }
+//                )
+//            }
+//        }
+//
+//        Spacer(modifier = Modifier.height(8.dp))
+//        OutlinedTextField(
+//            value = description,
+//            onValueChange = { description = it },
+//            label = { Text(stringResource(com.example.task_1.R.string.description)) },
+//            modifier = Modifier.fillMaxWidth()
+//        )
+//        Button(
+//            onClick = {
+//                val amount = sum.toDoubleOrNull() ?: 0.0
+//                addTransaction(
+//                    Transaction(
+//                        sender = sender,
+//                        receiver = receiver,
+//                        money = amount,
+//                        date = date.toString(),
+//                        categoryID = categoryID,
+//                        description = description,
+//                        payMethod = payMethod
+//                    )
+//                )
+//                if (categoryID != NoFilter) returnToTransactionScreen()
+//            },
+//            modifier = Modifier.fillMaxWidth()
+//        ) {
+//            Text(stringResource(com.example.task_1.R.string.save))
+//        }
+//    }
+//}

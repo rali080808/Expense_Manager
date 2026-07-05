@@ -1,7 +1,9 @@
 package com.example.task_1.ui
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -10,7 +12,11 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Button
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -23,6 +29,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.example.task_1.R
@@ -40,42 +51,82 @@ fun TransactionCard(
     showDescription: (String, ()->Unit) -> Unit,
 ) {
     var activeDescriptionDialog by remember { mutableStateOf(false) }
-    if (activeDescriptionDialog) showDescription(transaction.description, {activeDescriptionDialog=false})
+    if (activeDescriptionDialog) showDescription(
+        transaction.description,
+        { activeDescriptionDialog = false })
 
-    Column(
+
+    Card(
         modifier = Modifier
-            .border(
-                width = MaterialTheme.border.medium,
-                shape = MaterialTheme.shapes.large,
-                color = MaterialTheme.colorScheme.primary
-            )
-            .clickable(onClick = { activeDescriptionDialog = true })
+            //.fillMaxWidth()
+            .padding(horizontal = MaterialTheme.spacing.medium)
+            .clickable(onClick = { activeDescriptionDialog = true }),
+        shape = MaterialTheme.shapes.small,
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surface
+        ),
+        elevation = CardDefaults.cardElevation(
+            defaultElevation = MaterialTheme.spacing.small
+        )
     ) {
-        Row {
+//    Column(
+//        modifier = Modifier
+//            .padding(MaterialTheme.spacing.medium)
+//     ) {
+        Row(
+            modifier = Modifier
+            .fillMaxWidth()
+                .padding(MaterialTheme.spacing.small),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.medium)
+            ) {
+                Text(
+                    text = category.icon,
+                    style = MaterialTheme.typography.displaySmall,
+                    modifier = Modifier
+                        .background(
+                            color = MaterialTheme.colorScheme.primaryContainer,
+                            shape = CircleShape
+                        )
+                        .padding(MaterialTheme.spacing.medium),
+                    textAlign = TextAlign.Center
+                )
+
+                Text(
+                    text = buildAnnotatedString {
+                        append(transaction.sender)
+
+                        withStyle(
+                            style = SpanStyle(
+                                color = MaterialTheme.colorScheme.primary,
+                                fontWeight = FontWeight.Bold
+                            )
+                        ) {
+                            append(" ➔ ")
+                        }
+
+                        append(transaction.receiver)
+                    },
+                    style = MaterialTheme.typography.titleSmall,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+            }
             Text(
-                category.icon, style = MaterialTheme.typography.labelLarge,
-                modifier = Modifier.padding(MaterialTheme.spacing.medium)
-            )
-            Text(
-                transaction.sender
-                        + " -> "
-                        + transaction.receiver,
-                style = MaterialTheme.typography.labelMedium,
-                modifier = Modifier.padding(MaterialTheme.spacing.medium)
-            )
-            Text(
-                "" + transaction.money
-                        + " "
-                        + transaction.currency.sign,
-                style = MaterialTheme.typography.labelLarge,
-                modifier = Modifier.padding(
-                    start = MaterialTheme.spacing.large,
-                    end = MaterialTheme.spacing.medium,
-                    top = MaterialTheme.spacing.medium
-                ),
+                "${transaction.money} ${transaction.currency.sign}",
+                style = MaterialTheme.typography.headlineSmall,
+//                modifier = Modifier.padding(
+//                    start = MaterialTheme.spacing.large,
+//                    end = MaterialTheme.spacing.medium,
+//                    top = MaterialTheme.spacing.medium
+//                ),
                 color = Money
             )
         }
+
         Text(
             transaction.sender
                     + " "
@@ -94,10 +145,22 @@ fun TransactionCard(
                     + transaction.date
                     + ".",
             style = MaterialTheme.typography.bodySmall,
-            modifier = Modifier.padding(MaterialTheme.spacing.medium)
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(
+                    start = MaterialTheme.spacing.medium,
+                    end = MaterialTheme.spacing.medium,
+                    bottom = MaterialTheme.spacing.medium
+                )
         )
     }
-}
+    Spacer(modifier = Modifier.height(MaterialTheme.spacing.small))
+
+
+    }
+
 
 @Composable
 fun ShowDescription(

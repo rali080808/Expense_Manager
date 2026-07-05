@@ -32,7 +32,13 @@ val Typography = Typography(
         lineHeight = 30.sp,
         letterSpacing = 1.sp
     ),
-
+    titleSmall = TextStyle(
+        fontFamily = FontFamily.Serif,
+        fontWeight = FontWeight.Bold,
+        fontSize = 15.sp,
+        lineHeight = 24.sp,
+        letterSpacing = 0.5.sp
+    ),
     //labels
     labelLarge = TextStyle(
         fontFamily = FontFamily.Serif,

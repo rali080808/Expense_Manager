@@ -27,8 +27,6 @@ import kotlin.collections.forEach
 
 @Composable
 fun DashboardContent(
-    modifier: Modifier,
-    style: TextStyle,
     transactions: List<Transaction>,
     totalExpenses: Double,
     biggestExpense: Double,
@@ -37,12 +35,11 @@ fun DashboardContent(
 ) {
     LazyColumn(Modifier
         .fillMaxSize()
-        .padding(start = MaterialTheme.spacing.medium)) {
+        .padding(horizontal = MaterialTheme.spacing.small)) {
         item {
             Text(
                 stringResource(R.string.dashboard),
-                modifier = modifier,
-                style = style,
+                style = MaterialTheme.typography.titleLarge,
                 color = MaterialTheme.colorScheme.primary
             )
             Text(

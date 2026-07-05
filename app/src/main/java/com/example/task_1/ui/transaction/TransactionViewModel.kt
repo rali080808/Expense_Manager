@@ -14,10 +14,10 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
 enum class SortTypes(val displayName: String) {
-    SORTBY_DATE_ASCENDING("SORTBY_DATE_ASCENDING"),
-    SORTBY_DATE_DESCENDING("SORTBY_DATE_DESCENDING"),
-    SORTBY_SUM_ASCENDING("SORTBY_SUM_ASCENDING"),
-    SORTBY_SUM_DESCENDING("SORTBY_SUM_DESCENDING"),
+    SORTBY_DATE_ASCENDING("By date ascending"),
+    SORTBY_DATE_DESCENDING("By date descending"),
+    SORTBY_SUM_ASCENDING("By sum ascending"),
+    SORTBY_SUM_DESCENDING("By sum descending"),
 }
 
 

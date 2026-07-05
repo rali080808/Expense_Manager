@@ -19,8 +19,7 @@ import com.example.task_1.ui.LoadingScreen
 import com.example.task_1.ui.TransactionCard
 
 @Composable
-fun DashboardScreen(modifier : Modifier,
-                    style: TextStyle,
+fun DashboardScreen (
                     viewModel: DashboardViewModel,
                     onNavigateToDescription: (String) -> Unit) {
 
@@ -38,8 +37,7 @@ fun DashboardScreen(modifier : Modifier,
                 (dashboardUiState as DashboardUiState.Error).args,
                 { viewModel.loadData() } )
             is DashboardUiState.Success -> DashboardContent(
-                modifier=modifier,
-                style=style,
+
                 transactions = (dashboardUiState as DashboardUiState.Success).transactions,
                 totalExpenses = (dashboardUiState as DashboardUiState.Success).totalExpenses,
                 biggestExpense = (dashboardUiState as DashboardUiState.Success).biggestExpense,

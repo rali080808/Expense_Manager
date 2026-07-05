@@ -50,8 +50,7 @@ import com.example.task_1.ui.theme.spacing
 
 @Composable
 fun CategoriesScreen(
-    modifier: Modifier,
-    style: TextStyle,
+
     viewModel: CategoryViewModel,
     addCategoryOnClick: () -> Unit,
     editCategoryOnClick: (Int) -> Unit,
@@ -79,7 +78,7 @@ fun CategoriesScreen(
             is CategoryUiState.Success -> LazyColumn(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(start = MaterialTheme.spacing.medium)
+                    .padding(horizontal = MaterialTheme.spacing.medium)
             ) {
                 item {
                     Row(
@@ -88,8 +87,7 @@ fun CategoriesScreen(
                     ) {
                         Text(
                             stringResource(R.string.categories),
-                            modifier = modifier,
-                            style = style,
+                             style = MaterialTheme.typography.titleLarge,
                             color = MaterialTheme.colorScheme.primary
                         )
                         Button(

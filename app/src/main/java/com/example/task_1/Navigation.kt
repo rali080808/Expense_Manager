@@ -1,5 +1,6 @@
 package com.example.task_1
 
+import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Icon
@@ -41,6 +42,7 @@ import androidx.compose.runtime.collectAsState
 import com.example.task_1.domain.Transaction
 import com.example.task_1.domain.Transactions
 import com.example.task_1.ui.TransactionCard
+import com.example.task_1.ui.theme.spacing
 
 @Serializable
 data class TransactionCardRoute(
@@ -102,7 +104,13 @@ fun Navigation() {
              NavHost(
                 navController = navController,
                 startDestination = AppDestinations.DASHBOARD.route,
-modifier = Modifier.padding(paddingValues)
+                modifier = Modifier.padding(
+                     start = MaterialTheme.spacing.default, // Remove left padding
+        top = paddingValues.calculateTopPadding(),
+        bottom = paddingValues.calculateBottomPadding()
+
+
+                )  .consumeWindowInsets(paddingValues)
             ) {
 
                 composable<DashboardScreenRoute> {
@@ -110,8 +118,6 @@ modifier = Modifier.padding(paddingValues)
                         dashboardViewModel.loadData()
                     }
                     DashboardScreen(
-                        modifier = Modifier,
-                        style = MaterialTheme.typography.titleLarge,
                         viewModel = dashboardViewModel,
 
                         onNavigateToDescription = { description ->
@@ -126,8 +132,7 @@ modifier = Modifier.padding(paddingValues)
                         transactionViewModel.loadData()
                     }
                     TransactionsScreen(
-                        modifier = Modifier,
-                        style = MaterialTheme.typography.titleLarge,
+
                         viewModel = transactionViewModel,
                         onAddClick = { navController.navigate("addTransaction") },
                         onNavigateToDescription = { index, func ->
@@ -179,8 +184,7 @@ modifier = Modifier.padding(paddingValues)
                         categoryViewModel.loadData()
                     }
                     CategoriesScreen(
-                        modifier = Modifier,
-                        style = MaterialTheme.typography.titleLarge,
+
                         viewModel = categoryViewModel,
                         addCategoryOnClick = { navController.navigate("addCategory") },
                         editCategoryOnClick = { categoryIDForEdit ->
