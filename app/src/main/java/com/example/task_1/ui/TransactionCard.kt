@@ -66,7 +66,7 @@ fun TransactionCard(
             Text(
                 "" + transaction.money
                         + " "
-                        + transaction.currency,
+                        + transaction.currency.sign,
                 style = MaterialTheme.typography.labelLarge,
                 modifier = Modifier.padding(
                     start = MaterialTheme.spacing.large,
