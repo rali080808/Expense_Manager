@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.task_1.data.DataService
 import com.example.task_1.data.IDataService
+import com.example.task_1.data.containsText
 import com.example.task_1.domain.Category
 import com.example.task_1.domain.CategoryUiState
 import com.example.task_1.domain.DashboardUiState
@@ -25,6 +26,7 @@ class CategoryViewModel(private val dataService: IDataService) : ViewModel() {
     init {
         loadData()
     }
+
 
     fun loadData() {
         viewModelScope.launch {
@@ -66,12 +68,9 @@ class CategoryViewModel(private val dataService: IDataService) : ViewModel() {
                 categories = dataService.editCategory(categoryID, editedCategory).toMutableMap()
                 _uiState.value = CategoryUiState.Success(transactions.getTransactions(), categories)
             } else {
-                _uiState.value =
-                    CategoryUiState.Error(
-
-                        R.string.developer_bug_categoryid_does_not_exist,
-                        args = listOf(categoryID)
-                    )
+                _uiState.value = CategoryUiState.Error(
+                    R.string.developer_bug_categoryid_does_not_exist, args = listOf(categoryID)
+                )
             }
         }
     }
@@ -79,27 +78,25 @@ class CategoryViewModel(private val dataService: IDataService) : ViewModel() {
     fun addCategory(category: Category) {
         viewModelScope.launch {
             _uiState.value = CategoryUiState.Loading
-            val result =
-                dataService.addCategory(Category(category.text, category.icon, category.color, 0.0))
-
-            if (result.isSuccess) {
-                categories = dataService.getCategories().toMutableMap()
-                _uiState.value = CategoryUiState.Success(transactions.getTransactions(), categories)
-            } else {
+            if (categories.containsText(category.text)) {
                 _uiState.value = CategoryUiState.Error(
-                    R.string.failed_to_add_category, args = listOf(category.text)
+                    R.string.category_with_a_name_already_exist_you_cannot_add_it_again_but_you_can_edit_the_old_one,
+                    args = listOf(category.text)
                 )
+            return@launch
             }
+            dataService.addCategory(Category(category.text, category.icon, category.color, 0.0))
+            categories = dataService.getCategories().toMutableMap()
+            _uiState.value = CategoryUiState.Success(transactions.getTransactions(), categories)
+
         }
     }
 
     fun validateIDForDeletion(categoryID: Int): Boolean {
         if (!categories.containsKey(categoryID)) {
-            _uiState.value =
-                CategoryUiState.Error(
-                    R.string.developer_bug_categoryid_does_not_exist,
-                    args = listOf(categoryID)
-                ); return false
+            _uiState.value = CategoryUiState.Error(
+                R.string.developer_bug_categoryid_does_not_exist, args = listOf(categoryID)
+            ); return false
         } else if (transactionsInCategory(categoryID)) {
             _uiState.value = CategoryUiState.Error(
                 R.string.category_is_active_you_cannot_delete_it, args = listOf(

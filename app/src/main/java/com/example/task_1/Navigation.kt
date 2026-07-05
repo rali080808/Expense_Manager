@@ -197,9 +197,10 @@ fun Navigation() {
                 }
 
                 composable("addCategory") {
-                    AddCategory(
+                     AddCategory(
                         returnToCategoryScreen = { navController.popBackStack() },
-                        viewModel = categoryViewModel
+                        addCategory = { category -> categoryViewModel.addCategory(category)},
+
                     )
                 }
 

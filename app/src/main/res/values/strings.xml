@@ -54,4 +54,5 @@
     <string name="current_color">Current color</string>
     <string name="categories">Categories</string>
     <string name="add_this_category">Add this category</string>
+    <string name="category_with_a_name_already_exist_you_cannot_add_it_again_but_you_can_edit_the_old_one">Category with a name \"%1$s\" already exist. You cannot add it again, but you can edit the old one.</string>
 </resources>

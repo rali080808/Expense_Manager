@@ -72,8 +72,8 @@ fun CategoriesScreen(
             is CategoryUiState.Error ->
                 ErrorDialog(
                     message = (uiState as CategoryUiState.Error).message,
-                    args=(uiState as CategoryUiState.Error).args,
-                    loadData = { viewModel.loadData() } )
+                    args = (uiState as CategoryUiState.Error).args,
+                    loadData = { viewModel.loadData() })
 
             is CategoryUiState.Success -> LazyColumn(
                 modifier = Modifier
@@ -87,7 +87,7 @@ fun CategoriesScreen(
                     ) {
                         Text(
                             stringResource(R.string.categories),
-                             style = MaterialTheme.typography.titleLarge,
+                            style = MaterialTheme.typography.titleLarge,
                             color = MaterialTheme.colorScheme.primary
                         )
                         Button(
@@ -128,7 +128,8 @@ fun CategoriesScreen(
                                     },
                                     colors = ButtonDefaults.buttonColors(
                                         containerColor = Color(categories[categoryID]?.color ?: 0)
-                                    )                                 ) {
+                                    )
+                                ) {
                                     Text(stringResource(R.string.edit))
                                 }
                                 Spacer(Modifier.padding(MaterialTheme.spacing.small))
@@ -137,13 +138,15 @@ fun CategoriesScreen(
 
                         Column {
                             categories.forEach { (categoryID, category) ->
-                                Button(onClick = {
-                                    if ( viewModel.validateIDForDeletion(categoryID) )
-                                    categoryDeleteDialog(categoryID)
-                                },
+                                Button(
+                                    onClick = {
+                                        if (viewModel.validateIDForDeletion(categoryID))
+                                            categoryDeleteDialog(categoryID)
+                                    },
                                     colors = ButtonDefaults.buttonColors(
                                         containerColor = Color(categories[categoryID]?.color ?: 0)
-                                    )   ) {
+                                    )
+                                ) {
                                     Text("X")
                                 }
                                 Spacer(Modifier.padding(MaterialTheme.spacing.small))
@@ -155,21 +158,30 @@ fun CategoriesScreen(
         }
     }
 }
- @Composable
-fun CategoryDeleteDialog(categoryIDForDeletion: Int,currentCategory: Category ,returnToCategoryScreen: () -> Unit, removeCategory: (Int) -> Unit) {
+
+@Composable
+fun CategoryDeleteDialog(
+    categoryIDForDeletion: Int,
+    currentCategory: Category,
+    returnToCategoryScreen: () -> Unit,
+    removeCategory: (Int) -> Unit
+) {
 
     AlertDialog(
         onDismissRequest = returnToCategoryScreen,
         title = { Text(stringResource(R.string.delete_category)) },
-        text = { Text(
-            stringResource(
-                R.string.are_you_sure_that_you_want_to_delete,
-                currentCategory.text
-            )) },
+        text = {
+            Text(
+                stringResource(
+                    R.string.are_you_sure_that_you_want_to_delete,
+                    currentCategory.text
+                )
+            )
+        },
         confirmButton = {
             TextButton(
                 onClick = {
-                    removeCategory( categoryIDForDeletion)
+                    removeCategory(categoryIDForDeletion)
                     returnToCategoryScreen()
                 }
             ) {
@@ -186,7 +198,8 @@ fun CategoryDeleteDialog(categoryIDForDeletion: Int,currentCategory: Category ,r
 
 
 @Composable
-fun AddCategory(returnToCategoryScreen: () -> Unit, viewModel: CategoryViewModel) {
+fun AddCategory(returnToCategoryScreen: () -> Unit,
+                addCategory: (Category)-> Unit) {
     var categoryText by remember { mutableStateOf("") }
     var categoryIcon by remember { mutableStateOf("") }
     val colorOptions = listOf(
@@ -198,7 +211,7 @@ fun AddCategory(returnToCategoryScreen: () -> Unit, viewModel: CategoryViewModel
         R.string.indigo to Color(0xFF4B0082).toArgb(),
         R.string.slate_gray to Color(0xFF708090).toArgb(),
         R.string.sky_blue to Color(0xFF87CEEB).toArgb(),
-     )
+    ) // TODO get them from database
 
     var colorExpanded by remember { mutableStateOf(false) }
 
@@ -206,71 +219,95 @@ fun AddCategory(returnToCategoryScreen: () -> Unit, viewModel: CategoryViewModel
 
     Column(
         modifier = Modifier
-            .clip(MaterialTheme.shapes.large)
+            .fillMaxWidth()
+            .padding(MaterialTheme.spacing.medium)
+            .clip(MaterialTheme.shapes.medium)
             .border(
                 BorderStroke(
                     width = MaterialTheme.border.medium,
                     color = MaterialTheme.colorScheme.primary
                 )
             )
+            .padding(MaterialTheme.spacing.medium),
+        verticalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.small)
     ) {
 
         Text(stringResource(R.string.new_category), style = MaterialTheme.typography.titleMedium)
         Column {
-            Row() {
+
+            OutlinedTextField(
+                value = categoryText,
+                onValueChange = {
+                    if (it.length < MAX_CATEGORY_LENGTH) categoryText = it
+                },
+                label = { Text(stringResource(R.string.text)) },
+                singleLine = true,
+                modifier = Modifier.fillMaxWidth(),
+            )
+            OutlinedTextField(
+                value = categoryIcon,
+                onValueChange = {
+                    if (it.length < MAX_CATEGORY_LENGTH) categoryIcon = it
+                },
+                label = { Text(stringResource(R.string.icon)) },
+                singleLine = true,
+                modifier = Modifier.fillMaxWidth(),
+            )
+
+            Box(modifier = Modifier.fillMaxWidth()) {
                 OutlinedTextField(
-                    value = categoryText,
-                    onValueChange = {
-                        if (it.length < MAX_CATEGORY_LENGTH) categoryText = it
-                    },
-                    label = { Text(stringResource(R.string.text)) }
+                    value = stringResource(categoryColor.first),
+                    onValueChange = { },
+                    label = { Text(stringResource(com.example.task_1.R.string.color)) },
+                    readOnly = true,
+                    modifier = Modifier.fillMaxWidth(),
+                    textStyle = MaterialTheme.typography.bodyLarge.copy(
+                        color = Color(categoryColor.second)
+                    )
                 )
-                OutlinedTextField(
-                    value = categoryIcon,
-                    onValueChange = {
-                        if (it.length < MAX_CATEGORY_LENGTH) categoryIcon = it
-                    },
-                    label = { Text(stringResource(R.string.icon)) }
+                Box(
+                    modifier = Modifier
+                        .matchParentSize()
+                        .clickable { colorExpanded = !colorExpanded }
                 )
             }
-            Box {
-                Text(
-                    text = stringResource(R.string.color, stringResource(categoryColor.first)),
-                    color = Color(categoryColor.second),
-                    modifier = Modifier
-                        .clickable { colorExpanded = true }
-                        .padding(MaterialTheme.spacing.medium)
-                )
-                DropdownMenu(
-                    expanded = colorExpanded,
-                    onDismissRequest = { colorExpanded = false }) {
-                    colorOptions.forEach { item ->
-                        DropdownMenuItem(
-                            text = { Text(stringResource(item.first), color = Color(item.second)) },
-                            onClick = { categoryColor = item; colorExpanded = false }
-                        )
-                    }
+            DropdownMenu(
+                expanded = colorExpanded,
+                onDismissRequest = { colorExpanded = false },
+                modifier = Modifier
+                    .clip(MaterialTheme.shapes.small)
+                    .background(MaterialTheme.colorScheme.surface)
+            ) {
+                colorOptions.forEach { item ->
+                    DropdownMenuItem(
+                        text = { Text(stringResource(item.first), color = Color(item.second)) },
+                        onClick = { categoryColor = item; colorExpanded = false }
+                    )
                 }
             }
-
-
         }
+
         Button(onClick = {
-            viewModel.addCategory(
+             addCategory(
                 Category(
                     categoryText,
                     categoryIcon,
                     categoryColor.second,
                     0.0
                 )
-            ); returnToCategoryScreen()
+            );
+            returnToCategoryScreen()
         }) {
-            Text(stringResource(R.string.add_this_category), style = MaterialTheme.typography.bodyLarge)
+            Text(
+                stringResource(R.string.add_this_category),
+                style = MaterialTheme.typography.bodyLarge
+            )
         }
         Button(onClick = {
             returnToCategoryScreen()
         }) {
             Text(stringResource(R.string.cancel), style = MaterialTheme.typography.bodyLarge)
         }
+        }
+
     }
-}

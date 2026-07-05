@@ -31,11 +31,10 @@ public object DataService : IDataService {
         Transaction("Rali", "Billa", 2.0, Currency.EURO, LocalDate.of(2026, 6, 27).toString(), 1, "Another ice cream!",
             PayMethod.CASH)))
 
-    override suspend fun addCategory(category: Category): Result<Category>{
+    override suspend fun addCategory(category: Category) {
         delay(WAIT_TIME)
-        if ( categories.containsText(category.text) ) return Result.failure(IllegalArgumentException("Category ${category.text} already exists!"))
         categories[nextCategoryID++] = category
-        return Result.success(category)
+
     }
 
     override suspend fun addTransaction(transaction: Transaction) {
@@ -75,7 +74,7 @@ public object DataService : IDataService {
     }
 }
 
-private fun MutableMap<Int,Category>.containsText(text: String): Boolean {
+fun MutableMap<Int,Category>.containsText(text: String): Boolean {
     for((id, category) in this) {
         if ( category.text == text) return true;
     }
