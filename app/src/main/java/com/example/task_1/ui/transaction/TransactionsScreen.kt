@@ -1,5 +1,6 @@
 package com.example.task_1.ui.transaction
 
+import android.R
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -56,6 +57,7 @@ import com.example.task_1.domain.UiState
 import com.example.task_1.ui.ErrorScreen
 import com.example.task_1.ui.LoadingScreen
 import com.example.task_1.ui.TransactionCard
+import com.example.task_1.ui.theme.ErrorColor
 import com.example.task_1.ui.theme.border
 import com.example.task_1.ui.theme.spacing
 import kotlinx.coroutines.launch
@@ -89,18 +91,19 @@ fun TransactionsScreen(
     ) {
 
 
-        //   UiState.Loading -> LoadingScreen()
+        if (uiState is UiState.Loading )  LoadingScreen()
         if (uiState is UiState.Error) {
             AlertDialog(
+                modifier= Modifier.background(color=ErrorColor),
                 onDismissRequest = { viewModel.loadData() },
                 confirmButton = {
                     TextButton(onClick = { viewModel.loadData() }) {
-                        Text("OK")
+                        Text("OK", color=ErrorColor)
                     }
                 },
-                title = { Text("Attention") },
+                title = { Text("Error", color=ErrorColor) },
                 text = { Text((uiState as UiState.Error).message) }
-            )//ErrorScreen((uiState as UiState.Error).message)
+            )
         }
         if (showAddTransactionSheet) {
             ModalBottomSheet(
