@@ -18,7 +18,7 @@ fun ErrorDialog( message: Int, args:List<Any>, loadData: ()-> Unit ) {
         onDismissRequest = { loadData() },
         confirmButton = {
             TextButton(onClick = { loadData() }) {
-                Text(stringResource(R.string.ok), color = ErrorColor)
+                Text(stringResource(R.string.retry), color = ErrorColor)
             }
         },
         title = { Text(stringResource(R.string.error), color = ErrorColor) },

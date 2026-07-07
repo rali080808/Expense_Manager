@@ -7,10 +7,8 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Button
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -18,7 +16,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -35,16 +32,14 @@ import com.example.task_1.ui.theme.border
 import com.example.task_1.ui.theme.spacing
 
 @Composable
-fun EditCategory(
-    categoryIDForEdit: Int,
-    currentCategory: Category,
-    returnToCategoryScreen: () -> Unit,
-    editCategory: (Int, Category) -> Unit
+fun CategoryForm(
+    currentCategory: Category?,
+    actionOnClick: (Category) -> Unit,
+    onCancel: () -> Unit
 ) {
-
-    var categoryText by remember { mutableStateOf(currentCategory.text) }
-    var categoryIcon by remember { mutableStateOf(currentCategory.icon) }
-     val colorOptions = listOf(
+    var categoryText by remember { mutableStateOf(currentCategory?.text ?: "") }
+    var categoryIcon by remember { mutableStateOf(currentCategory?.icon ?: "") }
+    val colorOptions = listOf(
         R.string.blue to Color.Blue.toArgb(),
         R.string.green to Color.Green.toArgb(),
         R.string.cyan to Color.Cyan.toArgb(),
@@ -53,13 +48,15 @@ fun EditCategory(
         R.string.indigo to Color(0xFF4B0082).toArgb(),
         R.string.slate_gray to Color(0xFF708090).toArgb(),
         R.string.sky_blue to Color(0xFF87CEEB).toArgb(),
-        R.string.current_color to currentCategory.color
-    )
+    ) // TODO get them from database
 
     var colorExpanded by remember { mutableStateOf(false) }
 
-     var categoryColor by remember { mutableStateOf(R.string.current_color to currentCategory.color) }
-
+    var categoryColor by remember {
+        mutableStateOf(currentCategory?.let { currentCategory ->
+            R.string.current_color to currentCategory.color
+        } ?: colorOptions.first())
+    }
 
     Column(
         modifier = Modifier
@@ -75,61 +72,79 @@ fun EditCategory(
             .padding(MaterialTheme.spacing.medium),
         verticalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.small)
     ) {
-        Text(stringResource(R.string.edit_category), style = MaterialTheme.typography.titleMedium)
-//        Column {
-//            Row {
-                OutlinedTextField(value = categoryText, onValueChange = {
-                    if (it.length < MAX_CATEGORY_LENGTH) categoryText = it
-                }, label = { Text(stringResource(R.string.text)) })
-                OutlinedTextField(value = categoryIcon, onValueChange = {
-                    if (it.length < MAX_CATEGORY_LENGTH) categoryIcon = it
-                }, label = { Text(stringResource(R.string.icon)) })
-//            }
-            Box (modifier = Modifier.fillMaxWidth()) {
-                OutlinedTextField(
-                    value = stringResource(R.string.color, stringResource(categoryColor.first)),
-                    label = { Text(stringResource(R.string.color)) },
-                    //  color = Color(categoryColor.second),
-                    onValueChange = { },
 
+        Text(stringResource(R.string.new_category), style = MaterialTheme.typography.titleMedium)
+        Column {
+            OutlinedTextField(
+                value = categoryText,
+                onValueChange = {
+                    if (it.length < MAX_CATEGORY_LENGTH) categoryText = it
+                },
+                label = { Text(stringResource(R.string.text)) },
+                singleLine = true,
+                modifier = Modifier.fillMaxWidth(),
+            )
+            OutlinedTextField(
+                value = categoryIcon,
+                onValueChange = {
+                    if (it.length < MAX_CATEGORY_LENGTH) categoryIcon = it
+                },
+                label = { Text(stringResource(R.string.icon)) },
+                singleLine = true,
+                modifier = Modifier.fillMaxWidth(),
+            )
+
+            Box(modifier = Modifier.fillMaxWidth()) {
+                OutlinedTextField(
+                    value = stringResource(categoryColor.first),
+                    onValueChange = { },
+                    label = { Text(stringResource(com.example.task_1.R.string.color)) },
                     readOnly = true,
                     modifier = Modifier.fillMaxWidth(),
-                    trailingIcon = {
-                        Box(
-                            modifier = Modifier
-                                .size(MaterialTheme.spacing.medium)
-                                .clip(MaterialTheme.shapes.small)
-                                .background(Color(categoryColor.second))
-                        )
-                    }
+                    textStyle = MaterialTheme.typography.bodyLarge.copy(
+                        color = Color(categoryColor.second)
+                    )
                 )
                 Box(
                     modifier = Modifier
                         .matchParentSize()
                         .clickable { colorExpanded = !colorExpanded }
                 )
-                            DropdownMenu(
-                    expanded = colorExpanded, onDismissRequest = { colorExpanded = false }) {
-                    colorOptions.forEach { item ->
-                        DropdownMenuItem(
-                            text = { Text(stringResource(item.first), color = Color(item.second)) },
-                            onClick = { categoryColor = item; colorExpanded = false })
-                    }
+            }
+            DropdownMenu(
+                expanded = colorExpanded,
+                onDismissRequest = { colorExpanded = false },
+                modifier = Modifier
+                    .clip(MaterialTheme.shapes.small)
+                    .background(MaterialTheme.colorScheme.surface)
+            ) {
+                colorOptions.forEach { item ->
+                    DropdownMenuItem(
+                        text = { Text(stringResource(item.first), color = Color(item.second)) },
+                        onClick = { categoryColor = item; colorExpanded = false }
+                    )
                 }
             }
-
+        }
 
         Button(onClick = {
-            editCategory(
-                categoryIDForEdit, Category(
+            actionOnClick(
+                Category(
                     categoryText,
                     categoryIcon,
                     categoryColor.second,
-                    currentCategory.expenseOnThisCategory
+                    0.0
                 )
-            ); returnToCategoryScreen()
+            );
         }) {
-            Text(stringResource(R.string.save), style = MaterialTheme.typography.bodyLarge)
+            Text(
+                stringResource(R.string.save),
+                style = MaterialTheme.typography.bodyLarge
+            )
+        }
+        Button(onClick = onCancel) {
+            Text(stringResource(R.string.cancel), style = MaterialTheme.typography.bodyLarge)
         }
     }
+
 }

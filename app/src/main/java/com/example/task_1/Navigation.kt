@@ -34,7 +34,6 @@ import com.example.task_1.ui.dashboard.DashboardScreen
 import com.example.task_1.ui.ShowDescription
 import com.example.task_1.ui.transaction.AddTransaction
 import com.example.task_1.ui.transaction.TransactionsScreen
-import com.example.task_1.ui.category.AddCategory
 import com.example.task_1.ui.category.EditCategory
 import com.example.task_1.ui.category.CategoryDeleteDialog
 import kotlinx.serialization.Contextual
@@ -186,23 +185,21 @@ fun Navigation() {
                     CategoriesScreen(
 
                         viewModel = categoryViewModel,
-                        addCategoryOnClick = { navController.navigate("addCategory") },
-                        editCategoryOnClick = { categoryIDForEdit ->
-                            navController.navigate(
-                                EditCategoryRoute(categoryIDForEdit)
-                            )
-                        },
+                        addCategory = { category -> categoryViewModel.addCategory(category) },
+                        editCategory = { categoryIDForEdit, category ->
+                            categoryViewModel.editCategory(categoryIDForEdit, category) },
                         categoryDeleteDialog = {  categoryIDForDeletion -> navController.navigate(CategoryDeleteDialogRoute(categoryIDForDeletion)) }
                     )
                 }
 
-                composable("addCategory") {
-                     AddCategory(
-                        returnToCategoryScreen = { navController.popBackStack() },
-                        addCategory = { category -> categoryViewModel.addCategory(category)},
-
-                    )
-                }
+//                composable("addCategory") {
+//                     AddCategory(
+//                        returnToCategoryScreen = { navController.popBackStack() },
+//                         componentMode=,
+//                        addCategory = { category -> categoryViewModel.addCategory(category)},
+//
+//                    )
+//                }
 
                 composable<EditCategoryRoute> { backStackEntry ->
                     val route = backStackEntry.toRoute<EditCategoryRoute>()
