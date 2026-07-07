@@ -9,22 +9,22 @@ import com.example.task_1.R
 import com.example.task_1.domain.Category
 
 
+// TODO make it usable for transactions as well
 @Composable
 fun CategoryDeleteDialog(
     categoryIDForDeletion: Int,
     currentCategory: Category,
-    returnToCategoryScreen: () -> Unit,
+    closeDialog: () -> Unit,
     removeCategory: (Int) -> Unit
 ) {
 
     AlertDialog(
-        onDismissRequest = returnToCategoryScreen,
+        onDismissRequest = closeDialog,
         title = { Text(stringResource(R.string.delete_category)) },
         text = {
             Text(
                 stringResource(
-                    R.string.are_you_sure_that_you_want_to_delete,
-                    currentCategory.text
+                    R.string.are_you_sure_that_you_want_to_delete, currentCategory.text
                 )
             )
         },
@@ -32,16 +32,14 @@ fun CategoryDeleteDialog(
             TextButton(
                 onClick = {
                     removeCategory(categoryIDForDeletion)
-                    returnToCategoryScreen()
-                }
-            ) {
+                    closeDialog()
+                }) {
                 Text(stringResource(R.string.ok))
             }
         },
         dismissButton = {
-            TextButton(onClick = returnToCategoryScreen) {
+            TextButton(onClick = closeDialog) {
                 Text(stringResource(R.string.cancel))
             }
-        }
-    )
+        })
 }

@@ -38,7 +38,7 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.example.task_1.R
 import com.example.task_1.domain.Category
- import com.example.task_1.domain.Transaction
+import com.example.task_1.domain.Transaction
 import com.example.task_1.ui.theme.Money
 import com.example.task_1.ui.theme.border
 import com.example.task_1.ui.theme.spacing
@@ -48,13 +48,14 @@ import com.example.task_1.ui.theme.spacing
 fun TransactionCard(
     transaction: Transaction,
     category: Category,
-    showDescription: (String, ()->Unit) -> Unit,
 ) {
     var activeDescriptionDialog by remember { mutableStateOf(false) }
-    if (activeDescriptionDialog) showDescription(
-        transaction.description,
-        { activeDescriptionDialog = false })
 
+    if (activeDescriptionDialog)
+        ShowDescription(
+            description = transaction.description,
+            onClose = { activeDescriptionDialog = false }
+        )
 
     Card(
         modifier = Modifier
@@ -69,13 +70,9 @@ fun TransactionCard(
             defaultElevation = MaterialTheme.spacing.small
         )
     ) {
-//    Column(
-//        modifier = Modifier
-//            .padding(MaterialTheme.spacing.medium)
-//     ) {
         Row(
             modifier = Modifier
-            .fillMaxWidth()
+                .fillMaxWidth()
                 .padding(MaterialTheme.spacing.small),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
@@ -89,8 +86,7 @@ fun TransactionCard(
                     style = MaterialTheme.typography.displaySmall,
                     modifier = Modifier
                         .background(
-                            color = MaterialTheme.colorScheme.primaryContainer,
-                            shape = CircleShape
+                            color = MaterialTheme.colorScheme.primaryContainer, shape = CircleShape
                         )
                         .padding(MaterialTheme.spacing.medium),
                     textAlign = TextAlign.Center
@@ -118,32 +114,14 @@ fun TransactionCard(
             Text(
                 "${transaction.money} ${transaction.currency.sign}",
                 style = MaterialTheme.typography.headlineSmall,
-//                modifier = Modifier.padding(
-//                    start = MaterialTheme.spacing.large,
-//                    end = MaterialTheme.spacing.medium,
-//                    top = MaterialTheme.spacing.medium
-//                ),
                 color = Money
             )
         }
 
         Text(
-            transaction.sender
-                    + " "
-                    + stringResource(R.string.gave)
-                    + " "
-                    + transaction.money
-                    + " "
-                    + transaction.currency
-                    + " "
-                    + stringResource(R.string.to)
-                    + " "
-                    + transaction.receiver
-                    + " "
-                    + stringResource(R.string.on)
-                    + " "
-                    + transaction.date
-                    + ".",
+            transaction.sender + " " + stringResource(R.string.gave) + " " + transaction.money + " " + transaction.currency + " " + stringResource(
+                R.string.to
+            ) + " " + transaction.receiver + " " + stringResource(R.string.on) + " " + transaction.date + ".",
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
 
@@ -158,25 +136,24 @@ fun TransactionCard(
     }
     Spacer(modifier = Modifier.height(MaterialTheme.spacing.small))
 
-
-    }
+}
 
 
 @Composable
 fun ShowDescription(
-    description: String,
-    returnToMainScreen: () -> Unit
+    description: String, onClose: () -> Unit
 ) {
 
-    Dialog(onDismissRequest = { returnToMainScreen() },
+    Dialog(
+        onDismissRequest = { onClose() },
         properties = DialogProperties(usePlatformDefaultWidth = false)
     ) {
-         Surface(
+        Surface(
             shape = MaterialTheme.shapes.large,
             color = MaterialTheme.colorScheme.surface,
-             modifier = Modifier
-                 .fillMaxWidth()
-                 .padding(MaterialTheme.spacing.large)
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(MaterialTheme.spacing.large)
         ) {
             Column(modifier = Modifier.padding(MaterialTheme.spacing.medium)) {
                 Text(
@@ -188,8 +165,7 @@ fun ShowDescription(
                 Spacer(modifier = Modifier.height(MaterialTheme.spacing.small))
 
                 Text(
-                    text = description,
-                    style = MaterialTheme.typography.bodyLarge
+                    text = description, style = MaterialTheme.typography.bodyLarge
                 )
 
                 Spacer(modifier = Modifier.height(MaterialTheme.spacing.medium))
@@ -200,8 +176,7 @@ fun ShowDescription(
                     color = MaterialTheme.colorScheme.secondary,
                     modifier = Modifier
                         .align(Alignment.End)
-                        .clickable { returnToMainScreen() }
-                )
+                        .clickable { onClose() })
             }
         }
     }

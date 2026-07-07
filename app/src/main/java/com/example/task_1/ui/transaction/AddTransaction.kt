@@ -1,4 +1,5 @@
 package com.example.task_1.ui.transaction
+
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
@@ -7,9 +8,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
 import androidx.compose.material3.DatePicker
@@ -40,6 +39,7 @@ import com.example.task_1.domain.MAX_RECEIVER_LENGTH
 import com.example.task_1.domain.NoFilter
 import com.example.task_1.domain.PayMethod
 import com.example.task_1.domain.Transaction
+import com.example.task_1.ui.TransactionInput
 import com.example.task_1.ui.theme.border
 import com.example.task_1.ui.theme.spacing
 import java.time.Instant
@@ -51,10 +51,9 @@ import kotlin.collections.forEach
 
 
 @Composable
-fun AddTransaction(
-    returnToTransactionScreen: () -> Unit,
+fun TransactionForm(
     categories: Map<Int, Category>,
-    addTransaction: (Transaction) -> Unit
+    actionOnClick: (TransactionInput) -> Unit
 ) {
     var expandedCategory by remember { mutableStateOf(false) }
     var expandedPayMethod by remember { mutableStateOf(false) }
@@ -77,8 +76,7 @@ fun AddTransaction(
             .clip(MaterialTheme.shapes.medium)
             .border(
                 BorderStroke(
-                    width = MaterialTheme.border.medium,
-                    color = MaterialTheme.colorScheme.primary
+                    width = MaterialTheme.border.medium, color = MaterialTheme.colorScheme.primary
                 )
             )
             .padding(MaterialTheme.spacing.medium),
@@ -111,7 +109,7 @@ fun AddTransaction(
             modifier = Modifier.fillMaxWidth()
         )
 
-      //  Spacer(modifier = Modifier.height(MaterialTheme.spacing.small))
+        //  Spacer(modifier = Modifier.height(MaterialTheme.spacing.small))
 
         Box(modifier = Modifier.fillMaxWidth()) {
             OutlinedTextField(
@@ -124,29 +122,23 @@ fun AddTransaction(
             Box(
                 modifier = Modifier
                     .matchParentSize()
-                    .clickable { showDatePicker = true }
-            )
+                    .clickable { showDatePicker = true })
         }
 
         if (showDatePicker) {
-            DatePickerDialog(
-                onDismissRequest = { showDatePicker = false },
-                confirmButton = {
-                    TextButton(onClick = {
-                        datePickerState.selectedDateMillis?.let { millis ->
-                            date = Instant.ofEpochMilli(millis)
-                                .atZone(ZoneId.systemDefault())
-                                .toLocalDate()
-                        }
-                        showDatePicker = false
-                    }) { Text(stringResource(com.example.task_1.R.string.ok)) }
-                },
-                dismissButton = {
-                    TextButton(onClick = {
-                        showDatePicker = false
-                    }) { Text(stringResource(com.example.task_1.R.string.cancel)) }
-                }
-            ) {
+            DatePickerDialog(onDismissRequest = { showDatePicker = false }, confirmButton = {
+                TextButton(onClick = {
+                    datePickerState.selectedDateMillis?.let { millis ->
+                        date = Instant.ofEpochMilli(millis).atZone(ZoneId.systemDefault())
+                            .toLocalDate()
+                    }
+                    showDatePicker = false
+                }) { Text(stringResource(com.example.task_1.R.string.ok)) }
+            }, dismissButton = {
+                TextButton(onClick = {
+                    showDatePicker = false
+                }) { Text(stringResource(com.example.task_1.R.string.cancel)) }
+            }) {
                 DatePicker(state = datePickerState)
             }
         }
@@ -171,8 +163,7 @@ fun AddTransaction(
             Box(
                 modifier = Modifier
                     .matchParentSize()
-                    .clickable { expandedCategory = !expandedCategory }
-            )
+                    .clickable { expandedCategory = !expandedCategory })
 
 
             DropdownMenu(
@@ -185,28 +176,24 @@ fun AddTransaction(
 
             ) {
                 categories.forEach { (id, option) ->
-                    DropdownMenuItem(
-                        text = {
-                            Row(
-                                horizontalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.small),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Text(
-                                    text = option.icon,
-                                    style = MaterialTheme.typography.titleMedium
-                                )
-                                Text(
-                                    text = option.text,
-                                    style = MaterialTheme.typography.bodyLarge,
-                                    color = Color(option.color)
-                                )
-                            }
-                        },
-                        onClick = {
-                            categoryID = id
-                            expandedCategory = false
+                    DropdownMenuItem(text = {
+                        Row(
+                            horizontalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.small),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = option.icon, style = MaterialTheme.typography.titleMedium
+                            )
+                            Text(
+                                text = option.text,
+                                style = MaterialTheme.typography.bodyLarge,
+                                color = Color(option.color)
+                            )
                         }
-                    )
+                    }, onClick = {
+                        categoryID = id
+                        expandedCategory = false
+                    })
                 }
             }
         }
@@ -222,26 +209,20 @@ fun AddTransaction(
             Box(
                 modifier = Modifier
                     .matchParentSize()
-                    .clickable { expandedPayMethod = true }
-            )
+                    .clickable { expandedPayMethod = true })
 
 
-        DropdownMenu(
-            expanded = expandedPayMethod,
-            onDismissRequest = { expandedPayMethod = false }
-        ) {
-            PayMethod.entries.forEach { method ->
-                DropdownMenuItem(
-                    text = { Text(method.text) },
-                    onClick = {
+            DropdownMenu(
+                expanded = expandedPayMethod, onDismissRequest = { expandedPayMethod = false }) {
+                PayMethod.entries.forEach { method ->
+                    DropdownMenuItem(text = { Text(method.text) }, onClick = {
                         payMethod = method
                         expandedPayMethod = false
-                    }
-                )
+                    })
+                }
             }
-        }}
+        }
 
-//Spacer(modifier = Modifier.height(MaterialTheme.spacing.small))
         OutlinedTextField(
             value = description,
             onValueChange = { description = it },
@@ -251,8 +232,8 @@ fun AddTransaction(
         Button(
             onClick = {
                 val amount = sum.toDoubleOrNull() ?: 0.0
-                addTransaction(
-                    Transaction(
+                actionOnClick(
+                    TransactionInput(
                         sender = sender,
                         receiver = receiver,
                         money = amount,
@@ -262,9 +243,7 @@ fun AddTransaction(
                         payMethod = payMethod
                     )
                 )
-                if (categoryID != NoFilter) returnToTransactionScreen()
-            },
-            modifier = Modifier.fillMaxWidth()
+            }, modifier = Modifier.fillMaxWidth()
         ) {
             Text(stringResource(com.example.task_1.R.string.save))
         }

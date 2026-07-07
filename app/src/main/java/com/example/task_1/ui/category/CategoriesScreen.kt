@@ -48,13 +48,14 @@ import com.example.task_1.R
 import com.example.task_1.domain.Category
 import com.example.task_1.domain.CategoryUiState
 import com.example.task_1.domain.ComponentMode
+import com.example.task_1.domain.ErrorCategory
 import com.example.task_1.domain.MAX_CATEGORY_LENGTH
 import com.example.task_1.domain.TransactionUiState
 import com.example.task_1.ui.ErrorDialog
 import com.example.task_1.ui.LoadingScreen
 import com.example.task_1.ui.theme.border
 import com.example.task_1.ui.theme.spacing
-import com.example.task_1.ui.transaction.AddTransaction
+import com.example.task_1.ui.transaction.TransactionForm
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -63,13 +64,13 @@ fun CategoriesScreen(
     viewModel: CategoryViewModel,
     addCategory: (Category) -> Unit,
     editCategory: (Int, Category) -> Unit,
-    categoryDeleteDialog: (Int) -> Unit
 ) {
 
     val uiState by viewModel.uiState.collectAsState()
     val isRefreshing = uiState is CategoryUiState.Loading
     val categories = (uiState as? CategoryUiState.Success)?.categories ?: mapOf()
     var showCategoryForm by remember { mutableStateOf(false) }
+    var showDeleteDialog by remember { mutableStateOf(false) }
     var componentMode by remember { mutableStateOf(ComponentMode.ADD) }
     var clickedCategoryID by remember { mutableIntStateOf(-1) }
     PullToRefreshBox(
@@ -110,6 +111,14 @@ fun CategoriesScreen(
                             )
                         }
                     }
+                    if (showDeleteDialog) {
+                        CategoryDeleteDialog(
+                            categoryIDForDeletion = clickedCategoryID,
+                            currentCategory = categories[clickedCategoryID] ?: ErrorCategory,
+                            closeDialog = { showDeleteDialog = false },
+                            removeCategory = { id -> viewModel.removeCategory(id) }
+                        )
+                    }
                     Row(
                         horizontalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.medium),
                         modifier = Modifier.fillMaxWidth()
@@ -135,7 +144,7 @@ fun CategoriesScreen(
                         horizontalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.medium),
                         modifier = Modifier.fillMaxWidth()
                     ) {
-                        Column (modifier = Modifier.weight(1f)) {
+                        Column(modifier = Modifier.weight(1f)) {
                             categories.forEach { (categoryID, category) ->
                                 Box(
                                     modifier = Modifier.padding(vertical = MaterialTheme.spacing.small),
@@ -172,8 +181,9 @@ fun CategoriesScreen(
                             categories.forEach { (categoryID, category) ->
                                 Button(
                                     onClick = {
+                                        clickedCategoryID = categoryID
                                         if (viewModel.validateIDForDeletion(categoryID))
-                                            categoryDeleteDialog(categoryID)
+                                            showDeleteDialog = true
                                     },
                                     colors = ButtonDefaults.buttonColors(
                                         containerColor = Color(categories[categoryID]?.color ?: 0)

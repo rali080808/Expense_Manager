@@ -32,41 +32,21 @@ import com.example.task_1.ui.transaction.TransactionViewModel
 import com.example.task_1.ui.category.CategoriesScreen
 import com.example.task_1.ui.dashboard.DashboardScreen
 import com.example.task_1.ui.ShowDescription
-import com.example.task_1.ui.transaction.AddTransaction
+import com.example.task_1.ui.transaction.TransactionForm
 import com.example.task_1.ui.transaction.TransactionsScreen
-import com.example.task_1.ui.category.EditCategory
 import com.example.task_1.ui.category.CategoryDeleteDialog
 import kotlinx.serialization.Contextual
 import androidx.compose.runtime.collectAsState
 import com.example.task_1.domain.Transaction
-import com.example.task_1.domain.Transactions
 import com.example.task_1.ui.TransactionCard
 import com.example.task_1.ui.theme.spacing
 
 @Serializable
-data class TransactionCardRoute(
-    val transactionIndex: Int,
-    val categoryID: Int
-)
-
-@Serializable
-data class ShowDescriptionRoute(
-    val description: String,
-)
-
-@Serializable
-data class CategoryDeleteDialogRoute(
-    val categoryIDForDeletion: Int,
-)
-@Serializable
-data class EditCategoryRoute(
-    val categoryIDForEdit: Int,
-)
-
-@Serializable
 object CategoriesScreenRoute
+
 @Serializable
 object DashboardScreenRoute
+
 @Serializable
 object TransactionsScreenRoute
 
@@ -93,23 +73,24 @@ fun Navigation() {
                         currentDestination = destination
                         navController.navigate(destination.route)
 
-                    }
-                )
+                    })
             }
-        }
-    ) {Scaffold(
-        modifier = Modifier.fillMaxSize()
-    ) { paddingValues ->
-             NavHost(
+        }) {
+        Scaffold(
+            modifier = Modifier.fillMaxSize()
+        ) { paddingValues ->
+            NavHost(
                 navController = navController,
                 startDestination = AppDestinations.DASHBOARD.route,
-                modifier = Modifier.padding(
-                     start = MaterialTheme.spacing.default, // Remove left padding
-        top = paddingValues.calculateTopPadding(),
-        bottom = paddingValues.calculateBottomPadding()
+                modifier = Modifier
+                    .padding(
+                        start = MaterialTheme.spacing.default, // Remove left padding
+                        top = paddingValues.calculateTopPadding(),
+                        bottom = paddingValues.calculateBottomPadding()
 
 
-                )  .consumeWindowInsets(paddingValues)
+                    )
+                    .consumeWindowInsets(paddingValues)
             ) {
 
                 composable<DashboardScreenRoute> {
@@ -117,12 +98,7 @@ fun Navigation() {
                         dashboardViewModel.loadData()
                     }
                     DashboardScreen(
-                        viewModel = dashboardViewModel,
-
-                        onNavigateToDescription = { description ->
-                            navController.navigate(
-                                ShowDescriptionRoute(description = description))
-                        }
+                        viewModel = dashboardViewModel
                     )
                 }
 
@@ -134,49 +110,13 @@ fun Navigation() {
 
                         viewModel = transactionViewModel,
                         onAddClick = { navController.navigate("addTransaction") },
-                        onNavigateToDescription = { index, func ->
-                            navController.navigate(ShowDescriptionRoute(index))
-                        },
-                         )
-                }
 
-                composable<TransactionCardRoute> { backStackEntry ->
-                    val route = backStackEntry.toRoute<TransactionCardRoute>()
-
-                    val previousRoute = navController.previousBackStackEntry?.destination?.route
-
-                    val getTransaction: (Int) -> Transaction =
-                        if (previousRoute?.contains("TransactionsScreenRoute") == true) { index ->
-                            transactionViewModel.getTransaction(index)
-                        } else { index ->
-                            dashboardViewModel.getTransaction(index)
-                        }
-
-                    val getCategory: (Int) -> Category =
-                        if (previousRoute?.contains("TransactionsScreenRoute") == true) { id ->
-                            transactionViewModel.getCategory(id)
-                        } else { id ->
-                            dashboardViewModel.getCategory(id)
-                        }
-                    TransactionCard(
-                        transaction = getTransaction(route.transactionIndex),
-                         category = getCategory(route.categoryID),
-                         showDescription = { description, func ->
-                            navController.navigate(ShowDescriptionRoute(description))
-                        },
-                    )
+                        )
                 }
 
 
-                composable<ShowDescriptionRoute> { backStackEntry ->
-                    val route = backStackEntry.toRoute<ShowDescriptionRoute>()
 
 
-                    ShowDescription(
-                       description = route.description,
-                        returnToMainScreen = { navController.popBackStack() },
-                    )
-                }
 
                 composable<CategoriesScreenRoute> {
                     LaunchedEffect(Unit) {
@@ -187,60 +127,22 @@ fun Navigation() {
                         viewModel = categoryViewModel,
                         addCategory = { category -> categoryViewModel.addCategory(category) },
                         editCategory = { categoryIDForEdit, category ->
-                            categoryViewModel.editCategory(categoryIDForEdit, category) },
-                        categoryDeleteDialog = {  categoryIDForDeletion -> navController.navigate(CategoryDeleteDialogRoute(categoryIDForDeletion)) }
+                            categoryViewModel.editCategory(categoryIDForEdit, category)
+                        },
                     )
                 }
 
-//                composable("addCategory") {
-//                     AddCategory(
-//                        returnToCategoryScreen = { navController.popBackStack() },
-//                         componentMode=,
-//                        addCategory = { category -> categoryViewModel.addCategory(category)},
-//
-//                    )
-//                }
-
-                composable<EditCategoryRoute> { backStackEntry ->
-                    val route = backStackEntry.toRoute<EditCategoryRoute>()
-                    val currentCategory =
-                        categoryViewModel.getCategory( route.categoryIDForEdit) ?: ErrorCategory
-                    EditCategory(
-                        categoryIDForEdit = route.categoryIDForEdit,
-                        returnToCategoryScreen = { navController.popBackStack() },
-                        currentCategory = currentCategory,
-                        editCategory = { categoryID, editedCategory ->
-                            categoryViewModel.editCategory(
-                                categoryID,
-                                editedCategory
-                            )
-                        }
-                    )
-                }
-
-                composable<CategoryDeleteDialogRoute> {backStackEntry ->
-                    val route = backStackEntry.toRoute<CategoryDeleteDialogRoute>()
-                    val currentCategory =
-                        categoryViewModel.getCategory( route.categoryIDForDeletion) ?: ErrorCategory
-
-                    CategoryDeleteDialog(
-                        categoryIDForDeletion = route.categoryIDForDeletion,
-                        currentCategory=currentCategory,
-                        returnToCategoryScreen = { navController.popBackStack() },
-                        removeCategory = { id -> categoryViewModel.removeCategory(id) }
-                    )
-                }
             }
-        }}
+        }
+    }
 
 }
 
 enum class AppDestinations(
-    val label: String,
-    val icon: Int,
-    val route: Any
+    val label: String, val icon: Int, val route: Any
 ) {
-    DASHBOARD("Dashboard", R.drawable.ic_home, DashboardScreenRoute),
-    TRANSACTIONS("Transactions", R.drawable.ic_favorite, TransactionsScreenRoute),
+    DASHBOARD("Dashboard", R.drawable.ic_home, DashboardScreenRoute), TRANSACTIONS(
+        "Transactions", R.drawable.ic_favorite, TransactionsScreenRoute
+    ),
     CATEGORIES("Categories", R.drawable.ic_account_box, CategoriesScreenRoute)
 }

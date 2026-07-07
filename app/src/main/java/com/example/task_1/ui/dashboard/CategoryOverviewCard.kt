@@ -8,7 +8,6 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import com.example.task_1.domain.Category
-import com.example.task_1.domain.Transactions
 import com.example.task_1.ui.theme.spacing
 
 @Composable

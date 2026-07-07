@@ -48,6 +48,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import com.example.task_1.domain.Category
+import com.example.task_1.domain.ComponentMode
 import com.example.task_1.domain.ErrorCategory
 import com.example.task_1.domain.MAX_MONEY_LENGTH
 import com.example.task_1.domain.MAX_RECEIVER_LENGTH
@@ -55,7 +56,6 @@ import com.example.task_1.domain.NoFilter
 import com.example.task_1.domain.PayMethod
 import com.example.task_1.domain.Transaction
 import com.example.task_1.domain.TransactionUiState
-import com.example.task_1.domain.Transactions
 import com.example.task_1.ui.ErrorDialog
 import com.example.task_1.ui.LoadingScreen
 import com.example.task_1.ui.TransactionCard
@@ -74,7 +74,6 @@ fun TransactionsScreen(
 //    style: TextStyle,
     viewModel: TransactionViewModel,
     onAddClick: () -> Unit,
-    onNavigateToDescription: (String, () -> Unit) -> Unit,
 ) {
     val uiState by viewModel.uiState.collectAsState()
     var expandedSortTypes by remember { mutableStateOf(false) }
@@ -83,38 +82,38 @@ fun TransactionsScreen(
     val isRefreshing = uiState is TransactionUiState.Loading
     var lastDate: String? = null
     val scope = rememberCoroutineScope()
-    var showAddTransactionSheet by remember { mutableStateOf(false) }
+    var showForm by remember { mutableStateOf(false) }
     val categories = (uiState as? TransactionUiState.Success)?.categories ?: mapOf()
     val transactions = (uiState as? TransactionUiState.Success)?.transactions ?: listOf()
-
+    val componentMode by remember { mutableStateOf(ComponentMode.ADD) }
+    val clickedTransactionID by remember { mutableStateOf("") }
     PullToRefreshBox(
         isRefreshing = isRefreshing,
         onRefresh = { viewModel.loadData() }
     ) {
-
-
         if (uiState is TransactionUiState.Loading) LoadingScreen()
         if (uiState is TransactionUiState.Error) {
             ErrorDialog(
-                message = (uiState as TransactionUiState.Error).message ,
+                message = (uiState as TransactionUiState.Error).message,
                 args = (uiState as TransactionUiState.Error).args,
                 loadData = { viewModel.loadData() })
         }
 
-        if (showAddTransactionSheet) {
+        if (showForm) {
             ModalBottomSheet(
-                onDismissRequest = { showAddTransactionSheet = false },
+                onDismissRequest = { showForm = false },
                 sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
             ) {
-                AddTransaction(
-                    returnToTransactionScreen = {
-                        showAddTransactionSheet = false;
-                        viewModel.loadData()
-                    },
+                TransactionForm(
                     categories = categories,
-                    addTransaction = { transaction -> viewModel.addTransaction(transaction) },
-
-                    )
+                    actionOnClick = { transaction ->
+                        if (componentMode == ComponentMode.ADD)
+                            viewModel.addTransaction(transaction)
+                        else
+                            viewModel.editTransaction(clickedTransactionID, transaction)
+                        showForm = false
+                    },
+                )
             }
         }
         LazyColumn(Modifier.padding(horizontal = MaterialTheme.spacing.small)) {
@@ -126,13 +125,13 @@ fun TransactionsScreen(
                 ) {
                     Text(
                         "Transactions",
-                         style = MaterialTheme.typography.titleLarge,
+                        style = MaterialTheme.typography.titleLarge,
                         color = MaterialTheme.colorScheme.primary
                     )
                     Button(
                         onClick = {
                             if (categories.isEmpty()) viewModel.showError(com.example.task_1.R.string.add_a_category_to_become_able_to_add_transactions)
-                            else showAddTransactionSheet = true
+                            else showForm = true
 
                         }, Modifier
                             .clip(MaterialTheme.shapes.small),
@@ -241,7 +240,6 @@ fun TransactionsScreen(
                         TransactionCard(
                             transaction = transaction,
                             category = categories[transaction.categoryID] ?: ErrorCategory,
-                            showDescription = onNavigateToDescription
                         )
                         lastDate = transaction.date
                         if (index == transactions.size - 1) lastDate =

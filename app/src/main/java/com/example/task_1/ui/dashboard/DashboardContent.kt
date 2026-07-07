@@ -20,7 +20,6 @@ import com.example.task_1.R
 import com.example.task_1.domain.Category
 import com.example.task_1.domain.ErrorCategory
 import com.example.task_1.domain.Transaction
-import com.example.task_1.domain.Transactions
 import com.example.task_1.ui.TransactionCard
 import com.example.task_1.ui.theme.spacing
 import kotlin.collections.forEach
@@ -31,11 +30,12 @@ fun DashboardContent(
     totalExpenses: Double,
     biggestExpense: Double,
     categories: Map<Int, Category>,
-    onNavigateToDescription: (String, ()->Unit) -> Unit,
 ) {
-    LazyColumn(Modifier
-        .fillMaxSize()
-        .padding(horizontal = MaterialTheme.spacing.small)) {
+    LazyColumn(
+        Modifier
+            .fillMaxSize()
+            .padding(horizontal = MaterialTheme.spacing.small)
+    ) {
         item {
             Text(
                 stringResource(R.string.dashboard),
@@ -43,7 +43,8 @@ fun DashboardContent(
                 color = MaterialTheme.colorScheme.primary
             )
             Text(
-                stringResource(R.string.total), fontWeight = FontWeight.Bold,
+                stringResource(R.string.total),
+                fontWeight = FontWeight.Bold,
                 style = MaterialTheme.typography.titleMedium,
                 fontStyle = FontStyle.Italic,
                 modifier = Modifier.padding(MaterialTheme.spacing.small)
@@ -54,15 +55,13 @@ fun DashboardContent(
                     .fillMaxWidth()
                     .padding(end = MaterialTheme.spacing.medium),
                 horizontalArrangement = Arrangement.spacedBy(
-                    MaterialTheme.spacing.medium,
-                    Alignment.CenterHorizontally
+                    MaterialTheme.spacing.medium, Alignment.CenterHorizontally
                 ),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 SummaryCard(stringResource(R.string.total_sum), totalExpenses)
                 SummaryCard(
-                    stringResource(R.string.biggest_expense),
-                    biggestExpense
+                    stringResource(R.string.biggest_expense), biggestExpense
                 )
             }
 
@@ -78,13 +77,14 @@ fun DashboardContent(
                 transactions.forEachIndexed { index, transaction ->
                     TransactionCard(
                         transaction,
-                        categories[transaction.categoryID]?: ErrorCategory,
-                        onNavigateToDescription
-                    )
+                        categories[transaction.categoryID] ?: ErrorCategory,
+
+                        )
                 }
             }
             Text(
-                stringResource(R.string.categories_overview), fontWeight = FontWeight.Bold,
+                stringResource(R.string.categories_overview),
+                fontWeight = FontWeight.Bold,
                 style = MaterialTheme.typography.titleMedium,
                 fontStyle = FontStyle.Italic,
                 modifier = Modifier.padding(top = MaterialTheme.spacing.small)

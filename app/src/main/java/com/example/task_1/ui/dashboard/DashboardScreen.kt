@@ -1,4 +1,5 @@
 package com.example.task_1.ui.dashboard
+
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -19,31 +20,28 @@ import com.example.task_1.ui.LoadingScreen
 import com.example.task_1.ui.TransactionCard
 
 @Composable
-fun DashboardScreen (
-                    viewModel: DashboardViewModel,
-                    onNavigateToDescription: (String) -> Unit) {
-
-
+fun DashboardScreen(
+    viewModel: DashboardViewModel
+) {
     val dashboardUiState by viewModel.uiState.collectAsState()
     val isRefreshing = dashboardUiState is DashboardUiState.Loading
 
     PullToRefreshBox(
-        isRefreshing = isRefreshing,
-        onRefresh = { viewModel.loadData() }
-    ) {
+        isRefreshing = isRefreshing, onRefresh = { viewModel.loadData() }) {
         when (dashboardUiState) {
             DashboardUiState.Loading -> LoadingScreen()
-            is DashboardUiState.Error -> ErrorDialog((dashboardUiState as DashboardUiState.Error).message,
+            is DashboardUiState.Error -> ErrorDialog(
+                (dashboardUiState as DashboardUiState.Error).message,
                 (dashboardUiState as DashboardUiState.Error).args,
-                { viewModel.loadData() } )
+                { viewModel.loadData() })
+
             is DashboardUiState.Success -> DashboardContent(
 
                 transactions = (dashboardUiState as DashboardUiState.Success).transactions,
                 totalExpenses = (dashboardUiState as DashboardUiState.Success).totalExpenses,
                 biggestExpense = (dashboardUiState as DashboardUiState.Success).biggestExpense,
                 categories = (dashboardUiState as DashboardUiState.Success).categories,
-                onNavigateToDescription = { description, func -> onNavigateToDescription(description) },
-                )
+            )
         }
 
     }
