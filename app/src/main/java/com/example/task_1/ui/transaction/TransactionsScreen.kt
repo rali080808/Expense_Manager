@@ -55,7 +55,7 @@ import com.example.task_1.domain.MAX_RECEIVER_LENGTH
 import com.example.task_1.domain.NoFilter
 import com.example.task_1.domain.PayMethod
 import com.example.task_1.domain.Transaction
-import com.example.task_1.domain.TransactionUiState
+import com.example.task_1.domain.uiStates.TransactionUiState
 import com.example.task_1.ui.ErrorDialog
 import com.example.task_1.ui.LoadingScreen
 import com.example.task_1.ui.TransactionCard

@@ -6,8 +6,8 @@ import androidx.lifecycle.viewModelScope
 import com.example.task_1.data.DataService
 import com.example.task_1.data.IDataService
 import com.example.task_1.domain.Category
-import com.example.task_1.domain.CategoryUiState
-import com.example.task_1.domain.DashboardUiState
+import com.example.task_1.domain.uiStates.CategoryUiState
+import com.example.task_1.domain.uiStates.DashboardUiState
 import com.example.task_1.domain.Transaction
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow

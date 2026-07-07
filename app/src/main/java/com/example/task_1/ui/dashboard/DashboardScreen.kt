@@ -12,7 +12,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.graphics.Color
 import com.example.task_1.domain.Category
-import com.example.task_1.domain.DashboardUiState
+import com.example.task_1.domain.uiStates.DashboardUiState
 import com.example.task_1.domain.ErrorCategory
 import com.example.task_1.ui.ErrorDialog
 import com.example.task_1.ui.dashboard.DashboardViewModel

@@ -7,7 +7,7 @@ import com.example.task_1.data.IDataService
 import com.example.task_1.domain.Category
 import com.example.task_1.domain.NoFilter
 import com.example.task_1.domain.Transaction
-import com.example.task_1.domain.TransactionUiState
+import com.example.task_1.domain.uiStates.TransactionUiState
 import com.example.task_1.ui.TransactionInput
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow

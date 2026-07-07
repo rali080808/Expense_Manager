@@ -8,7 +8,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import com.example.task_1.R
-import com.example.task_1.domain.TransactionUiState
+import com.example.task_1.domain.uiStates.TransactionUiState
 import com.example.task_1.ui.theme.ErrorColor
 
 @Composable

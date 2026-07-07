@@ -46,11 +46,11 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import com.example.task_1.R
 import com.example.task_1.domain.Category
-import com.example.task_1.domain.CategoryUiState
+import com.example.task_1.domain.uiStates.CategoryUiState
 import com.example.task_1.domain.ComponentMode
 import com.example.task_1.domain.ErrorCategory
 import com.example.task_1.domain.MAX_CATEGORY_LENGTH
-import com.example.task_1.domain.TransactionUiState
+import com.example.task_1.domain.uiStates.TransactionUiState
 import com.example.task_1.ui.ErrorDialog
 import com.example.task_1.ui.LoadingScreen
 import com.example.task_1.ui.theme.border

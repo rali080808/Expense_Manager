@@ -1,4 +1,7 @@
-package com.example.task_1.domain
+package com.example.task_1.domain.uiStates
+
+import com.example.task_1.domain.Category
+import com.example.task_1.domain.Transaction
 
 sealed class DashboardUiState {
     object Loading : DashboardUiState()
