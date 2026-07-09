@@ -1,10 +1,7 @@
 package com.example.task_1.data;
 
-import androidx.compose.animation.core.StartOffsetType.Companion.Delay
-import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
-import androidx.room.util.copy
 import com.example.task_1.domain.Transaction;
 
 
@@ -13,7 +10,6 @@ import com.example.task_1.domain.Currency
 import com.example.task_1.domain.PayMethod
 import kotlinx.coroutines.delay
 import java.time.LocalDate
-import kotlin.uuid.Uuid
 
 const val WAIT_TIME: Long = 200
 
