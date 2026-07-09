@@ -15,13 +15,13 @@ enum class Currency(val sign: String) {
 
 @Serializable
 data class Transaction (
-    val id: String,
+    val id: Long,
     val sender: String,
     val receiver: String,
     val money: Double,
     val currency: Currency = Currency.EURO,
     val date: String,
-    val categoryID: Int,
+    val categoryID: Long,
     val description: String = "",
     val payMethod: PayMethod
 )

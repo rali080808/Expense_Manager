@@ -12,10 +12,10 @@ import com.example.task_1.domain.Category
 // TODO make it usable for transactions as well
 @Composable
 fun CategoryDeleteDialog(
-    categoryIDForDeletion: Int,
+    categoryIDForDeletion: Long,
     currentCategory: Category,
     closeDialog: () -> Unit,
-    removeCategory: (Int) -> Unit
+    removeCategory: (Long) -> Unit
 ) {
 
     AlertDialog(

@@ -8,7 +8,7 @@ sealed class DashboardUiState {
 
     data class Success(
         val transactions: List<Transaction>,
-        val categories: Map<Int, Category>,
+        val categories: List<Category>,
         val totalExpenses: Double,
         val biggestExpense: Double,
     ) : DashboardUiState()

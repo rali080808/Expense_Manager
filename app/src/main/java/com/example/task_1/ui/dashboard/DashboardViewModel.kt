@@ -18,7 +18,7 @@ class DashboardViewModel(private val dataService: IDataService) : ViewModel() {
     private val _uiState = MutableStateFlow<DashboardUiState>(DashboardUiState.Loading)
     val uiState: StateFlow<DashboardUiState> get() = _uiState
     private var transactions: List<Transaction> = listOf()
-    private var categories: Map<Int, Category> = mapOf()
+    private var categories:  List<Category> = listOf()
 
     init {
         loadData()
@@ -57,24 +57,6 @@ class DashboardViewModel(private val dataService: IDataService) : ViewModel() {
                 totalExpenses = totalExpenses(),
                 biggestExpense = getBiggestExpense(),
             )
-        }
-    }
-
-    fun getCategory(categoryID: Int): Category {
-        return categories[categoryID] ?: run {
-            _uiState.value = DashboardUiState.Error(
-                R.string.developer_bug_categoryid_does_not_exist, args = listOf(categoryID)
-            )
-            throw IllegalArgumentException("No category found with ID: $categoryID")
-        }
-    }
-
-    fun getTransaction(transactionId: String): Transaction {
-        return transactions.find { it.id == transactionId } ?: run {
-            _uiState.value = DashboardUiState.Error(
-                R.string.transaction_with_id_not_found, args = listOf(transactionId)
-            )
-            throw IllegalArgumentException()
         }
     }
 

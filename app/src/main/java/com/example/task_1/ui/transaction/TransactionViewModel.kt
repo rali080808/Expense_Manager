@@ -8,7 +8,6 @@ import com.example.task_1.domain.Category
 import com.example.task_1.domain.NoFilter
 import com.example.task_1.domain.Transaction
 import com.example.task_1.domain.uiStates.TransactionUiState
-import com.example.task_1.ui.TransactionInput
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -26,7 +25,7 @@ class TransactionViewModel(private val dataService: IDataService) : ViewModel() 
     val uiState: StateFlow<TransactionUiState> get() = _uiState
     private var allTransactions = listOf<Transaction>()
     private var filteredTransactions = listOf<Transaction>()
-    private var categories = mapOf<Int, Category>()
+    private var categories = listOf<Category>()
 
     var currentSortType = SortTypes.SORTBY_DATE_DESCENDING
         private set
@@ -59,7 +58,7 @@ class TransactionViewModel(private val dataService: IDataService) : ViewModel() 
         )
     }
 
-    fun addTransaction(transaction: TransactionInput) {
+    fun addTransaction(transaction: Transaction) {
         viewModelScope.launch {
             if (transaction.categoryID == NoFilter) {
                 _uiState.value = TransactionUiState.Error(R.string.please_choose_a_category)
@@ -77,11 +76,11 @@ class TransactionViewModel(private val dataService: IDataService) : ViewModel() 
         }
     }
 
-    fun editTransaction(transactionID: String, transaction: TransactionInput) {
+    fun editTransaction(transaction: Transaction) {
         viewModelScope.launch {
 
             _uiState.value = TransactionUiState.Loading
-            dataService.editTransaction(transaction.toTransaction(transactionID))
+            dataService.editTransaction(transaction)
             filterByCategory(currentCategoryFilter)
             sortTransactions(currentSortType)
 
@@ -111,7 +110,7 @@ class TransactionViewModel(private val dataService: IDataService) : ViewModel() 
         _uiState.value = TransactionUiState.Success(filteredTransactions, categories)
     }
 
-    fun filterByCategory(categoryID: Int) {
+    fun filterByCategory(categoryID: Long) {
         _uiState.value = TransactionUiState.Loading
         currentCategoryFilter = categoryID
 
@@ -127,23 +126,5 @@ class TransactionViewModel(private val dataService: IDataService) : ViewModel() 
 
     }
 
-    fun getCategory(categoryID: Int): Category {
-        return categories[categoryID] ?: run {
-            _uiState.value = TransactionUiState.Error(
-                R.string.developer_bug_categoryid_does_not_exist, args = listOf(categoryID)
-            )
-            throw IllegalArgumentException("No category found with ID: $categoryID")
-        }
-    }
 
-    fun getTransaction(transactionId: String): Transaction {
-        return filteredTransactions.find { it.id == transactionId }
-            ?: run {
-                _uiState.value = TransactionUiState.Error(
-                    R.string.transaction_with_id_not_found,
-                    args = listOf(transactionId)
-                )
-                throw IllegalArgumentException()
-            }
-    }
 }

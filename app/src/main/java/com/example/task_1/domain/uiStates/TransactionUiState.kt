@@ -9,7 +9,7 @@ sealed class TransactionUiState {
 
     data class Success(
         val transactions: List<Transaction>,
-        val categories: Map<Int, Category>,
+        val categories: List<Category>,
     ) : TransactionUiState()
 
     data class Error(

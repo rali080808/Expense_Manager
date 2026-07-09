@@ -20,6 +20,7 @@ import com.example.task_1.R
 import com.example.task_1.domain.Category
 import com.example.task_1.domain.ErrorCategory
 import com.example.task_1.domain.Transaction
+import com.example.task_1.domain.getById
 import com.example.task_1.ui.TransactionCard
 import com.example.task_1.ui.theme.spacing
 import kotlin.collections.forEach
@@ -29,7 +30,7 @@ fun DashboardContent(
     transactions: List<Transaction>,
     totalExpenses: Double,
     biggestExpense: Double,
-    categories: Map<Int, Category>,
+    categories: List<Category>,
 ) {
     LazyColumn(
         Modifier
@@ -77,7 +78,7 @@ fun DashboardContent(
                 transactions.forEachIndexed { index, transaction ->
                     TransactionCard(
                         transaction,
-                        categories[transaction.categoryID] ?: ErrorCategory,
+                        categories.getById(transaction.categoryID) ?: ErrorCategory,
 
                         )
                 }
@@ -92,8 +93,8 @@ fun DashboardContent(
 
 
             Column {
-                categories.forEach { (_, category) ->
-                    CategoryOverviewCard(category, totalExpenses)
+                categories.forEach {  category  ->
+                    CategoryOverviewCard(category, totalExpenses, transactions)
                 }
             }
         }

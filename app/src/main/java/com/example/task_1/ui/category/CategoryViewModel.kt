@@ -9,6 +9,8 @@ import com.example.task_1.domain.Category
 import com.example.task_1.domain.uiStates.CategoryUiState
 import com.example.task_1.domain.uiStates.DashboardUiState
 import com.example.task_1.domain.Transaction
+import com.example.task_1.domain.containsID
+import com.example.task_1.domain.getById
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -18,7 +20,7 @@ class CategoryViewModel(private val dataService: IDataService) : ViewModel() {
     val uiState: StateFlow<CategoryUiState> get() = _uiState
 
     private var transactions = listOf<Transaction>()
-    private var categories = mapOf<Int, Category>()
+    private var categories = listOf<Category>()
 
     init {
         loadData()
@@ -38,7 +40,7 @@ class CategoryViewModel(private val dataService: IDataService) : ViewModel() {
         }
     }
 
-    fun transactionsInCategory(categoryID: Int): Boolean {  //TODO should be private
+    fun transactionsInCategory(categoryID: Long): Boolean {  //TODO should be private
         for (transaction in transactions) {
             if (transaction.categoryID == categoryID) {
                 return true;
@@ -47,7 +49,7 @@ class CategoryViewModel(private val dataService: IDataService) : ViewModel() {
         return false;
     }
 
-    fun removeCategory(categoryID: Int) {
+    fun removeCategory(categoryID: Long) {
         viewModelScope.launch {
             _uiState.value = CategoryUiState.Loading
 
@@ -57,10 +59,10 @@ class CategoryViewModel(private val dataService: IDataService) : ViewModel() {
         }
     }
 
-    fun editCategory(categoryID: Int, editedCategory: Category) {
+    fun editCategory(categoryID: Long, editedCategory: Category) {
         viewModelScope.launch {
             _uiState.value = CategoryUiState.Loading
-            if (categories.containsKey(categoryID)) {
+            if (categories.containsID(categoryID)) {
                 categories = dataService.editCategory(categoryID, editedCategory)
                 _uiState.value = CategoryUiState.Success(transactions, categories)
             } else {
@@ -70,6 +72,8 @@ class CategoryViewModel(private val dataService: IDataService) : ViewModel() {
             }
         }
     }
+
+
 
     fun addCategory(category: Category) {
         viewModelScope.launch {
@@ -81,7 +85,7 @@ class CategoryViewModel(private val dataService: IDataService) : ViewModel() {
                 )
                 return@launch
             }
-            dataService.addCategory(Category(category.text, category.icon, category.color, 0.0))
+            dataService.addCategory(Category(0,category.text, category.icon, category.color))
             categories = dataService.getCategories()
             _uiState.value = CategoryUiState.Success(transactions, categories)
 
@@ -89,12 +93,12 @@ class CategoryViewModel(private val dataService: IDataService) : ViewModel() {
     }
 
     // TODO check whether to remove Boolean from return type
-    fun validateIDForDeletion(categoryID: Int): Boolean {
-        if (categories.containsKey(categoryID)) {
+    fun validateIDForDeletion(categoryID: Long): Boolean {
+        if (categories.containsID(categoryID)) {
             if (transactionsInCategory(categoryID)) {
                 _uiState.value = CategoryUiState.Error(
                     R.string.category_is_active_you_cannot_delete_it, args = listOf(
-                        categories[categoryID]?.text ?: "", categories[categoryID]?.icon ?: ""
+                        categories.getById( categoryID)?.text ?: "", categories.getById( categoryID)?.icon ?: ""
                     )
                 ); return false
             }
@@ -105,24 +109,12 @@ class CategoryViewModel(private val dataService: IDataService) : ViewModel() {
         return true
     }
 
-    fun getCategory(categoryID: Int): Category {
-        return categories[categoryID]
-            ?: throw IllegalArgumentException("Category ID $categoryID does not exist.")
-    }
 
 
-    fun getTransaction(transactionId: String): Transaction {
-        return transactions.find { it.id == transactionId } ?: run {
-            _uiState.value = CategoryUiState.Error(
-                R.string.transaction_with_id_not_found, args = listOf(transactionId)
-            )
-            throw IllegalArgumentException()
-        }
-    }
 }
 
-fun Map<Int, Category>.containsText(text: String): Boolean {
-    for ((id, category) in this) {
+fun List <Category>.containsText(text: String): Boolean {
+    for ( category  in this) {
         if (category.text == text) return true;
     }
     return false;

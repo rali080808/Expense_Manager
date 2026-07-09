@@ -130,10 +130,10 @@ fun CategoryForm(
         Button(onClick = {
             actionOnClick(
                 Category(
+                    0,
                     categoryText,
                     categoryIcon,
-                    categoryColor.second,
-                    0.0
+                    categoryColor.second
                 )
             );
         }) {

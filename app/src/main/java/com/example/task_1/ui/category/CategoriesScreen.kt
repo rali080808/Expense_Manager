@@ -35,6 +35,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.currentComposer
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -50,6 +51,7 @@ import com.example.task_1.domain.uiStates.CategoryUiState
 import com.example.task_1.domain.ComponentMode
 import com.example.task_1.domain.ErrorCategory
 import com.example.task_1.domain.MAX_CATEGORY_LENGTH
+import com.example.task_1.domain.getById
 import com.example.task_1.domain.uiStates.TransactionUiState
 import com.example.task_1.ui.ErrorDialog
 import com.example.task_1.ui.LoadingScreen
@@ -63,16 +65,16 @@ fun CategoriesScreen(
 
     viewModel: CategoryViewModel,
     addCategory: (Category) -> Unit,
-    editCategory: (Int, Category) -> Unit,
+    editCategory: (Long, Category) -> Unit,
 ) {
 
     val uiState by viewModel.uiState.collectAsState()
     val isRefreshing = uiState is CategoryUiState.Loading
-    val categories = (uiState as? CategoryUiState.Success)?.categories ?: mapOf()
+    val categories = (uiState as? CategoryUiState.Success)?.categories ?: listOf()
     var showCategoryForm by remember { mutableStateOf(false) }
     var showDeleteDialog by remember { mutableStateOf(false) }
     var componentMode by remember { mutableStateOf(ComponentMode.ADD) }
-    var clickedCategoryID by remember { mutableIntStateOf(-1) }
+    var clickedCategoryID by remember { mutableLongStateOf(-1) }
     PullToRefreshBox(
         isRefreshing = isRefreshing,
         onRefresh = { viewModel.loadData() }
@@ -99,7 +101,7 @@ fun CategoriesScreen(
                             sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
                         ) {
                             CategoryForm(
-                                currentCategory = if (componentMode == ComponentMode.EDIT) categories[clickedCategoryID] else null,
+                                currentCategory = if (componentMode == ComponentMode.EDIT) categories.getById(clickedCategoryID) else null,
                                 actionOnClick = { category ->
                                     if (componentMode == ComponentMode.ADD)
                                         addCategory(category)
@@ -114,7 +116,7 @@ fun CategoriesScreen(
                     if (showDeleteDialog) {
                         CategoryDeleteDialog(
                             categoryIDForDeletion = clickedCategoryID,
-                            currentCategory = categories[clickedCategoryID] ?: ErrorCategory,
+                            currentCategory = categories.getById(clickedCategoryID) ?: ErrorCategory,
                             closeDialog = { showDeleteDialog = false },
                             removeCategory = { id -> viewModel.removeCategory(id) }
                         )
@@ -145,7 +147,7 @@ fun CategoriesScreen(
                         modifier = Modifier.fillMaxWidth()
                     ) {
                         Column(modifier = Modifier.weight(1f)) {
-                            categories.forEach { (categoryID, category) ->
+                            categories.forEach {  category  ->
                                 Box(
                                     modifier = Modifier.padding(vertical = MaterialTheme.spacing.small),
                                     contentAlignment = Alignment.CenterStart
@@ -160,15 +162,15 @@ fun CategoriesScreen(
                             }
                         }
                         Column {
-                            categories.forEach { (categoryID, _) ->
+                            categories.forEach { category ->
                                 Button(
                                     onClick = {
                                         showCategoryForm = true
                                         componentMode = ComponentMode.EDIT
-                                        clickedCategoryID = categoryID
+                                        clickedCategoryID = category.id
                                     },
                                     colors = ButtonDefaults.buttonColors(
-                                        containerColor = Color(categories[categoryID]?.color ?: 0)
+                                        containerColor = Color(categories.getById(category.id)?.color ?: 0)
                                     )
                                 ) {
                                     Text(stringResource(R.string.edit))
@@ -178,15 +180,15 @@ fun CategoriesScreen(
                         }
 
                         Column {
-                            categories.forEach { (categoryID, category) ->
+                            categories.forEach {  category   ->
                                 Button(
                                     onClick = {
-                                        clickedCategoryID = categoryID
-                                        if (viewModel.validateIDForDeletion(categoryID))
+                                        clickedCategoryID = category.id
+                                        if (viewModel.validateIDForDeletion(category.id))
                                             showDeleteDialog = true
                                     },
                                     colors = ButtonDefaults.buttonColors(
-                                        containerColor = Color(categories[categoryID]?.color ?: 0)
+                                        containerColor = Color(categories.getById(category.id)?.color ?: 0)
                                     )
                                 ) {
                                     Text("X")
@@ -200,3 +202,5 @@ fun CategoriesScreen(
         }
     }
 }
+
+

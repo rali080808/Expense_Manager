@@ -7,16 +7,17 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import com.example.task_1.domain.Category
+ import com.example.task_1.domain.Category
+import com.example.task_1.domain.Transaction
 import com.example.task_1.ui.theme.spacing
 
 @Composable
-fun CategoryOverviewCard(category: Category, totalExpenses: Double) {
+fun CategoryOverviewCard(category: Category, totalExpenses: Double, transactions: List<Transaction>) {
     Text(
         (category.icon)
                 + " "
-                + "🟦".repeat(category.percentage(totalExpenses) * 16 / 100)
-                + category.percentage(totalExpenses)
+                + "🟦".repeat(category.percentage(totalExpenses, transactions) * 16 / 100)
+                + category.percentage(totalExpenses, transactions)
                 + "%",
         style = MaterialTheme.typography.bodyMedium,
         modifier = Modifier.padding(MaterialTheme.spacing.small)

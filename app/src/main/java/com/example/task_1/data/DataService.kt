@@ -11,7 +11,6 @@ import com.example.task_1.domain.Transaction;
 import com.example.task_1.domain.Category;
 import com.example.task_1.domain.Currency
 import com.example.task_1.domain.PayMethod
-import com.example.task_1.ui.TransactionInput
 import kotlinx.coroutines.delay
 import java.time.LocalDate
 import kotlin.uuid.Uuid
@@ -19,16 +18,15 @@ import kotlin.uuid.Uuid
 const val WAIT_TIME: Long = 200
 
 public object DataService : IDataService {
-    // TODO make categories a list
-    private val categories: MutableMap<Int, Category> = mutableMapOf(
-        1 to Category("ice cream", "🍦", Color.Magenta.toArgb(), 8.0),
-        2 to Category("dresses", "👗", Color.Blue.toArgb(), 61.0)
+    private val categories: MutableList<Category> = mutableListOf(
+        Category(1, "ice cream", "🍦", Color.Magenta.toArgb()),
+        Category(2, "dresses", "👗", Color.Blue.toArgb())
     )
     private var nextCategoryID = 3
-     private val transactions: MutableList<Transaction> =
+    private val transactions: MutableList<Transaction> =
         mutableListOf(
             Transaction(
-                id = "1",
+                id = 1,
                 "Rali",
                 "LIDL",
                 6.0,
@@ -40,7 +38,7 @@ public object DataService : IDataService {
             ),
 
             Transaction(
-                id = "2",
+                id = 2,
                 "Rali",
                 "Stradivarius",
                 61.0,
@@ -52,7 +50,7 @@ public object DataService : IDataService {
             ),
 
             Transaction(
-                id = "3",
+                id = 3,
                 "Rali",
                 "Billa",
                 2.0,
@@ -70,24 +68,16 @@ public object DataService : IDataService {
         categories[nextCategoryID++] = category
 
     }
-    var nextTransactionID = 3;
-    override suspend fun addTransaction(transaction: TransactionInput) {
+
+    var nextTransactionID: Long = 3;
+    override suspend fun addTransaction(transaction: Transaction) {
         delay(WAIT_TIME)
-        transactions.add(transaction.toTransaction( (nextTransactionID++).toString() ))
-
-        val currentCategory = categories[transaction.categoryID]
-            ?: throw IllegalArgumentException("Category ID ${transaction.categoryID} not found")
-
-        categories[transaction.categoryID] = Category(
-            text = currentCategory.text,
-            icon = currentCategory.icon,
-            color = currentCategory.color,
-            expenseOnThisCategory = currentCategory.expenseOnThisCategory + transaction.money
-        )
+        transactions.add(transaction.copy(id = nextTransactionID++))
     }
 
-    override suspend fun editTransaction( transaction: Transaction) {
-        delay(WAIT_TIME)
+    override suspend fun editTransaction(transaction: Transaction) {
+//        delay(WAIT_TIME)
+//        transactions.find{ it.id == transaction.id }
         // TODO editTransaction
 //
 //        val oldCategoryID = transactions[index].categoryID
@@ -109,21 +99,21 @@ public object DataService : IDataService {
 //            )
 //        }
     }
-//TODO how can I make DataService be the only one able to add a transaction to transactions?
 
-    override suspend fun removeCategory(id: Int): Map<Int, Category> {
+    override suspend fun removeCategory(id: Long): List<Category> {
         delay(WAIT_TIME)
-        categories.remove(id)
+        categories.removeIf { it.id == id }
         return categories; //toMap
     }
 
-    override suspend fun editCategory(id: Int, editedCategory: Category): Map<Int, Category> {
+    override suspend fun editCategory(id: Long, editedCategory: Category): List<Category> {
         delay(WAIT_TIME)
-        categories[id] = editedCategory
-        return categories; // toMap
+        val index = categories.indexOfFirst { it.id == id }
+        categories[index] = editedCategory.copy(id=id)
+        return categories;
     }
 
-    override suspend fun getCategories(): Map<Int, Category> {
+    override suspend fun getCategories(): List<Category> {
         delay(WAIT_TIME)
         return categories;
     }

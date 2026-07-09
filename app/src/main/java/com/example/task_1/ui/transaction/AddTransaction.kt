@@ -24,6 +24,7 @@ import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -34,12 +35,13 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.example.task_1.domain.Category
+import com.example.task_1.domain.ErrorCategory
 import com.example.task_1.domain.MAX_MONEY_LENGTH
 import com.example.task_1.domain.MAX_RECEIVER_LENGTH
 import com.example.task_1.domain.NoFilter
 import com.example.task_1.domain.PayMethod
 import com.example.task_1.domain.Transaction
-import com.example.task_1.ui.TransactionInput
+import com.example.task_1.domain.getById
 import com.example.task_1.ui.theme.border
 import com.example.task_1.ui.theme.spacing
 import java.time.Instant
@@ -52,8 +54,8 @@ import kotlin.collections.forEach
 
 @Composable
 fun TransactionForm(
-    categories: Map<Int, Category>,
-    actionOnClick: (TransactionInput) -> Unit
+    categories: List<Category>,
+    actionOnClick: (Transaction) -> Unit
 ) {
     var expandedCategory by remember { mutableStateOf(false) }
     var expandedPayMethod by remember { mutableStateOf(false) }
@@ -62,7 +64,7 @@ fun TransactionForm(
 
     var receiver by remember { mutableStateOf("") }
     var sum by remember { mutableStateOf("0.0") }
-    var categoryID by remember { mutableIntStateOf(NoFilter) }
+    var categoryID by remember { mutableLongStateOf(NoFilter) }
     var date by remember { mutableStateOf(LocalDate.now()) }
     var description by remember { mutableStateOf("") }
     var payMethod by remember { mutableStateOf(PayMethod.DEBIT) }
@@ -145,18 +147,17 @@ fun TransactionForm(
 // category
         Box(modifier = Modifier.fillMaxWidth()) {
             OutlinedTextField(
-                value = categories[categoryID]?.text ?: "",
+                value = categories.getById(categoryID)?.text ?: "",
                 onValueChange = { },
                 label = { Text(stringResource(com.example.task_1.R.string.select_category)) },
                 readOnly = true,
                 modifier = Modifier.fillMaxWidth(),
                 leadingIcon = {
-                    if (categories[categoryID] != null) {
-                        Text(
-                            text = categories[categoryID]!!.icon,
+                         Text(
+                            text = categories.getById(categoryID)?.icon ?: "",
                             style = MaterialTheme.typography.titleMedium
                         )
-                    }
+
                 },
 
                 )
@@ -175,7 +176,7 @@ fun TransactionForm(
                 offset = androidx.compose.ui.unit.DpOffset(0.dp, 0.dp) // This anchors it to the Box
 
             ) {
-                categories.forEach { (id, option) ->
+                categories.forEach { option  ->
                     DropdownMenuItem(text = {
                         Row(
                             horizontalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.small),
@@ -191,7 +192,7 @@ fun TransactionForm(
                             )
                         }
                     }, onClick = {
-                        categoryID = id
+                        categoryID = option.id
                         expandedCategory = false
                     })
                 }
@@ -233,7 +234,8 @@ fun TransactionForm(
             onClick = {
                 val amount = sum.toDoubleOrNull() ?: 0.0
                 actionOnClick(
-                    TransactionInput(
+                    Transaction(
+                        id=0,
                         sender = sender,
                         receiver = receiver,
                         money = amount,
