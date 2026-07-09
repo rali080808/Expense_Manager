@@ -64,7 +64,7 @@ fun TransactionForm(
 
     var receiver by remember { mutableStateOf("") }
     var sum by remember { mutableStateOf("0.0") }
-    var categoryID by remember { mutableLongStateOf(NoFilter) }
+    var categoryID by remember { mutableStateOf<Long>(NoFilter) }
     var date by remember { mutableStateOf(LocalDate.now()) }
     var description by remember { mutableStateOf("") }
     var payMethod by remember { mutableStateOf(PayMethod.DEBIT) }
@@ -177,6 +177,7 @@ fun TransactionForm(
 
             ) {
                 categories.forEach { option  ->
+                    option.id?.let{ id ->
                     DropdownMenuItem(text = {
                         Row(
                             horizontalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.small),
@@ -192,16 +193,17 @@ fun TransactionForm(
                             )
                         }
                     }, onClick = {
-                        categoryID = option.id
+                        categoryID = id
                         expandedCategory = false
-                    })
+                    })}
+
                 }
             }
         }
 
         Box(modifier = Modifier.fillMaxWidth()) {
             OutlinedTextField(
-                value = payMethod.text,
+                value = stringResource(payMethod.text),
                 onValueChange = { },
                 label = { Text(stringResource(com.example.task_1.R.string.payment_method)) },
                 readOnly = true,
@@ -216,7 +218,8 @@ fun TransactionForm(
             DropdownMenu(
                 expanded = expandedPayMethod, onDismissRequest = { expandedPayMethod = false }) {
                 PayMethod.entries.forEach { method ->
-                    DropdownMenuItem(text = { Text(method.text) }, onClick = {
+                    if ( method != PayMethod.UNKNOWN)
+                    DropdownMenuItem(text = { Text(stringResource(method.text)) }, onClick = {
                         payMethod = method
                         expandedPayMethod = false
                     })
@@ -235,7 +238,7 @@ fun TransactionForm(
                 val amount = sum.toDoubleOrNull() ?: 0.0
                 actionOnClick(
                     Transaction(
-                        id=0,
+                        id=null,
                         sender = sender,
                         receiver = receiver,
                         money = amount,

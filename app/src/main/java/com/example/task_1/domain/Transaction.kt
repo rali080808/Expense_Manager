@@ -1,21 +1,27 @@
 package com.example.task_1.domain
 
+import com.example.task_1.R
 import kotlinx.serialization.Serializable
 import java.time.LocalDate
 import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 
-enum class PayMethod(val text: String) {
-    CASH("💵 Cash"), DEBIT("💳 Debit"), CREDIT("💰 Credit")
+enum class PayMethod(val icon: String, val text: Int) {
+    CASH("💵", R.string.cash),
+    DEBIT("💳", R.string.debit),
+    CREDIT("💰", R.string.credit),
+    UNKNOWN("💎", R.string.unknown)
 }
 
 enum class Currency(val sign: String) {
-    EURO("€"), DOLLAR("$")
+    EURO("€"),
+    DOLLAR("$"),
+    UNKNOWN("🪙")
 }
 
 @Serializable
-data class Transaction (
-    val id: Long,
+data class Transaction(
+    val id: Long?,
     val sender: String,
     val receiver: String,
     val money: Double,

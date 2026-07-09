@@ -8,7 +8,7 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class Category(
-    val id: Long,
+    val id: Long?,
     val text: String,
     val icon: String,
     val color: Int,

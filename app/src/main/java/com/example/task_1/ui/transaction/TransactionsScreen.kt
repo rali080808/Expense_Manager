@@ -160,6 +160,7 @@ fun TransactionsScreen(
                                     }
                                 )
                                 categories.forEach {  filter  ->
+                                    filter.id?.let{id->
                                     DropdownMenuItem(
                                         text = {
                                             Text(
@@ -169,11 +170,11 @@ fun TransactionsScreen(
                                         },
                                         onClick = {
                                             scope.launch {
-                                                viewModel.filterByCategory(filter.id)
+                                                viewModel.filterByCategory(id)
                                                 expandedCategoryFilter = false
                                             }
                                         }
-                                    )
+                                    )}
                                 }
                             }
                         }
@@ -220,8 +221,7 @@ fun TransactionsScreen(
                             category = categories.getById(transaction.categoryID) ?: ErrorCategory,
                         )
                         lastDate = transaction.date
-                        if (index == transactions.size - 1) lastDate =
-                            null
+                        if (index == transactions.size - 1) lastDate = null
                     }
                 }
             }

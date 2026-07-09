@@ -130,7 +130,7 @@ fun CategoryForm(
         Button(onClick = {
             actionOnClick(
                 Category(
-                    0,
+                    currentCategory?.id,
                     categoryText,
                     categoryIcon,
                     categoryColor.second

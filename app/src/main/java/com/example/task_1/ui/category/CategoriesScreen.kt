@@ -1,7 +1,9 @@
 package com.example.task_1.ui.category
 
 import android.app.Dialog
+import android.util.Log
 import android.util.MutableBoolean
+import android.widget.Toast
 import androidx.annotation.StringRes
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
@@ -43,6 +45,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import com.example.task_1.R
@@ -67,6 +70,7 @@ fun CategoriesScreen(
     addCategory: (Category) -> Unit,
     editCategory: (Long, Category) -> Unit,
 ) {
+    val context = LocalContext.current
 
     val uiState by viewModel.uiState.collectAsState()
     val isRefreshing = uiState is CategoryUiState.Loading
@@ -74,7 +78,7 @@ fun CategoriesScreen(
     var showCategoryForm by remember { mutableStateOf(false) }
     var showDeleteDialog by remember { mutableStateOf(false) }
     var componentMode by remember { mutableStateOf(ComponentMode.ADD) }
-    var clickedCategoryID by remember { mutableLongStateOf(-1) }
+    var clickedCategoryID by remember { mutableStateOf<Long?>(null) }
     PullToRefreshBox(
         isRefreshing = isRefreshing,
         onRefresh = { viewModel.loadData() }
@@ -101,12 +105,31 @@ fun CategoriesScreen(
                             sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
                         ) {
                             CategoryForm(
-                                currentCategory = if (componentMode == ComponentMode.EDIT) categories.getById(clickedCategoryID) else null,
+                                currentCategory = if (componentMode == ComponentMode.EDIT) categories.getById(
+                                    clickedCategoryID
+                                ) else null,
                                 actionOnClick = { category ->
                                     if (componentMode == ComponentMode.ADD)
                                         addCategory(category)
-                                    else
-                                        editCategory(clickedCategoryID, category)
+                                    else {
+                                        val currentId = clickedCategoryID
+                                        if (currentId != null) {
+                                            editCategory(currentId, category)
+                                        } else {
+                                            Log.e(
+                                                "UI_BUG",
+                                                "Category edit requested, but clickedCategoryID was null!"
+                                            )
+
+                                            Toast.makeText(
+                                                context,
+                                                "An error occurred. Please try again.",
+                                                Toast.LENGTH_LONG
+                                            ).show()
+                                        }
+
+                                    }
+
                                     showCategoryForm = false
                                 },
                                 onCancel = { showCategoryForm = false }
@@ -114,12 +137,41 @@ fun CategoriesScreen(
                         }
                     }
                     if (showDeleteDialog) {
-                        CategoryDeleteDialog(
-                            categoryIDForDeletion = clickedCategoryID,
-                            currentCategory = categories.getById(clickedCategoryID) ?: ErrorCategory,
-                            closeDialog = { showDeleteDialog = false },
-                            removeCategory = { id -> viewModel.removeCategory(id) }
-                        )
+                        clickedCategoryID?.let { clickedCategoryID ->
+                            val currentCategory = categories.getById(clickedCategoryID)
+                            currentCategory?.let { currentCategory ->
+                                CategoryDeleteDialog(
+                                    categoryIDForDeletion = clickedCategoryID,
+                                    currentCategory = currentCategory,
+                                    closeDialog = { showDeleteDialog = false },
+                                    removeCategory = { id -> viewModel.removeCategory(id) }
+                                )
+                            }
+                            if (currentCategory == null) {
+                                Log.e(
+                                    "UI_ERROR",
+                                    "Tried to delete category $clickedCategoryID, but it wasn't found in the list!"
+                                )
+                                Toast.makeText(
+                                    context,
+                                    stringResource(R.string.an_error_occurred_please_try_again),
+                                    Toast.LENGTH_LONG
+                                ).show()
+                                showDeleteDialog = false
+                            }
+                        }
+                        if (clickedCategoryID == null) {
+                            Log.e(
+                                "UI_ERROR",
+                                "Tried to delete category $clickedCategoryID, but it is null!"
+                            )
+                            Toast.makeText(
+                                context,
+                                stringResource(R.string.an_error_occurred_please_try_again),
+                                Toast.LENGTH_LONG
+                            ).show()
+                            showDeleteDialog = false
+                        }
                     }
                     Row(
                         horizontalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.medium),
@@ -147,7 +199,7 @@ fun CategoriesScreen(
                         modifier = Modifier.fillMaxWidth()
                     ) {
                         Column(modifier = Modifier.weight(1f)) {
-                            categories.forEach {  category  ->
+                            categories.forEach { category ->
                                 Box(
                                     modifier = Modifier.padding(vertical = MaterialTheme.spacing.small),
                                     contentAlignment = Alignment.CenterStart
@@ -170,7 +222,9 @@ fun CategoriesScreen(
                                         clickedCategoryID = category.id
                                     },
                                     colors = ButtonDefaults.buttonColors(
-                                        containerColor = Color(categories.getById(category.id)?.color ?: 0)
+                                        containerColor = Color(
+                                            categories.getById(category.id)?.color ?: 0
+                                        )
                                     )
                                 ) {
                                     Text(stringResource(R.string.edit))
@@ -180,7 +234,7 @@ fun CategoriesScreen(
                         }
 
                         Column {
-                            categories.forEach {  category   ->
+                            categories.forEach { category ->
                                 Button(
                                     onClick = {
                                         clickedCategoryID = category.id
@@ -188,7 +242,7 @@ fun CategoriesScreen(
                                             showDeleteDialog = true
                                     },
                                     colors = ButtonDefaults.buttonColors(
-                                        containerColor = Color(categories.getById(category.id)?.color ?: 0)
+                                        containerColor = Color(category.color)
                                     )
                                 ) {
                                     Text("X")

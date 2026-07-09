@@ -58,4 +58,9 @@
     <string name="retry">Retry</string>
     <string name="please_try_again">Please, try again.</string>
     <string name="transaction_with_id_not_found">Transaction with id=%1$d not found</string>
+    <string name="cash">Cash</string>
+    <string name="debit">Debit</string>
+    <string name="credit">Credit</string>
+    <string name="unknown">unknown</string>
+    <string name="an_error_occurred_please_try_again">An error occurred. Please, try again</string>
 </resources>

@@ -66,6 +66,7 @@ class TransactionViewModel(private val dataService: IDataService) : ViewModel() 
             } else {
                 _uiState.value = TransactionUiState.Loading
                 dataService.addTransaction(transaction)
+                allTransactions = dataService.getTransactions()
                 filterByCategory(currentCategoryFilter)
                 sortTransactions(currentSortType)
 
@@ -114,9 +115,10 @@ class TransactionViewModel(private val dataService: IDataService) : ViewModel() 
         _uiState.value = TransactionUiState.Loading
         currentCategoryFilter = categoryID
 
-        // if (categoryID == NoFilter) filteredTransactions = allTransactions
-        //else
-        filteredTransactions = allTransactions.filter { it.categoryID == categoryID }
+        if (categoryID == NoFilter)
+            filteredTransactions = allTransactions
+        else
+            filteredTransactions = allTransactions.filter { it.categoryID == categoryID }
 
 
         sortTransactions(currentSortType)

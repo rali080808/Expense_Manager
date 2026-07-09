@@ -85,7 +85,7 @@ class CategoryViewModel(private val dataService: IDataService) : ViewModel() {
                 )
                 return@launch
             }
-            dataService.addCategory(Category(0,category.text, category.icon, category.color))
+            dataService.addCategory(Category(null,category.text, category.icon, category.color))
             categories = dataService.getCategories()
             _uiState.value = CategoryUiState.Success(transactions, categories)
 
@@ -93,7 +93,11 @@ class CategoryViewModel(private val dataService: IDataService) : ViewModel() {
     }
 
     // TODO check whether to remove Boolean from return type
-    fun validateIDForDeletion(categoryID: Long): Boolean {
+    fun validateIDForDeletion(categoryID: Long?): Boolean {
+        if (categoryID == null ) {
+            _uiState.value = CategoryUiState.Error(R.string.please_try_again, args= listOf())
+            return false
+        }
         if (categories.containsID(categoryID)) {
             if (transactionsInCategory(categoryID)) {
                 _uiState.value = CategoryUiState.Error(

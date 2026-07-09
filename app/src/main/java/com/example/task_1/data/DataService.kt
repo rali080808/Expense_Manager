@@ -22,7 +22,7 @@ public object DataService : IDataService {
         Category(1, "ice cream", "🍦", Color.Magenta.toArgb()),
         Category(2, "dresses", "👗", Color.Blue.toArgb())
     )
-    private var nextCategoryID = 3
+    private var nextCategoryID = 3L
     private val transactions: MutableList<Transaction> =
         mutableListOf(
             Transaction(
@@ -65,7 +65,7 @@ public object DataService : IDataService {
 
     override suspend fun addCategory(category: Category) {
         delay(WAIT_TIME)
-        categories[nextCategoryID++] = category
+        categories.add(category.copy(id=nextCategoryID++))
 
     }
 
