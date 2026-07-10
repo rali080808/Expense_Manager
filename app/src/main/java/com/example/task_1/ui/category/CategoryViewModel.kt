@@ -74,7 +74,6 @@ class CategoryViewModel(private val dataService: IDataService) : ViewModel() {
     }
 
 
-
     fun addCategory(category: Category) {
         viewModelScope.launch {
             _uiState.value = CategoryUiState.Loading
@@ -85,7 +84,7 @@ class CategoryViewModel(private val dataService: IDataService) : ViewModel() {
                 )
                 return@launch
             }
-            dataService.addCategory(Category(null,category.text, category.icon, category.color))
+            dataService.addCategory(Category(null, category.text, category.icon, category.color))
             categories = dataService.getCategories()
             _uiState.value = CategoryUiState.Success(transactions, categories)
 
@@ -94,31 +93,30 @@ class CategoryViewModel(private val dataService: IDataService) : ViewModel() {
 
     // TODO check whether to remove Boolean from return type
     fun validateIDForDeletion(categoryID: Long?): Boolean {
-        if (categoryID == null ) {
-            _uiState.value = CategoryUiState.Error(R.string.please_try_again, args= listOf())
+        if (categoryID == null) {
+            _uiState.value = CategoryUiState.Error(R.string.please_try_again, args = listOf())
             return false
         }
         if (categories.containsID(categoryID)) {
             if (transactionsInCategory(categoryID)) {
                 _uiState.value = CategoryUiState.Error(
                     R.string.category_is_active_you_cannot_delete_it, args = listOf(
-                        categories.getById( categoryID)?.text ?: "", categories.getById( categoryID)?.icon ?: ""
+                        categories.getById(categoryID)?.text ?: "",
+                        categories.getById(categoryID)?.icon ?: ""
                     )
                 ); return false
             }
-
+            return true
         }
         throw IllegalArgumentException("Category ID $categoryID does not exist.")
 
-        return true
     }
-
 
 
 }
 
-fun List <Category>.containsText(text: String): Boolean {
-    for ( category  in this) {
+fun List<Category>.containsText(text: String): Boolean {
+    for (category in this) {
         if (category.text == text) return true;
     }
     return false;
