@@ -17,7 +17,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
 @Composable
-fun SummaryCard( text : String, money: Double) {
+fun SummaryCard( text : String, money: String) {
 
     Surface (shape= MaterialTheme.shapes.small) {
         Text(" $text: $money € ",

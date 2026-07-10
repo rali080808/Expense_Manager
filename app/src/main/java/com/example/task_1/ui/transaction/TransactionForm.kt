@@ -34,8 +34,6 @@ import androidx.compose.ui.unit.dp
 import com.example.task_1.R
 import com.example.task_1.domain.Category
 import com.example.task_1.domain.ErrorMessage
-import com.example.task_1.domain.MAX_MONEY_LENGTH
-import com.example.task_1.domain.MAX_RECEIVER_LENGTH
 import com.example.task_1.domain.NoFilter
 import com.example.task_1.domain.PayMethod
 import com.example.task_1.domain.Transaction
@@ -86,7 +84,7 @@ fun TransactionForm(
 
         OutlinedTextField(
             value = sender,
-            onValueChange = { if (it.length < MAX_RECEIVER_LENGTH) sender = it },
+            onValueChange = { sender = it },
             label = { Text(stringResource(com.example.task_1.R.string.sender)) },
             singleLine = true,
             modifier = Modifier.fillMaxWidth()
@@ -94,7 +92,7 @@ fun TransactionForm(
 
         OutlinedTextField(
             value = receiver,
-            onValueChange = { if (it.length < MAX_RECEIVER_LENGTH) receiver = it },
+            onValueChange = {  receiver = it },
             label = { Text(stringResource(com.example.task_1.R.string.receiver)) },
             singleLine = true,
             modifier = Modifier.fillMaxWidth()
@@ -102,7 +100,7 @@ fun TransactionForm(
 
         OutlinedTextField(
             value = sum,
-            onValueChange = { if (it.length < MAX_MONEY_LENGTH) sum = it },
+            onValueChange = { sum = it },
             singleLine = true,
             label = { Text(stringResource(com.example.task_1.R.string.money)) },
             modifier = Modifier.fillMaxWidth()
@@ -246,13 +244,13 @@ fun TransactionForm(
         )
         Button(
             onClick = {
-                val amount = sum.toDoubleOrNull() ?: 0.0
+              //  val amount = sum.toDoubleOrNull() ?: 0.0
                 actionOnClick(
                     Transaction(
                         id=null,
                         sender = sender,
                         receiver = receiver,
-                        money = amount,
+                        money = sum,
                         date = date.toString(),
                         categoryID = categoryID,
                         description = description,

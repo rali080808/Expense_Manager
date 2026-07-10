@@ -13,6 +13,7 @@ import com.example.task_1.domain.uiStates.TransactionUiState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import java.math.BigDecimal
 
 class DashboardViewModel(private val dataService: IDataService) : ViewModel() {
     private val _uiState = MutableStateFlow<DashboardUiState>(DashboardUiState.Loading)
@@ -24,20 +25,20 @@ class DashboardViewModel(private val dataService: IDataService) : ViewModel() {
         loadData()
     }
 
-    fun totalExpenses(): Double {
-        var sum: Double = 0.0;
+    fun totalExpenses(): String {
+        var sum: BigDecimal = BigDecimal.ZERO;
         for (transaction in transactions) {
-            sum += transaction.money;
+            sum.add( BigDecimal(  transaction.money))
         }
-        return sum;
+        return sum.toString()
     }
 
-    fun getBiggestExpense(): Double {
-        if (transactions.isEmpty()) return 0.0;
+    fun getBiggestExpense(): String {
+        if (transactions.isEmpty()) return "0.0";
 
         var indexOfTheBiggest: Int = 0;
         for (transaction in transactions) {
-            if (transaction.money > transactions[indexOfTheBiggest].money) {
+            if ( BigDecimal(transaction.money) > BigDecimal(transactions[indexOfTheBiggest].money)) {
                 indexOfTheBiggest = transactions.indexOf(transaction)
             }
         }

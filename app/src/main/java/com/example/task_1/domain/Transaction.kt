@@ -1,5 +1,6 @@
 package com.example.task_1.domain
 
+import android.icu.math.BigDecimal
 import com.example.task_1.R
 import kotlinx.serialization.Serializable
 import java.time.LocalDate
@@ -24,13 +25,19 @@ data class Transaction(
     val id: Long?,
     val sender: String,
     val receiver: String,
-    val money: Double,
+    val money: String,
     val currency: Currency = Currency.EURO,
     val date: String,
     val categoryID: Long,
     val description: String = "",
     val payMethod: PayMethod
-)
+) {
 
-val MAX_RECEIVER_LENGTH = 16
-val MAX_MONEY_LENGTH = 16
+    companion object {
+        val MAX_NAME_LENGTH = 64
+        val MIN_NAME_LENGTH = 4
+    }
+}
+
+
+

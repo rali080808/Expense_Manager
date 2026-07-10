@@ -10,14 +10,15 @@ import androidx.compose.ui.Modifier
  import com.example.task_1.domain.Category
 import com.example.task_1.domain.Transaction
 import com.example.task_1.ui.theme.spacing
+import java.math.BigDecimal
 
 @Composable
-fun CategoryOverviewCard(category: Category, totalExpenses: Double, transactions: List<Transaction>) {
+fun CategoryOverviewCard(category: Category, totalExpenses: String, transactions: List<Transaction>) {
     Text(
         (category.icon)
                 + " "
-                + "🟦".repeat(category.percentage(totalExpenses, transactions) * 16 / 100)
-                + category.percentage(totalExpenses, transactions)
+                + "🟦".repeat(category.percentage(BigDecimal(totalExpenses), transactions) * 16 / 100)
+                + category.percentage(BigDecimal(totalExpenses), transactions)
                 + "%",
         style = MaterialTheme.typography.bodyMedium,
         modifier = Modifier.padding(MaterialTheme.spacing.small)

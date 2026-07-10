@@ -10,8 +10,8 @@ sealed class DashboardUiState {
     data class Success(
         val transactions: List<Transaction>,
         val categories: List<Category>,
-        val totalExpenses: Double,
-        val biggestExpense: Double,
+        val totalExpenses: String,
+        val biggestExpense: String,
     ) : DashboardUiState()
 
     data class Error(

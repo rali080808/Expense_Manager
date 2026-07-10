@@ -11,7 +11,7 @@ import com.example.task_1.data.local.entity.TransactionEntity
 
 @Database(
     entities = [CategoryEntity::class, TransactionEntity::class],
-    version = 1,
+    version = 2,
 //    exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {

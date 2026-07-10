@@ -2,6 +2,7 @@ package com.example.task_1.domain
 
 import com.example.task_1.R
 import java.math.BigDecimal
+import kotlin.collections.listOf
 import kotlin.random.Random
 
 sealed class Result<out T> {
@@ -65,5 +66,17 @@ fun categoryExists(categoryText: String, categories: List<Category>) : Result<St
         Result.Failure(ErrorMessage( R.string.category_already_exists, listOf(categoryText)))
     } else {
         Result.Success(categoryText)
+    }
+}
+
+fun hasUpToTwoDecimalPlaces(money: BigDecimal): Result<BigDecimal> {
+    // scale() returns the number of decimal places
+    // stripTrailingZeros() ensures that 10.50 is treated as 10.5 (scale 1)
+    return when {
+        money.stripTrailingZeros().scale() > 2 -> Result.Failure(ErrorMessage(
+            R.string.money_must_have_no_more_than_2_decimal_places,
+            listOf()
+        ))
+        else -> Result.Success(money)
     }
 }
