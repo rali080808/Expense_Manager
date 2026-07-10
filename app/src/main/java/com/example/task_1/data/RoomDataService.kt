@@ -10,6 +10,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
@@ -23,7 +24,7 @@ class RoomDataService(
 
     private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
-     private val categoriesState: StateFlow<List<Category>> = categoryDao.getCategories()
+    private val categoriesState: StateFlow<List<Category>> = categoryDao.getCategories()
         .map { entities -> entities.map { it.toDomain() } }
         .stateIn(
             scope = serviceScope,
@@ -31,7 +32,7 @@ class RoomDataService(
             initialValue = emptyList()
         )
 
-     private val transactionsState: StateFlow<List<Transaction>> = transactionDao.getTransactions()
+    private val transactionsState: StateFlow<List<Transaction>> = transactionDao.getTransactions()
         .map { entities -> entities.map { it.toDomain() } }
         .stateIn(
             scope = serviceScope,
@@ -39,33 +40,42 @@ class RoomDataService(
             initialValue = emptyList()
         )
 
-     override suspend fun getCategories(): List<Category> = categoriesState.value
+    override suspend fun getCategories(): List<Category> = categoriesState.value
 
     override suspend fun getTransactions(): List<Transaction> = transactionsState.value
 
-    override suspend fun addCategory(category: Category): Unit = withContext(Dispatchers.IO) {
-        categoryDao.insertCategory(category.toEntity())
-    }
+    override suspend fun addCategory(category: Category): Unit =
+        withContext(Dispatchers.IO) {
+            categoryDao.insertCategory(category.toEntity())
+            delay(10)
+        }
 
-    override suspend fun addTransaction(transaction: Transaction): Unit = withContext(Dispatchers.IO) {
-        transactionDao.insertTransaction(transaction.toEntity())
-    }
+    override suspend fun addTransaction(transaction: Transaction): Unit =
+        withContext(Dispatchers.IO) {
+            transactionDao.insertTransaction(transaction.toEntity())
+            delay(10)
+        }
 
-    override suspend fun editTransaction(transaction: Transaction): Unit = withContext(Dispatchers.IO) {
-        transactionDao.updateTransaction(transaction.toEntity())
-    }
+    override suspend fun editTransaction(transaction: Transaction): Unit =
+        withContext(Dispatchers.IO) {
+            transactionDao.updateTransaction(transaction.toEntity())
+            delay(10)
+        }
 
     override suspend fun removeCategory(id: Long): List<Category> = withContext(Dispatchers.IO) {
         categoryDao.deleteCategoryById(id)
+        delay(10)
         return@withContext categoriesState.value
     }
 
-    override suspend fun editCategory(id: Long, editedCategory: Category): List<Category> = withContext(Dispatchers.IO) {
-        categoryDao.updateCategory(editedCategory.toEntity())
-        return@withContext categoriesState.value
-    }
+    override suspend fun editCategory(id: Long, editedCategory: Category): List<Category> =
+        withContext(Dispatchers.IO) {
+            categoryDao.updateCategory(editedCategory.toEntity())
+            delay(10)
+            return@withContext categoriesState.value
+        }
 
-     fun clear() {
+    fun clear() {
         serviceScope.cancel()
     }
 }
