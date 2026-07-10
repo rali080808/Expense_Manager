@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.task_1.data.DataService
 import com.example.task_1.data.IDataService
 import com.example.task_1.domain.Category
+import com.example.task_1.domain.ErrorMessage
 import com.example.task_1.domain.uiStates.CategoryUiState
 import com.example.task_1.domain.uiStates.DashboardUiState
 import com.example.task_1.domain.Transaction
@@ -67,8 +68,9 @@ class CategoryViewModel(private val dataService: IDataService) : ViewModel() {
                 _uiState.value = CategoryUiState.Success(transactions, categories)
             } else {
                 _uiState.value = CategoryUiState.Error(
-                    R.string.developer_bug_categoryid_does_not_exist, args = listOf(categoryID)
-                )
+                    ErrorMessage(
+                        R.string.developer_bug_categoryid_does_not_exist, args = listOf(categoryID)
+                    ))
             }
         }
     }
@@ -78,10 +80,10 @@ class CategoryViewModel(private val dataService: IDataService) : ViewModel() {
         viewModelScope.launch {
             _uiState.value = CategoryUiState.Loading
             if (categories.containsText(category.text)) {
-                _uiState.value = CategoryUiState.Error(
+                _uiState.value = CategoryUiState.Error( ErrorMessage(
                     R.string.category_with_a_name_already_exist_you_cannot_add_it_again_but_you_can_edit_the_old_one,
                     args = listOf(category.text)
-                )
+                ))
                 return@launch
             }
             dataService.addCategory(Category(null, category.text, category.icon, category.color))
@@ -94,16 +96,16 @@ class CategoryViewModel(private val dataService: IDataService) : ViewModel() {
     // TODO check whether to remove Boolean from return type
     fun validateIDForDeletion(categoryID: Long?): Boolean {
         if (categoryID == null) {
-            _uiState.value = CategoryUiState.Error(R.string.please_try_again, args = listOf())
+            _uiState.value = CategoryUiState.Error( ErrorMessage(R.string.please_try_again, args = listOf()))
             return false
         }
         if (categories.containsID(categoryID)) {
             if (transactionsInCategory(categoryID)) {
                 _uiState.value = CategoryUiState.Error(
-                    R.string.category_is_active_you_cannot_delete_it, args = listOf(
+                    ErrorMessage(R.string.category_is_active_you_cannot_delete_it, args = listOf(
                         categories.getById(categoryID)?.text ?: "",
                         categories.getById(categoryID)?.icon ?: ""
-                    )
+                    ))
                 ); return false
             }
             return true

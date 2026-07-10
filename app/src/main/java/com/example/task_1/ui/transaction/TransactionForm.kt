@@ -17,14 +17,11 @@ import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -34,8 +31,9 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.example.task_1.R
 import com.example.task_1.domain.Category
-import com.example.task_1.domain.ErrorCategory
+import com.example.task_1.domain.ErrorMessage
 import com.example.task_1.domain.MAX_MONEY_LENGTH
 import com.example.task_1.domain.MAX_RECEIVER_LENGTH
 import com.example.task_1.domain.NoFilter
@@ -47,15 +45,14 @@ import com.example.task_1.ui.theme.spacing
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
-import kotlin.collections.component1
-import kotlin.collections.component2
 import kotlin.collections.forEach
 
 
 @Composable
 fun TransactionForm(
     categories: List<Category>,
-    actionOnClick: (Transaction) -> Unit
+    actionOnClick: (Transaction) -> Unit,
+    errors: Map<TransactionFormFields, ErrorMessage>?
 ) {
     var expandedCategory by remember { mutableStateOf(false) }
     var expandedPayMethod by remember { mutableStateOf(false) }
@@ -199,6 +196,20 @@ fun TransactionForm(
 
                 }
             }
+            val categoryError = errors?.get(TransactionFormFields.CATEGORY)
+
+            Text(
+                text = if (categoryError != null && categoryError.messageID != R.string.empty_string) {
+                     stringResource(
+                        id = categoryError.messageID,
+                        *categoryError.args.toTypedArray()
+                    )
+                } else {
+                    ""
+                },
+                color = MaterialTheme.colorScheme.error,
+                style = MaterialTheme.typography.bodySmall
+            )
         }
 
         Box(modifier = Modifier.fillMaxWidth()) {

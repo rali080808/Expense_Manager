@@ -90,7 +90,7 @@ fun CategoriesScreen(
             is CategoryUiState.Error ->
                 ErrorDialog(
                     message = (uiState as CategoryUiState.Error).message,
-                    args = (uiState as CategoryUiState.Error).args,
+//args = (uiState as CategoryUiState.Error).args,
                     loadData = { viewModel.loadData() })
 
             is CategoryUiState.Success -> LazyColumn(

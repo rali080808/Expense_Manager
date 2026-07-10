@@ -32,8 +32,8 @@ fun DashboardScreen(
             DashboardUiState.Loading -> LoadingScreen()
             is DashboardUiState.Error -> ErrorDialog(
                 (dashboardUiState as DashboardUiState.Error).message,
-                (dashboardUiState as DashboardUiState.Error).args,
-                { viewModel.loadData() })
+            //    (dashboardUiState as DashboardUiState.Error).args,
+               loadData =  { viewModel.loadData() })
 
             is DashboardUiState.Success -> DashboardContent(
 

@@ -5,12 +5,16 @@ import androidx.lifecycle.viewModelScope
 import com.example.task_1.R
 import com.example.task_1.data.IDataService
 import com.example.task_1.domain.Category
+import com.example.task_1.domain.ErrorMessage
 import com.example.task_1.domain.NoFilter
 import com.example.task_1.domain.Transaction
+import com.example.task_1.domain.categoryExists
+import com.example.task_1.domain.isChosenCategory
 import com.example.task_1.domain.uiStates.TransactionUiState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import kotlin.onFailure
 
 enum class SortTypes(val displayName: String) {
     SORTBY_DATE_ASCENDING("By date ascending"), SORTBY_DATE_DESCENDING("By date descending"), SORTBY_SUM_ASCENDING(
@@ -19,14 +23,16 @@ enum class SortTypes(val displayName: String) {
     SORTBY_SUM_DESCENDING("By sum descending"),
 }
 
-
+enum class TransactionFormFields {
+    SENDER, RECEIVER, MONEY, CATEGORY, DATE, PAY_METHOD, DESCRIPTION,
+}
 class TransactionViewModel(private val dataService: IDataService) : ViewModel() {
     private val _uiState = MutableStateFlow<TransactionUiState>(TransactionUiState.Loading)
     val uiState: StateFlow<TransactionUiState> get() = _uiState
     private var allTransactions = listOf<Transaction>()
     private var filteredTransactions = listOf<Transaction>()
     private var categories = listOf<Category>()
-
+    private var errors = TransactionFormFields.entries.associateWith { ErrorMessage(R.string.empty_string) }.toMutableMap()
     var currentSortType = SortTypes.SORTBY_DATE_DESCENDING
         private set
     var currentCategoryFilter = NoFilter
@@ -35,7 +41,10 @@ class TransactionViewModel(private val dataService: IDataService) : ViewModel() 
     init {
         loadData()
     }
-
+    fun putFormFillingState () {
+        _uiState.value = TransactionUiState.FormFilling(filteredTransactions,
+            categories, errors)
+    }
     fun loadData() {
         viewModelScope.launch {
             _uiState.value = TransactionUiState.Loading
@@ -53,17 +62,20 @@ class TransactionViewModel(private val dataService: IDataService) : ViewModel() 
     }
 
     fun showError(messageResId: Int, args: List<Any> = emptyList()) {
-        _uiState.value = TransactionUiState.Error(
-            message = messageResId, args = args
-        )
+        _uiState.value = TransactionUiState.Error(ErrorMessage(
+            messageID = messageResId, args = args
+        ))
     }
 
     fun addTransaction(transaction: Transaction) {
         viewModelScope.launch {
-            if (transaction.categoryID == NoFilter) {
-                _uiState.value = TransactionUiState.Error(R.string.please_choose_a_category)
+            isChosenCategory(transaction.categoryID).onFailure { message ->
+//                _uiState.value = TransactionUiState.Error(message)
+                errors[TransactionFormFields.CATEGORY] = message
+                _uiState.value = TransactionUiState.FormFilling(filteredTransactions,
+                    categories, errors)
                 return@launch // may be unnecessary
-            } else {
+            }.onSuccess {
                 _uiState.value = TransactionUiState.Loading
                 dataService.addTransaction(transaction)
                 allTransactions = dataService.getTransactions()

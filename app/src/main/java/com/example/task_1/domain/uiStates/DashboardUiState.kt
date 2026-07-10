@@ -1,6 +1,7 @@
 package com.example.task_1.domain.uiStates
 
 import com.example.task_1.domain.Category
+import com.example.task_1.domain.ErrorMessage
 import com.example.task_1.domain.Transaction
 
 sealed class DashboardUiState {
@@ -14,7 +15,6 @@ sealed class DashboardUiState {
     ) : DashboardUiState()
 
     data class Error(
-        val message: Int,
-        val args: List<Any> = emptyList()
+        val message: ErrorMessage
     ) : DashboardUiState()
 }

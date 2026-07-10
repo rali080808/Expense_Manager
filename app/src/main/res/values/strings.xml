@@ -63,4 +63,11 @@
     <string name="credit">Credit</string>
     <string name="unknown">unknown</string>
     <string name="an_error_occurred_please_try_again">An error occurred. Please, try again</string>
+    <string name="this_field_should_be_at_least_symbols">This field should be at least %1$d symbols</string>
+    <string name="this_field_be_at_most_symbols">This field be at most %1$d symbols</string>
+    <string name="this_field_cannot_be_negative">This field cannot be negative</string>
+    <string name="this_field_should_not_be_empty">This field should not be empty.</string>
+    <string name="this_field_should_be_bigger_than_zero">This field should be bigger than zero</string>
+    <string name="category_already_exists">Category %1$s already exists.</string>
+    <string name="empty_string" />
 </resources>

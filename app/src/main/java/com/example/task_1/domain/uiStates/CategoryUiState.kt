@@ -1,6 +1,7 @@
 package com.example.task_1.domain.uiStates
 
 import com.example.task_1.domain.Category
+import com.example.task_1.domain.ErrorMessage
 import com.example.task_1.domain.Transaction
 
 sealed class CategoryUiState {
@@ -12,8 +13,6 @@ sealed class CategoryUiState {
 
         ) : CategoryUiState()
 
-    data class Error(val message: Int,
-                     val args: List<Any> = emptyList()
-    ) : CategoryUiState()
+    data class Error(val message: ErrorMessage) : CategoryUiState()
     // TODO developer bug state
 }

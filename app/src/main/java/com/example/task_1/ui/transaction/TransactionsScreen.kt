@@ -22,6 +22,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -61,10 +62,22 @@ fun TransactionsScreen(
     var lastDate: String? = null
     val scope = rememberCoroutineScope()
     var showForm by remember { mutableStateOf(false) }
-    val categories = (uiState as? TransactionUiState.Success)?.categories ?: listOf()
-    val transactions = (uiState as? TransactionUiState.Success)?.transactions ?: listOf()
+    val categories = (uiState as? TransactionUiState.Success)?.categories
+        ?: (uiState as? TransactionUiState.FormFilling)?.categories
+        ?: emptyList()
+
+    val transactions = (uiState as? TransactionUiState.Success)?.transactions
+        ?: (uiState as? TransactionUiState.FormFilling)?.transactions
+        ?: emptyList()
+    val errors =  (uiState as? TransactionUiState.FormFilling)?.errors
     val componentMode by remember { mutableStateOf(ComponentMode.ADD) }
     val clickedTransactionID by remember { mutableStateOf("") }
+
+    LaunchedEffect( uiState ) {
+        if ( uiState is TransactionUiState.Success) {
+            showForm = false
+        }
+    }
     PullToRefreshBox(
         isRefreshing = isRefreshing,
         onRefresh = { viewModel.loadData() }
@@ -73,7 +86,7 @@ fun TransactionsScreen(
         if (uiState is TransactionUiState.Error) {
             ErrorDialog(
                 message = (uiState as TransactionUiState.Error).message,
-                args = (uiState as TransactionUiState.Error).args,
+               // args = (uiState as TransactionUiState.Error).args,
                 loadData = { viewModel.loadData() })
         }
 
@@ -85,12 +98,14 @@ fun TransactionsScreen(
                 TransactionForm(
                     categories = categories,
                     actionOnClick = { transaction ->
+                        viewModel.putFormFillingState()
                         if (componentMode == ComponentMode.ADD)
                             viewModel.addTransaction(transaction)
                         else
                             viewModel.editTransaction(transaction)
-                        showForm = false
+                      //  showForm = false
                     },
+                    errors = errors
                 )
             }
         }

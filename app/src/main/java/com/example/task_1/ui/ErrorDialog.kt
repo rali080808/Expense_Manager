@@ -8,11 +8,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import com.example.task_1.R
+import com.example.task_1.domain.ErrorMessage
 import com.example.task_1.domain.uiStates.TransactionUiState
 import com.example.task_1.ui.theme.ErrorColor
 
 @Composable
-fun ErrorDialog( message: Int, args:List<Any>, loadData: ()-> Unit ) {
+fun ErrorDialog( message: ErrorMessage, loadData: ()-> Unit ) {
     AlertDialog(
         modifier = Modifier.background(color = ErrorColor),
         onDismissRequest = { loadData() },
@@ -22,6 +23,6 @@ fun ErrorDialog( message: Int, args:List<Any>, loadData: ()-> Unit ) {
             }
         },
         title = { Text(stringResource(R.string.error), color = ErrorColor) },
-        text = { Text(stringResource(message, *args.toTypedArray())) }
+        text = { Text(stringResource(message.messageID, *message.args.toTypedArray())) }
     )
 }
