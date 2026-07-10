@@ -30,7 +30,7 @@ data class Category(
         var expenses: BigDecimal = BigDecimal.ZERO
         for (transaction in transactions) {
             if (transaction.categoryID == this.id) {
-                expenses.add(BigDecimal(transaction.money))
+                expenses =  expenses.add(BigDecimal(transaction.money))
             }
         }
         return expenses

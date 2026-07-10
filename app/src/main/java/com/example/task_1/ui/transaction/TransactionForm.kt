@@ -194,22 +194,22 @@ fun TransactionForm(
 
                 }
             }
-            val categoryError = errors?.get(TransactionFormFields.CATEGORY)
 
-            Text(
-                text = if (categoryError != null && categoryError.messageID != R.string.empty_string) {
-                     stringResource(
-                        id = categoryError.messageID,
-                        *categoryError.args.toTypedArray()
-                    )
-                } else {
-                    ""
-                },
-                color = MaterialTheme.colorScheme.error,
-                style = MaterialTheme.typography.bodySmall
-            )
         }
+        val categoryError = errors?.get(TransactionFormFields.CATEGORY)
 
+        Text(
+            text = if (categoryError != null && categoryError.messageID != R.string.empty_string) {
+                stringResource(
+                    id = categoryError.messageID,
+                    *categoryError.args.toTypedArray()
+                )
+            } else {
+                ""
+            },
+            color = MaterialTheme.colorScheme.error,
+            style = MaterialTheme.typography.titleSmall
+        )
         Box(modifier = Modifier.fillMaxWidth()) {
             OutlinedTextField(
                 value = stringResource(payMethod.text),

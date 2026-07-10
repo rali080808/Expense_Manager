@@ -28,7 +28,7 @@ class DashboardViewModel(private val dataService: IDataService) : ViewModel() {
     fun totalExpenses(): String {
         var sum: BigDecimal = BigDecimal.ZERO;
         for (transaction in transactions) {
-            sum.add( BigDecimal(  transaction.money))
+           sum = sum.add( BigDecimal(  transaction.money))
         }
         return sum.toString()
     }
