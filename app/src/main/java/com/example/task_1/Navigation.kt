@@ -37,6 +37,7 @@ import com.example.task_1.ui.transaction.TransactionsScreen
 import com.example.task_1.ui.category.CategoryDeleteDialog
 import kotlinx.serialization.Contextual
 import androidx.compose.runtime.collectAsState
+import com.example.task_1.data.IDataService
 import com.example.task_1.domain.Transaction
 import com.example.task_1.ui.TransactionCard
 import com.example.task_1.ui.theme.spacing
@@ -51,12 +52,12 @@ object DashboardScreenRoute
 object TransactionsScreenRoute
 
 @Composable
-fun Navigation() {
+fun Navigation(dataService : IDataService) {
     val navController = rememberNavController()
     var currentDestination by rememberSaveable { mutableStateOf(AppDestinations.DASHBOARD) }
-    val dashboardViewModel = remember { DashboardViewModel(DataService) }
-    val transactionViewModel = remember { TransactionViewModel(DataService) }
-    val categoryViewModel = remember { CategoryViewModel(DataService) }
+    val dashboardViewModel = remember { DashboardViewModel(dataService) }
+    val transactionViewModel = remember { TransactionViewModel(dataService) }
+    val categoryViewModel = remember { CategoryViewModel(dataService) }
     NavigationSuiteScaffold(
         navigationSuiteItems = {
             AppDestinations.entries.forEach { destination ->

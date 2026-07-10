@@ -11,7 +11,7 @@ import kotlinx.coroutines.flow.Flow
 interface TransactionDao {
 
     @Query("SELECT * FROM transactions")
-    fun getAllTransactions(): Flow<List<TransactionEntity>>
+    fun getTransactions(): Flow<List<TransactionEntity>>
 
     @Insert
     suspend fun insertTransaction(transaction: TransactionEntity): Long
