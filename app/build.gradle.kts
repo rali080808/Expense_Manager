@@ -46,6 +46,7 @@ android {
 }
 
 dependencies {
+    implementation(libs.androidx.compose.foundation.layout)
     // Keep your existing compose and room-ktx lines...
     implementation(libs.androidx.room.ktx)
 

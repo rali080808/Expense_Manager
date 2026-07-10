@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
@@ -48,6 +49,7 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.style.TextOverflow
 import com.example.task_1.R
 import com.example.task_1.domain.Category
 import com.example.task_1.domain.uiStates.CategoryUiState
@@ -60,6 +62,7 @@ import com.example.task_1.ui.ErrorDialog
 import com.example.task_1.ui.LoadingScreen
 import com.example.task_1.ui.theme.border
 import com.example.task_1.ui.theme.spacing
+import com.example.task_1.ui.theme.width
 import com.example.task_1.ui.transaction.TransactionForm
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -121,7 +124,7 @@ fun CategoriesScreen(
                                                 "Category edit requested, but clickedCategoryID was null!"
                                             )
 
-                                            Toast.makeText(
+                                            Toast.makeText( // TODO lang
                                                 context,
                                                 "An error occurred. Please try again.",
                                                 Toast.LENGTH_LONG
@@ -204,10 +207,18 @@ fun CategoriesScreen(
                                     modifier = Modifier.padding(vertical = MaterialTheme.spacing.small),
                                     contentAlignment = Alignment.CenterStart
                                 ) {
+                                    Row() {
+                                        Text(
+                                            text = category.text,
+                                            modifier = Modifier.width(MaterialTheme.width.medium),
+                                            style = MaterialTheme.typography.titleMedium,
+                                            overflow = TextOverflow.Ellipsis,
+                                            maxLines = 1
+                                        )
                                     Text(
-                                        text = "${category.text} ${category.icon}",
-                                        style = MaterialTheme.typography.titleMedium
-                                    )
+                                        text = " ${category.icon}",
+                                        style = MaterialTheme.typography.displaySmall
+                                    )}
                                     Spacer(Modifier.padding(MaterialTheme.spacing.medium))
                                 }
 

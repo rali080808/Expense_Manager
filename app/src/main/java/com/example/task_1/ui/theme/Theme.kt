@@ -43,6 +43,9 @@ val MaterialTheme.border: Border
 val MaterialTheme.elevation: Elevation
     @Composable
     get() = LocalElevation.current
+val MaterialTheme.width: Width
+    @Composable
+    get() = LocalWidth.current
 @Composable
 fun Task_1Theme(
     darkTheme: Boolean = isSystemInDarkTheme(),
@@ -50,7 +53,11 @@ fun Task_1Theme(
     dynamicColor: Boolean = true,
     content: @Composable () -> Unit
 ) {
-    CompositionLocalProvider(LocalSpacing provides Spacing(), LocalBorder provides Border(), LocalElevation provides Elevation()) {
+    CompositionLocalProvider(
+        LocalSpacing provides Spacing(),
+        LocalBorder provides Border(),
+        LocalElevation provides Elevation(),
+        LocalWidth provides Width()) {
 
 
     val colorScheme = when {

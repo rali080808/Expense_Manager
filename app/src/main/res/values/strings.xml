@@ -71,4 +71,5 @@
     <string name="category_already_exists">Category %1$s already exists.</string>
     <string name="empty_string" />
     <string name="money_must_have_no_more_than_2_decimal_places">Money must have no more than 2 decimal places.</string>
+    <string name="invalid_format">Invalid format</string>
 </resources>

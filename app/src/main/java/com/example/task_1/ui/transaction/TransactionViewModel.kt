@@ -19,6 +19,7 @@ import com.example.task_1.domain.Result
  import com.example.task_1.domain.hasUpToTwoDecimalPlaces
 import com.example.task_1.domain.isNotEmpty
 import com.example.task_1.domain.validateLength
+import com.example.task_1.domain.validateMoney
 import java.math.BigDecimal
 
 
@@ -88,11 +89,9 @@ class TransactionViewModel(private val dataService: IDataService) : ViewModel() 
                 errors[TransactionFormFields.CATEGORY] = message
             }
 
-            isPositive(BigDecimal(transaction.money)).onFailure { message ->
+            validateMoney(transaction.money).onFailure { message ->
                 errors[TransactionFormFields.MONEY] = message
             }
-
-            hasUpToTwoDecimalPlaces(BigDecimal(transaction.money))
 
             validateLength(
                 transaction.sender,

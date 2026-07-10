@@ -25,15 +25,19 @@ sealed class Result<out T> {
 
 fun validateLength(text: String, lengthSmallest: Int, lengthLargest: Int): Result<String> {
     return when {
-        text.length < lengthSmallest -> Result.Failure(ErrorMessage(
-            R.string.this_field_should_be_at_least_symbols,
-            listOf(lengthSmallest))
+        text.length < lengthSmallest -> Result.Failure(
+            ErrorMessage(
+                R.string.this_field_should_be_at_least_symbols,
+                listOf(lengthSmallest)
+            )
         )
 
-        text.length > lengthLargest -> Result.Failure(ErrorMessage(
-            R.string.this_field_be_at_most_symbols,
-            listOf(lengthLargest)
-        ))
+        text.length > lengthLargest -> Result.Failure(
+            ErrorMessage(
+                R.string.this_field_be_at_most_symbols,
+                listOf(lengthLargest)
+            )
+        )
 
         else -> Result.Success(text)
     }
@@ -41,42 +45,71 @@ fun validateLength(text: String, lengthSmallest: Int, lengthLargest: Int): Resul
 
 fun isPositive(number: BigDecimal): Result<BigDecimal> {
     return when {
-        number <= BigDecimal.ZERO -> Result.Failure(ErrorMessage( R.string.this_field_should_be_bigger_than_zero, listOf()))
+        number <= BigDecimal.ZERO -> Result.Failure(
+            ErrorMessage(
+                R.string.this_field_should_be_bigger_than_zero,
+                listOf()
+            )
+        )
+
         else -> Result.Success(number)
     }
 }
 
-fun isNotEmpty(text: String) :Result<String> {
+fun isNotEmpty(text: String): Result<String> {
     return when {
-        text.isEmpty() -> Result.Failure(ErrorMessage( R.string.this_field_should_not_be_empty, listOf()))
+        text.isEmpty() -> Result.Failure(
+            ErrorMessage(
+                R.string.this_field_should_not_be_empty,
+                listOf()
+            )
+        )
+
         else -> Result.Success(text)
     }
 }
-fun isChosenCategory(categoryId : Long  ) : Result<Long> {
+
+fun isChosenCategory(categoryId: Long): Result<Long> {
     return when {
-        categoryId == NoFilter -> Result.Failure(ErrorMessage( R.string.please_choose_a_category))
+        categoryId == NoFilter -> Result.Failure(ErrorMessage(R.string.please_choose_a_category))
         else -> Result.Success(categoryId)
     }
 }
 
-fun categoryExists(categoryText: String, categories: List<Category>) : Result<String> {
+fun categoryExists(categoryText: String, categories: List<Category>): Result<String> {
     val exists = categories.any { it.text.equals(categoryText, ignoreCase = true) }
 
     return if (exists) {
-        Result.Failure(ErrorMessage( R.string.category_already_exists, listOf(categoryText)))
+        Result.Failure(ErrorMessage(R.string.category_already_exists, listOf(categoryText)))
     } else {
         Result.Success(categoryText)
     }
 }
 
 fun hasUpToTwoDecimalPlaces(money: BigDecimal): Result<BigDecimal> {
-    // scale() returns the number of decimal places
-    // stripTrailingZeros() ensures that 10.50 is treated as 10.5 (scale 1)
     return when {
-        money.stripTrailingZeros().scale() > 2 -> Result.Failure(ErrorMessage(
-            R.string.money_must_have_no_more_than_2_decimal_places,
-            listOf()
-        ))
+        money.stripTrailingZeros().scale() > 2 -> Result.Failure(
+            ErrorMessage(
+                R.string.money_must_have_no_more_than_2_decimal_places,
+                listOf()
+            )
+        )
+
         else -> Result.Success(money)
+    }
+}
+
+fun validateMoney(money: String): Result<BigDecimal> {
+    try {
+        val moneyBigDecimal = BigDecimal(money)
+        hasUpToTwoDecimalPlaces(moneyBigDecimal).onFailure { message ->
+            return Result.Failure(
+                message
+            )
+        }
+        isPositive(moneyBigDecimal).onFailure { message -> return Result.Failure(message) }
+        return Result.Success(moneyBigDecimal)
+    } catch (e: Exception) {
+        return Result.Failure(ErrorMessage(R.string.invalid_format))
     }
 }

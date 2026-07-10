@@ -87,7 +87,17 @@ fun TransactionForm(
             onValueChange = { sender = it },
             label = { Text(stringResource(com.example.task_1.R.string.sender)) },
             singleLine = true,
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
+            isError = errors?.containsKey(TransactionFormFields.SENDER) == true,
+            supportingText = {
+                val error = errors?.get(TransactionFormFields.SENDER)
+                if (error != null && error.messageID != R.string.empty_string) {
+                    Text(
+                        text = stringResource(id = error.messageID, *error.args.toTypedArray()),
+                        color = MaterialTheme.colorScheme.error
+                    )
+                }
+            },
         )
 
         OutlinedTextField(
@@ -95,7 +105,17 @@ fun TransactionForm(
             onValueChange = {  receiver = it },
             label = { Text(stringResource(com.example.task_1.R.string.receiver)) },
             singleLine = true,
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
+            isError = errors?.containsKey(TransactionFormFields.RECEIVER) == true,
+             supportingText = {
+                val error = errors?.get(TransactionFormFields.RECEIVER)
+                if (error != null && error.messageID != R.string.empty_string) {
+                    Text(
+                        text = stringResource(id = error.messageID, *error.args.toTypedArray()),
+                        color = MaterialTheme.colorScheme.error
+                    )
+                }
+            },
         )
 
         OutlinedTextField(
@@ -103,10 +123,18 @@ fun TransactionForm(
             onValueChange = { sum = it },
             singleLine = true,
             label = { Text(stringResource(com.example.task_1.R.string.money)) },
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
+            isError = errors?.containsKey(TransactionFormFields.MONEY) == true,
+             supportingText = {
+                val error = errors?.get(TransactionFormFields.MONEY)
+                if (error != null && error.messageID != R.string.empty_string) {
+                    Text(
+                        text = stringResource(id = error.messageID, *error.args.toTypedArray()),
+                        color = MaterialTheme.colorScheme.error
+                    )
+                }
+            },
         )
-
-        //  Spacer(modifier = Modifier.height(MaterialTheme.spacing.small))
 
         Box(modifier = Modifier.fillMaxWidth()) {
             OutlinedTextField(
@@ -114,7 +142,17 @@ fun TransactionForm(
                 onValueChange = { },
                 label = { Text(stringResource(com.example.task_1.R.string.date)) },
                 readOnly = true,
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
+                isError = errors?.containsKey(TransactionFormFields.DATE) == true,
+                 supportingText = {
+                    val error = errors?.get(TransactionFormFields.DATE)
+                    if (error != null && error.messageID != R.string.empty_string) {
+                        Text(
+                            text = stringResource(id = error.messageID, *error.args.toTypedArray()),
+                            color = MaterialTheme.colorScheme.error
+                        )
+                    }
+                },
             )
             Box(
                 modifier = Modifier
@@ -154,7 +192,16 @@ fun TransactionForm(
                         )
 
                 },
-
+                isError = errors?.containsKey(TransactionFormFields.CATEGORY) == true,
+                 supportingText = {
+                    val error = errors?.get(TransactionFormFields.CATEGORY)
+                    if (error != null && error.messageID != R.string.empty_string) {
+                        Text(
+                            text = stringResource(id = error.messageID, *error.args.toTypedArray()),
+                            color = MaterialTheme.colorScheme.error
+                        )
+                    }
+                },
                 )
             Box(
                 modifier = Modifier
@@ -196,27 +243,24 @@ fun TransactionForm(
             }
 
         }
-        val categoryError = errors?.get(TransactionFormFields.CATEGORY)
 
-        Text(
-            text = if (categoryError != null && categoryError.messageID != R.string.empty_string) {
-                stringResource(
-                    id = categoryError.messageID,
-                    *categoryError.args.toTypedArray()
-                )
-            } else {
-                ""
-            },
-            color = MaterialTheme.colorScheme.error,
-            style = MaterialTheme.typography.titleSmall
-        )
         Box(modifier = Modifier.fillMaxWidth()) {
             OutlinedTextField(
                 value = stringResource(payMethod.text),
                 onValueChange = { },
                 label = { Text(stringResource(com.example.task_1.R.string.payment_method)) },
                 readOnly = true,
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
+                isError = errors?.containsKey(TransactionFormFields.PAY_METHOD) == true,
+                 supportingText = {
+                    val error = errors?.get(TransactionFormFields.PAY_METHOD)
+                    if (error != null && error.messageID != R.string.empty_string) {
+                        Text(
+                            text = stringResource(id = error.messageID, *error.args.toTypedArray()),
+                            color = MaterialTheme.colorScheme.error
+                        )
+                    }
+                },
             )
             Box(
                 modifier = Modifier
@@ -244,8 +288,7 @@ fun TransactionForm(
         )
         Button(
             onClick = {
-              //  val amount = sum.toDoubleOrNull() ?: 0.0
-                actionOnClick(
+                 actionOnClick(
                     Transaction(
                         id=null,
                         sender = sender,
