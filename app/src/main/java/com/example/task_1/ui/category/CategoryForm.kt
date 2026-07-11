@@ -27,15 +27,18 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.res.stringResource
 import com.example.task_1.R
 import com.example.task_1.domain.Category
+import com.example.task_1.domain.ErrorMessage
 import com.example.task_1.domain.MAX_CATEGORY_LENGTH
 import com.example.task_1.ui.theme.border
 import com.example.task_1.ui.theme.spacing
+import com.example.task_1.ui.transaction.TransactionFormFields
 
 @Composable
 fun CategoryForm(
     currentCategory: Category?,
     actionOnClick: (Category) -> Unit,
-    onCancel: () -> Unit
+    onCancel: () -> Unit,
+    errors: Map<CategoryFormField, ErrorMessage>?
 ) {
     var categoryText by remember { mutableStateOf(currentCategory?.text ?: "") }
     var categoryIcon by remember { mutableStateOf(currentCategory?.icon ?: "") }
@@ -83,6 +86,16 @@ fun CategoryForm(
                 label = { Text(stringResource(R.string.text)) },
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth(),
+                isError = errors?.containsKey(CategoryFormField.TEXT) == true,
+                supportingText = {
+                    val error = errors?.get(CategoryFormField.TEXT)
+                    if (error != null && error.messageID != R.string.empty_string) {
+                        Text(
+                            text = stringResource(id = error.messageID, *error.args.toTypedArray()),
+                            color = MaterialTheme.colorScheme.error
+                        )
+                    }
+                },
             )
             OutlinedTextField(
                 value = categoryIcon,
@@ -92,6 +105,16 @@ fun CategoryForm(
                 label = { Text(stringResource(R.string.icon)) },
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth(),
+                isError = errors?.containsKey(CategoryFormField.ICON) == true,
+                supportingText = {
+                    val error = errors?.get(CategoryFormField.ICON)
+                    if (error != null && error.messageID != R.string.empty_string) {
+                        Text(
+                            text = stringResource(id = error.messageID, *error.args.toTypedArray()),
+                            color = MaterialTheme.colorScheme.error
+                        )
+                    }
+                },
             )
 
             Box(modifier = Modifier.fillMaxWidth()) {
@@ -103,7 +126,17 @@ fun CategoryForm(
                     modifier = Modifier.fillMaxWidth(),
                     textStyle = MaterialTheme.typography.bodyLarge.copy(
                         color = Color(categoryColor.second)
-                    )
+                    ),
+                    isError = errors?.containsKey(CategoryFormField.COLOR) == true,
+                    supportingText = {
+                        val error = errors?.get(CategoryFormField.COLOR)
+                        if (error != null && error.messageID != R.string.empty_string) {
+                            Text(
+                                text = stringResource(id = error.messageID, *error.args.toTypedArray()),
+                                color = MaterialTheme.colorScheme.error
+                            )
+                        }
+                    },
                 )
                 Box(
                     modifier = Modifier
@@ -135,7 +168,7 @@ fun CategoryForm(
                     categoryIcon,
                     categoryColor.second
                 )
-            );
+            )
         }) {
             Text(
                 stringResource(R.string.save),

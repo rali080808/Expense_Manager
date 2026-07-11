@@ -1,5 +1,6 @@
 package com.example.task_1.domain
 
+import androidx.core.content.MimeTypeFilter.matches
 import com.example.task_1.R
 import java.math.BigDecimal
 import kotlin.collections.listOf
@@ -76,8 +77,8 @@ fun isChosenCategory(categoryId: Long): Result<Long> {
     }
 }
 
-fun categoryExists(categoryText: String, categories: List<Category>): Result<String> {
-    val exists = categories.any { it.text.equals(categoryText, ignoreCase = true) }
+fun categoryExists(categoryText: String, categories: List<Category>, categoryId: Long?): Result<String> {
+    val exists = categories.any { it.text.equals(categoryText, ignoreCase = true) && it.id != categoryId}
 
     return if (exists) {
         Result.Failure(ErrorMessage(R.string.category_already_exists, listOf(categoryText)))
@@ -112,4 +113,10 @@ fun validateMoney(money: String): Result<BigDecimal> {
     } catch (e: Exception) {
         return Result.Failure(ErrorMessage(R.string.invalid_format))
     }
+}
+
+fun validateIcon(icon: String): Result<String> {
+    val strictEmojiRegex = Regex("""^\p{IsExtended_Pictographic}$""")
+    if (icon.matches(strictEmojiRegex)) return Result.Success(icon)
+    return Result.Failure(ErrorMessage(R.string.you_should_choose_1_emoji_and_nothing_else))
 }

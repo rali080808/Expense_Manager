@@ -84,7 +84,7 @@ class TransactionViewModel(private val dataService: IDataService) : ViewModel() 
 
     fun addTransaction(transaction: Transaction) {
         viewModelScope.launch {
-            errors.clear()
+            errors = mutableMapOf()
             isChosenCategory(transaction.categoryID).onFailure { message ->
                 errors[TransactionFormFields.CATEGORY] = message
             }

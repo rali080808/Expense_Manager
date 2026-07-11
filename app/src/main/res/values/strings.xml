@@ -72,4 +72,5 @@
     <string name="empty_string" />
     <string name="money_must_have_no_more_than_2_decimal_places">Money must have no more than 2 decimal places.</string>
     <string name="invalid_format">Invalid format</string>
+    <string name="you_should_choose_1_emoji_and_nothing_else">You should choose 1 emoji and nothing else</string>
 </resources>

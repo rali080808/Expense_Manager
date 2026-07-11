@@ -35,6 +35,10 @@ data class Category(
         }
         return expenses
     }
+    companion object{
+        val MIN_TEXT_LENGTH = 2
+        val MAX_TEXT_LENGTH = 8
+    }
 }
 
 const val NoFilter: Long = -1

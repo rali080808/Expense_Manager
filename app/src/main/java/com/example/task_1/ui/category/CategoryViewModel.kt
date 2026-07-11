@@ -10,11 +10,22 @@ import com.example.task_1.domain.ErrorMessage
 import com.example.task_1.domain.uiStates.CategoryUiState
 import com.example.task_1.domain.uiStates.DashboardUiState
 import com.example.task_1.domain.Transaction
+import com.example.task_1.domain.categoryExists
 import com.example.task_1.domain.containsID
 import com.example.task_1.domain.getById
+import com.example.task_1.domain.isNotEmpty
+import com.example.task_1.domain.validateIcon
+import com.example.task_1.domain.validateLength
+import com.example.task_1.domain.validateMoney
+import com.example.task_1.ui.transaction.TransactionFormFields
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import kotlin.collections.set
+
+enum class CategoryFormField {
+    TEXT, ICON, COLOR
+}
 
 class CategoryViewModel(private val dataService: IDataService) : ViewModel() {
     private val _uiState = MutableStateFlow<CategoryUiState>(CategoryUiState.Loading)
@@ -22,6 +33,9 @@ class CategoryViewModel(private val dataService: IDataService) : ViewModel() {
 
     private var transactions = listOf<Transaction>()
     private var categories = listOf<Category>()
+
+    private var errors = mutableMapOf<CategoryFormField, ErrorMessage>()
+
 
     init {
         loadData()
@@ -33,7 +47,6 @@ class CategoryViewModel(private val dataService: IDataService) : ViewModel() {
             _uiState.value = CategoryUiState.Loading
 
             transactions = dataService.getTransactions()
-
             categories = dataService.getCategories()
 
             _uiState.value = CategoryUiState.Success(transactions, categories)
@@ -41,7 +54,7 @@ class CategoryViewModel(private val dataService: IDataService) : ViewModel() {
         }
     }
 
-    fun transactionsInCategory(categoryID: Long): Boolean {  //TODO should be private
+    private fun transactionsInCategory(categoryID: Long): Boolean {
         for (transaction in transactions) {
             if (transaction.categoryID == categoryID) {
                 return true;
@@ -62,15 +75,42 @@ class CategoryViewModel(private val dataService: IDataService) : ViewModel() {
 
     fun editCategory(categoryID: Long, editedCategory: Category) {
         viewModelScope.launch {
-            _uiState.value = CategoryUiState.Loading
+
             if (categories.containsID(categoryID)) {
-                categories = dataService.editCategory(categoryID, editedCategory)
-                _uiState.value = CategoryUiState.Success(transactions, categories)
+                // TODO call validation on every type
+                errors = mutableMapOf()
+                _uiState.value = CategoryUiState.FormFilling(transactions, categories, errors)
+
+                validateLength(
+                    editedCategory.text,
+                    Category.MIN_TEXT_LENGTH,
+                    Category.MAX_TEXT_LENGTH
+                ).onFailure { message ->
+                    errors[CategoryFormField.TEXT] = message
+                }
+
+                categoryExists(editedCategory.text, categories, categoryID).onFailure { message ->
+                    errors[CategoryFormField.TEXT] = message
+                }
+
+                validateIcon(
+                    editedCategory.icon
+                ).onFailure { message ->
+                    errors[CategoryFormField.ICON] = message
+                }
+
+                if (errors.isEmpty()) {
+                    categories = dataService.editCategory(categoryID, editedCategory)
+                    _uiState.value = CategoryUiState.Success(transactions, categories)
+                }else {
+                    _uiState.value = CategoryUiState.FormFilling(transactions, categories, errors)
+                }
             } else {
                 _uiState.value = CategoryUiState.Error(
                     ErrorMessage(
                         R.string.developer_bug_categoryid_does_not_exist, args = listOf(categoryID)
-                    ))
+                    )
+                )
             }
         }
     }
@@ -78,35 +118,50 @@ class CategoryViewModel(private val dataService: IDataService) : ViewModel() {
 
     fun addCategory(category: Category) {
         viewModelScope.launch {
-            _uiState.value = CategoryUiState.Loading
-            if (categories.containsText(category.text)) {
-                _uiState.value = CategoryUiState.Error( ErrorMessage(
-                    R.string.category_with_a_name_already_exist_you_cannot_add_it_again_but_you_can_edit_the_old_one,
-                    args = listOf(category.text)
-                ))
-                return@launch
+            errors = mutableMapOf()
+            _uiState.value = CategoryUiState.FormFilling(transactions, categories, errors)
+
+            validateLength(
+                category.text,
+                Category.MIN_TEXT_LENGTH,
+                Category.MAX_TEXT_LENGTH
+            ).onFailure { message ->
+                errors[CategoryFormField.TEXT] = message
             }
-            dataService.addCategory(Category(null, category.text, category.icon, category.color))
-            categories = dataService.getCategories()
-            _uiState.value = CategoryUiState.Success(transactions, categories)
+
+            categoryExists(category.text, categories, null).onFailure { message ->
+                errors[CategoryFormField.TEXT] = message
+            }
+
+            validateIcon(
+                category.icon
+            ).onFailure { message ->
+                errors[CategoryFormField.ICON] = message
+            }
+
+            if (errors.isEmpty()) {
+                dataService.addCategory(Category(null, category.text, category.icon, category.color))
+                categories = dataService.getCategories()
+                _uiState.value = CategoryUiState.Success(transactions, categories)
+            }else {
+                _uiState.value = CategoryUiState.FormFilling(transactions, categories, errors)
+            }
 
         }
     }
 
     // TODO check whether to remove Boolean from return type
     fun validateIDForDeletion(categoryID: Long?): Boolean {
+
+
         if (categoryID == null) {
-            _uiState.value = CategoryUiState.Error( ErrorMessage(R.string.please_try_again, args = listOf()))
+            _uiState.value =
+                CategoryUiState.Error(ErrorMessage(R.string.please_try_again, args = listOf()))
             return false
         }
         if (categories.containsID(categoryID)) {
             if (transactionsInCategory(categoryID)) {
-                _uiState.value = CategoryUiState.Error(
-                    ErrorMessage(R.string.category_is_active_you_cannot_delete_it, args = listOf(
-                        categories.getById(categoryID)?.text ?: "",
-                        categories.getById(categoryID)?.icon ?: ""
-                    ))
-                ); return false
+              return false
             }
             return true
         }
