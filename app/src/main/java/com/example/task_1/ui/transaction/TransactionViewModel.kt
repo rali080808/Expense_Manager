@@ -133,8 +133,44 @@ class TransactionViewModel(private val dataService: IDataService) : ViewModel() 
     fun editTransaction(transaction: Transaction) {
         viewModelScope.launch {
 
+
+            errors = mutableMapOf()
+            isChosenCategory(transaction.categoryID).onFailure { message ->
+                errors[TransactionFormFields.CATEGORY] = message
+            }
+
+            validateMoney(transaction.money).onFailure { message ->
+                errors[TransactionFormFields.MONEY] = message
+            }
+
+            validateLength(
+                transaction.sender,
+                Transaction.MIN_NAME_LENGTH,
+                Transaction.MAX_NAME_LENGTH
+            ).onFailure { message ->
+                errors[TransactionFormFields.SENDER] = message
+            }
+
+            validateLength(
+                transaction.receiver,
+                Transaction.MIN_NAME_LENGTH,
+                Transaction.MAX_NAME_LENGTH
+            ).onFailure { message ->
+                errors[TransactionFormFields.RECEIVER] = message
+            }
+
+            if (errors.isNotEmpty()) {
+                _uiState.value = TransactionUiState.FormFilling(
+                    filteredTransactions,
+                    categories,
+                    errors
+                )
+                return@launch
+            }
+
             _uiState.value = TransactionUiState.Loading
             dataService.editTransaction(transaction)
+            allTransactions = dataService.getTransactions()
             filterByCategory(currentCategoryFilter)
             sortTransactions(currentSortType)
 

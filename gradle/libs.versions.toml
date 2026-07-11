@@ -16,6 +16,7 @@ kotlinx-datetime = "0.8.0"
 material3 = "1.4.0"
 ksp = "2.2.10-2.0.2"
 foundationLayout = "1.11.4"
+composeMaterial3 = "1.6.2"
 
 [libraries]
 kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "kotlinxSerialization" }
@@ -42,6 +43,7 @@ androidx-navigation-safe-args-generator = { group = "androidx.navigation", name 
 androidx-material3 = { group = "androidx.compose.material3", name = "material3", version.ref = "material3" }
 androidx-room-compiler = { group = "androidx.room", name = "room-compiler", version.ref = "roomKtx" }
 androidx-compose-foundation-layout = { group = "androidx.compose.foundation", name = "foundation-layout", version.ref = "foundationLayout" }
+compose-material3 = { group = "androidx.wear.compose", name = "compose-material3", version.ref = "composeMaterial3" }
 
 [plugins]
 kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }

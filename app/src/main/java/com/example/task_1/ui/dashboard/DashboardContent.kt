@@ -80,7 +80,7 @@ fun DashboardContent(
                     TransactionCard(
                         transaction,
                         categories.getById(transaction.categoryID) ?: ErrorCategory,
-
+                        onEdit = {  _ ->   }
                         )
                 }
             }

@@ -37,6 +37,7 @@ import androidx.compose.ui.res.stringResource
 import com.example.task_1.domain.ComponentMode
 import com.example.task_1.domain.ErrorCategory
 import com.example.task_1.domain.NoFilter
+import com.example.task_1.domain.Transaction
 import com.example.task_1.domain.getById
 import com.example.task_1.domain.uiStates.TransactionUiState
 import com.example.task_1.ui.ErrorDialog
@@ -70,8 +71,8 @@ fun TransactionsScreen(
         ?: (uiState as? TransactionUiState.FormFilling)?.transactions
         ?: emptyList()
     val errors =  (uiState as? TransactionUiState.FormFilling)?.errors
-    val componentMode by remember { mutableStateOf(ComponentMode.ADD) }
-    val clickedTransactionID by remember { mutableStateOf("") }
+    var componentMode by remember { mutableStateOf(ComponentMode.ADD) }
+    var clickedTransactionID by remember { mutableStateOf<Long?>(null) }
 
     LaunchedEffect( uiState ) {
         if ( uiState is TransactionUiState.Success) {
@@ -96,6 +97,7 @@ fun TransactionsScreen(
                 sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
             ) {
                 TransactionForm(
+                    currentTransaction = if (componentMode == ComponentMode.ADD) null else transactions.getById(clickedTransactionID),
                     categories = categories,
                     actionOnClick = { transaction ->
                         viewModel.putFormFillingState()
@@ -124,8 +126,10 @@ fun TransactionsScreen(
                     Button(
                         onClick = {
                             if (categories.isEmpty()) viewModel.showError(com.example.task_1.R.string.add_a_category_to_become_able_to_add_transactions)
-                            else showForm = true
-
+                            else {
+                                componentMode = ComponentMode.ADD
+                                showForm = true
+                            }
                         }, Modifier
                             .clip(MaterialTheme.shapes.small),
                         shape = MaterialTheme.shapes.small
@@ -234,7 +238,12 @@ fun TransactionsScreen(
                         TransactionCard(
                             transaction = transaction,
                             category = categories.getById(transaction.categoryID) ?: ErrorCategory,
-                        )
+                            onEdit = { transactionId ->
+                                componentMode = ComponentMode.EDIT
+                                clickedTransactionID = transactionId
+                                showForm = true
+                            }
+                            )
                         lastDate = transaction.date
                         if (index == transactions.size - 1) lastDate = null
                     }

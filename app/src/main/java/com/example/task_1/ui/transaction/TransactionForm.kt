@@ -22,6 +22,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -48,6 +49,7 @@ import kotlin.collections.forEach
 
 @Composable
 fun TransactionForm(
+    currentTransaction: Transaction?,
     categories: List<Category>,
     actionOnClick: (Transaction) -> Unit,
     errors: Map<TransactionFormFields, ErrorMessage>?
@@ -55,15 +57,14 @@ fun TransactionForm(
     var expandedCategory by remember { mutableStateOf(false) }
     var expandedPayMethod by remember { mutableStateOf(false) }
     var showDatePicker by remember { mutableStateOf(false) }
-    var sender by remember { mutableStateOf("") }
 
-    var receiver by remember { mutableStateOf("") }
-    var sum by remember { mutableStateOf("0.0") }
-    var categoryID by remember { mutableStateOf<Long>(NoFilter) }
-    var date by remember { mutableStateOf(LocalDate.now()) }
-    var description by remember { mutableStateOf("") }
-    var payMethod by remember { mutableStateOf(PayMethod.DEBIT) }
-
+    var sender by remember { mutableStateOf(currentTransaction?.sender ?: "") }
+    var receiver by remember { mutableStateOf(currentTransaction?.receiver ?: "") }
+    var sum by remember { mutableStateOf(currentTransaction?.money ?: "0.0") }
+    var categoryID by remember { mutableLongStateOf(currentTransaction?.categoryID ?: NoFilter) }
+    var date by remember { mutableStateOf(currentTransaction?.date?.let { LocalDate.parse(it) } ?: LocalDate.now()) }
+    var description by remember { mutableStateOf(currentTransaction?.description ?: "") }
+    var payMethod by remember { mutableStateOf(currentTransaction?.payMethod ?: PayMethod.DEBIT) }
     val datePickerState = rememberDatePickerState()
 
     Column(
@@ -85,7 +86,7 @@ fun TransactionForm(
         OutlinedTextField(
             value = sender,
             onValueChange = { sender = it },
-            label = { Text(stringResource(com.example.task_1.R.string.sender)) },
+            label = { Text(stringResource(R.string.sender)) },
             singleLine = true,
             modifier = Modifier.fillMaxWidth(),
             isError = errors?.containsKey(TransactionFormFields.SENDER) == true,
@@ -103,7 +104,7 @@ fun TransactionForm(
         OutlinedTextField(
             value = receiver,
             onValueChange = {  receiver = it },
-            label = { Text(stringResource(com.example.task_1.R.string.receiver)) },
+            label = { Text(stringResource(R.string.receiver)) },
             singleLine = true,
             modifier = Modifier.fillMaxWidth(),
             isError = errors?.containsKey(TransactionFormFields.RECEIVER) == true,
@@ -122,7 +123,7 @@ fun TransactionForm(
             value = sum,
             onValueChange = { sum = it },
             singleLine = true,
-            label = { Text(stringResource(com.example.task_1.R.string.money)) },
+            label = { Text(stringResource(R.string.money)) },
             modifier = Modifier.fillMaxWidth(),
             isError = errors?.containsKey(TransactionFormFields.MONEY) == true,
              supportingText = {
@@ -140,7 +141,7 @@ fun TransactionForm(
             OutlinedTextField(
                 value = date.toString(),
                 onValueChange = { },
-                label = { Text(stringResource(com.example.task_1.R.string.date)) },
+                label = { Text(stringResource(R.string.date)) },
                 readOnly = true,
                 modifier = Modifier.fillMaxWidth(),
                 isError = errors?.containsKey(TransactionFormFields.DATE) == true,
@@ -168,11 +169,11 @@ fun TransactionForm(
                             .toLocalDate()
                     }
                     showDatePicker = false
-                }) { Text(stringResource(com.example.task_1.R.string.ok)) }
+                }) { Text(stringResource(R.string.ok)) }
             }, dismissButton = {
                 TextButton(onClick = {
                     showDatePicker = false
-                }) { Text(stringResource(com.example.task_1.R.string.cancel)) }
+                }) { Text(stringResource(R.string.cancel)) }
             }) {
                 DatePicker(state = datePickerState)
             }
@@ -290,7 +291,7 @@ fun TransactionForm(
             onClick = {
                  actionOnClick(
                     Transaction(
-                        id=null,
+                        id=currentTransaction?.id  ,
                         sender = sender,
                         receiver = receiver,
                         money = sum,

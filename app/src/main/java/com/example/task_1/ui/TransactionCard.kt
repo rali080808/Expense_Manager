@@ -1,5 +1,6 @@
 package com.example.task_1.ui
 
+import android.R.attr.onClick
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -21,6 +22,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SegmentedButtonDefaults.Icon
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -29,8 +31,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
+ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.SpanStyle
@@ -49,12 +50,18 @@ import com.example.task_1.ui.theme.Money
 import com.example.task_1.ui.theme.border
 import com.example.task_1.ui.theme.spacing
 import com.example.task_1.ui.theme.width
-
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.draw.paint
 
 @Composable
 fun TransactionCard(
     transaction: Transaction,
     category: Category,
+    onEdit: (Long?) -> Unit
 ) {
     var activeDescriptionDialog by remember { mutableStateOf(false) }
 
@@ -63,94 +70,127 @@ fun TransactionCard(
             description = transaction.description,
             onClose = { activeDescriptionDialog = false }
         )
-
-    Card(
-        modifier = Modifier
-            //.fillMaxWidth()
+    Box(
+        Modifier
+            .fillMaxWidth()
             .padding(horizontal = MaterialTheme.spacing.medium)
-            .clickable(onClick = { activeDescriptionDialog = true }),
-        shape = MaterialTheme.shapes.small,
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surface
-        ),
-        elevation = CardDefaults.cardElevation(
-            defaultElevation = MaterialTheme.spacing.small
-        )
     ) {
-        Row(
+
+        Card(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(MaterialTheme.spacing.small),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
+                //.padding(horizontal = MaterialTheme.spacing.medium)
+                .clickable(onClick = { activeDescriptionDialog = true }),
+            shape = MaterialTheme.shapes.small,
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.surface
+            ),
+            elevation = CardDefaults.cardElevation(
+                defaultElevation = MaterialTheme.spacing.small
+            )
         ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.medium)
-            ) {
-                Text(
-                    text = category.icon,
-                    style = MaterialTheme.typography.displaySmall,
+            Column(modifier = Modifier.padding(MaterialTheme.spacing.small)) {
+
+                Row(
                     modifier = Modifier
-                        .background(
-                            color = Color(category.color), shape = CircleShape
+                        .fillMaxWidth()
+                        .padding(MaterialTheme.spacing.small),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.medium)
+                    ) {
+                        Text(
+                            text = category.icon,
+                            style = MaterialTheme.typography.displaySmall,
+                            modifier = Modifier
+                                .background(
+                                    color = Color(category.color), shape = CircleShape
+                                )
+                                .padding(MaterialTheme.spacing.medium),
+                            textAlign = TextAlign.Center
                         )
-                        .padding(MaterialTheme.spacing.medium),
-                    textAlign = TextAlign.Center
-                )
 
-                Column(
-                    Modifier.width(MaterialTheme.width.large)) {
-                     Text(
-                        text = transaction.sender,
-                        style = MaterialTheme.typography.titleSmall,
-                        color = MaterialTheme.colorScheme.onSurface,
-                         overflow = TextOverflow.Ellipsis,
-                         maxLines = 1
-                     )
+                        Column(
+                            Modifier.width(MaterialTheme.width.extraSmall)
+                        ) {
+                            Text(
+                                text = transaction.sender,
+                                style = MaterialTheme.typography.titleSmall,
+                                color = MaterialTheme.colorScheme.onSurface,
+                                overflow = TextOverflow.Ellipsis,
+                                maxLines = 1
+                            )
 
-                     Text(
-                        text = "➔",
-                        style = MaterialTheme.typography.titleSmall,
-                        color = MaterialTheme.colorScheme.primary,
-                        fontWeight = FontWeight.Bold,
+                            Text(
+                                text = "➔",
+                                style = MaterialTheme.typography.titleSmall,
+                                color = MaterialTheme.colorScheme.primary,
+                                fontWeight = FontWeight.Bold,
 
-                    )
+                                )
 
-                     Text(
-                        text = transaction.receiver,
-                        style = MaterialTheme.typography.titleSmall,
-                        color = MaterialTheme.colorScheme.onSurface,
-                         overflow = TextOverflow.Ellipsis,
-                         maxLines = 1
-                    )
+                            Text(
+                                text = transaction.receiver,
+                                style = MaterialTheme.typography.titleSmall,
+                                color = MaterialTheme.colorScheme.onSurface,
+                                overflow = TextOverflow.Ellipsis,
+                                maxLines = 1
+                            )
+                        }
+                    }
+
+                    Row(
+                        Modifier.width(MaterialTheme.width.medium),
+                        horizontalArrangement = Arrangement.End,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+
+                        Text(
+                            "${transaction.money} ${transaction.currency.sign}",
+                            style = MaterialTheme.typography.headlineSmall,
+                            color = Money
+                        )
+
+                    }
+
+
                 }
+
+                Text(
+                    transaction.sender + " " + stringResource(R.string.gave) + " " + transaction.money + " " + transaction.currency + " " + stringResource(
+                        R.string.to
+                    ) + " " + transaction.receiver + " " + stringResource(R.string.on) + " " + transaction.date + ".",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(
+                            start = MaterialTheme.spacing.medium,
+                            end = MaterialTheme.spacing.medium,
+                            bottom = MaterialTheme.spacing.medium
+                        )
+                )
             }
-            Text(
-                "${transaction.money} ${transaction.currency.sign}",
-                style = MaterialTheme.typography.headlineSmall,
-                color = Money
+
+        }
+        IconButton(
+            onClick = { onEdit(transaction.id) },
+            modifier = Modifier
+                .align(Alignment.TopEnd)
+                .padding(MaterialTheme.spacing.small)
+        ) {
+            Icon(
+                imageVector = Icons.Default.Edit,
+                contentDescription = "Edit",
+                tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
             )
         }
-
-        Text(
-            transaction.sender + " " + stringResource(R.string.gave) + " " + transaction.money + " " + transaction.currency + " " + stringResource(
-                R.string.to
-            ) + " " + transaction.receiver + " " + stringResource(R.string.on) + " " + transaction.date + ".",
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(
-                    start = MaterialTheme.spacing.medium,
-                    end = MaterialTheme.spacing.medium,
-                    bottom = MaterialTheme.spacing.medium
-                )
-        )
     }
     Spacer(modifier = Modifier.height(MaterialTheme.spacing.small))
-
 }
 
 

@@ -226,7 +226,7 @@ fun CategoriesScreen(
                                 Row() {
                                     Text(
                                         text = category.text,
-                                        modifier = Modifier.width(MaterialTheme.width.medium),
+                                        modifier = Modifier.width(MaterialTheme.width.extraSmall),
                                         style = MaterialTheme.typography.titleMedium,
                                         overflow = TextOverflow.Ellipsis,
                                         maxLines = 1

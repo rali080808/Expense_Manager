@@ -1,5 +1,6 @@
 package com.example.task_1.data
 
+import android.util.Log
 import com.example.task_1.data.local.dao.CategoryDao
 import com.example.task_1.data.local.dao.TransactionDao
 import com.example.task_1.data.local.mapper.toDomain
@@ -58,6 +59,7 @@ class RoomDataService(
 
     override suspend fun editTransaction(transaction: Transaction): Unit =
         withContext(Dispatchers.IO) {
+            Log.d("UpdateDebug", "Updating transaction with ID: ${transaction.id}")
             transactionDao.updateTransaction(transaction.toEntity())
             delay(10)
         }

@@ -9,8 +9,8 @@ plugins {
 }
 
 android {
-     namespace = "com.example.task_1"
-  //  namespace = ""
+    namespace = "com.example.task_1"
+    //  namespace = ""
     compileSdk {
         version = release(36) {
             minorApiLevel = 1
@@ -47,14 +47,14 @@ android {
 
 dependencies {
     implementation(libs.androidx.compose.foundation.layout)
-    // Keep your existing compose and room-ktx lines...
     implementation(libs.androidx.room.ktx)
+    implementation(libs.compose.material3)
 
-    // 🌟 ADD THIS KSP LINE HERE:
     "ksp"(libs.androidx.room.compiler)
 
+    implementation("androidx.compose.material:material-icons-extended:1.7.0")
 
-implementation(libs.androidx.material3)
+    implementation(libs.androidx.material3)
     //        implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.8.0"),
 
     implementation(libs.kotlinx.datetime)
