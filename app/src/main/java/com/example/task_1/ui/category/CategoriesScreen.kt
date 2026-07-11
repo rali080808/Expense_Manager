@@ -17,14 +17,21 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
@@ -97,7 +104,81 @@ fun CategoriesScreen(
             showForm = false
         }
     }
+    if (showForm) {
+        ModalBottomSheet(
+            onDismissRequest = { showForm = false },
+            sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+        ) {
+            CategoryForm(
+                currentCategory = if (componentMode == ComponentMode.EDIT) categories.getById(
+                    clickedCategoryID
+                ) else null,
+                actionOnClick = { category ->
+                    if (componentMode == ComponentMode.ADD)
+                        addCategory(category)
+                    else {
+                        val currentId = clickedCategoryID
+                        if (currentId != null) {
+                            editCategory(currentId, category)
+                        } else {
+                            Log.e(
+                                "UI_BUG",
+                                "Category edit requested, but clickedCategoryID was null!"
+                            )
 
+                            Toast.makeText( // TODO lang
+                                context,
+                                "An error occurred. Please try again.",
+                                Toast.LENGTH_LONG
+                            ).show()
+                        }
+
+                    }
+
+                    // showForm = false
+                },
+                onCancel = { showForm = false },
+                errors = errors
+            )
+        }
+    }
+    if (showDeleteDialog) {
+        clickedCategoryID?.let { clickedCategoryID ->
+            val currentCategory = categories.getById(clickedCategoryID)
+            currentCategory?.let { currentCategory ->
+                CategoryDeleteDialog(
+                    categoryIDForDeletion = clickedCategoryID,
+                    currentCategory = currentCategory,
+                    closeDialog = { showDeleteDialog = false },
+                    removeCategory = { id -> viewModel.removeCategory(id) }
+                )
+            }
+            if (currentCategory == null) {
+                Log.e(
+                    "UI_ERROR",
+                    "Tried to delete category $clickedCategoryID, but it wasn't found in the list!"
+                )
+                Toast.makeText(
+                    context,
+                    stringResource(R.string.an_error_occurred_please_try_again),
+                    Toast.LENGTH_LONG
+                ).show()
+                showDeleteDialog = false
+            }
+        }
+        if (clickedCategoryID == null) {
+            Log.e(
+                "UI_ERROR",
+                "Tried to delete category $clickedCategoryID, but it is null!"
+            )
+            Toast.makeText(
+                context,
+                stringResource(R.string.an_error_occurred_please_try_again),
+                Toast.LENGTH_LONG
+            ).show()
+            showDeleteDialog = false
+        }
+    }
     PullToRefreshBox(
         isRefreshing = isRefreshing,
         onRefresh = { viewModel.loadData() }
@@ -116,82 +197,9 @@ fun CategoriesScreen(
                 .fillMaxSize()
                 .padding(horizontal = MaterialTheme.spacing.medium)
         ) {
+
+
             item {
-                if (showForm) {
-                    ModalBottomSheet(
-                        onDismissRequest = { showForm = false },
-                        sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
-                    ) {
-                        CategoryForm(
-                            currentCategory = if (componentMode == ComponentMode.EDIT) categories.getById(
-                                clickedCategoryID
-                            ) else null,
-                            actionOnClick = { category ->
-                                if (componentMode == ComponentMode.ADD)
-                                    addCategory(category)
-                                else {
-                                    val currentId = clickedCategoryID
-                                    if (currentId != null) {
-                                        editCategory(currentId, category)
-                                    } else {
-                                        Log.e(
-                                            "UI_BUG",
-                                            "Category edit requested, but clickedCategoryID was null!"
-                                        )
-
-                                        Toast.makeText( // TODO lang
-                                            context,
-                                            "An error occurred. Please try again.",
-                                            Toast.LENGTH_LONG
-                                        ).show()
-                                    }
-
-                                }
-
-                                // showForm = false
-                            },
-                            onCancel = { showForm = false },
-                            errors = errors
-                        )
-                    }
-                }
-                if (showDeleteDialog) {
-                    clickedCategoryID?.let { clickedCategoryID ->
-                        val currentCategory = categories.getById(clickedCategoryID)
-                        currentCategory?.let { currentCategory ->
-                            CategoryDeleteDialog(
-                                categoryIDForDeletion = clickedCategoryID,
-                                currentCategory = currentCategory,
-                                closeDialog = { showDeleteDialog = false },
-                                removeCategory = { id -> viewModel.removeCategory(id) }
-                            )
-                        }
-                        if (currentCategory == null) {
-                            Log.e(
-                                "UI_ERROR",
-                                "Tried to delete category $clickedCategoryID, but it wasn't found in the list!"
-                            )
-                            Toast.makeText(
-                                context,
-                                stringResource(R.string.an_error_occurred_please_try_again),
-                                Toast.LENGTH_LONG
-                            ).show()
-                            showDeleteDialog = false
-                        }
-                    }
-                    if (clickedCategoryID == null) {
-                        Log.e(
-                            "UI_ERROR",
-                            "Tried to delete category $clickedCategoryID, but it is null!"
-                        )
-                        Toast.makeText(
-                            context,
-                            stringResource(R.string.an_error_occurred_please_try_again),
-                            Toast.LENGTH_LONG
-                        ).show()
-                        showDeleteDialog = false
-                    }
-                }
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.medium),
                     modifier = Modifier.fillMaxWidth()
@@ -212,82 +220,83 @@ fun CategoriesScreen(
                     }
                 }
                 Spacer(Modifier.padding(MaterialTheme.spacing.medium))
-
+            }
+            items(categories) { category ->
                 Row(
-                    horizontalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.medium),
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = MaterialTheme.spacing.small),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Column(modifier = Modifier.weight(1f)) {
-                        categories.forEach { category ->
-                            Box(
-                                modifier = Modifier.padding(vertical = MaterialTheme.spacing.small),
-                                contentAlignment = Alignment.CenterStart
-                            ) {
-                                Row() {
-                                    Text(
-                                        text = category.text,
-                                        modifier = Modifier.width(MaterialTheme.width.extraSmall),
-                                        style = MaterialTheme.typography.titleMedium,
-                                        overflow = TextOverflow.Ellipsis,
-                                        maxLines = 1
-                                    )
-                                    Text(
-                                        text = " ${category.icon}",
-                                        style = MaterialTheme.typography.displaySmall
-                                    )
-                                }
-                                Spacer(Modifier.padding(MaterialTheme.spacing.medium))
-                            }
+                    Row(
+                        modifier = Modifier.weight(1f),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = category.text,
+                            modifier = Modifier.width(MaterialTheme.width.small),
+                            style = MaterialTheme.typography.titleMedium,
+                            overflow = TextOverflow.Ellipsis,
+                            maxLines = 1
+                        )
+                        Text(
+                            text = " ${category.icon}",
+                            style = MaterialTheme.typography.titleMedium
+                        )
 
-                        }
                     }
-                    Column {
-                        categories.forEach { category ->
-                            Button(
-                                onClick = {
-                                    showForm = true
-                                    componentMode = ComponentMode.EDIT
-                                    clickedCategoryID = category.id
-                                },
-                                colors = ButtonDefaults.buttonColors(
-                                    containerColor = Color(
-                                        categories.getById(category.id)?.color ?: 0
-                                    )
-                                )
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        IconButton(
+                            onClick = {
+                                showForm = true
+                                componentMode = ComponentMode.EDIT
+                                clickedCategoryID = category.id
+                            },
+
                             ) {
-                                Text(stringResource(R.string.edit))
-                            }
-                            Spacer(Modifier.padding(MaterialTheme.spacing.small))
+                            Icon(
+                                imageVector = Icons.Default.Edit,
+                                contentDescription = "Edit",
+                                tint = Color(
+                                    categories.getById(category.id)?.color ?: 0
+                                )
+                            )
                         }
+
+                        IconButton(
+                            onClick = {
+
+                                clickedCategoryID = category.id
+                                if (viewModel.validateIDForDeletion(category.id))
+                                    showDeleteDialog = true
+                                else
+                                    Toast.makeText(
+                                        context,
+                                        context.getString(
+                                            R.string.category_is_active_you_cannot_delete_it,
+                                            category.text,
+                                            category.icon
+                                        ),
+                                        Toast.LENGTH_SHORT
+                                    ).show()
+                            },
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Delete,
+                                contentDescription = "Delete Transaction",
+                                tint = Color(category.color)
+                            )
+                        }
+
+
                     }
 
-                    Column {
-                        categories.forEach { category ->
-                            Button(
-                                onClick = {
-                                    clickedCategoryID = category.id
-                                    if (viewModel.validateIDForDeletion(category.id))
-                                        showDeleteDialog = true
-                                    else
-                                        Toast.makeText(
-                                            context,
-                                            context.getString(R.string.category_is_active_you_cannot_delete_it, category.text, category.icon),
-                                            Toast.LENGTH_SHORT
-                                        ).show()
-                                },
-                                colors = ButtonDefaults.buttonColors(
-                                    containerColor = Color(category.color)
-                                )
-                            ) {
-                                Text("X")
-                            }
-                            Spacer(Modifier.padding(MaterialTheme.spacing.small))
-                        }
-                    }
                 }
+                Spacer(Modifier.padding(MaterialTheme.spacing.extraSmall))
             }
         }
     }
 }
+
 
 

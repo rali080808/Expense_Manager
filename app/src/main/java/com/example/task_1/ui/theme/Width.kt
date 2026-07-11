@@ -9,7 +9,7 @@ import androidx.compose.ui.unit.dp
 data class Width(
     val default: Dp = 100.dp,
     val extraSmall: Dp = 110.dp,
-    val small: Dp = 150.dp,
+    val small: Dp = 200.dp,
     val medium: Dp = 370.dp,
     val large: Dp = 600.dp,
     val extraLarge: Dp = 900.dp

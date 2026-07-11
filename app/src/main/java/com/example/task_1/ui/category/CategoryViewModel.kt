@@ -6,11 +6,13 @@ import androidx.lifecycle.viewModelScope
 import com.example.task_1.data.DataService
 import com.example.task_1.data.IDataService
 import com.example.task_1.domain.Category
+import com.example.task_1.domain.ComponentMode
 import com.example.task_1.domain.ErrorMessage
 import com.example.task_1.domain.uiStates.CategoryUiState
 import com.example.task_1.domain.uiStates.DashboardUiState
 import com.example.task_1.domain.Transaction
 import com.example.task_1.domain.categoryExists
+import com.example.task_1.domain.containsEmojis
 import com.example.task_1.domain.containsID
 import com.example.task_1.domain.getById
 import com.example.task_1.domain.isNotEmpty
@@ -77,27 +79,7 @@ class CategoryViewModel(private val dataService: IDataService) : ViewModel() {
         viewModelScope.launch {
 
             if (categories.containsID(categoryID)) {
-                // TODO call validation on every type
-                errors = mutableMapOf()
-                _uiState.value = CategoryUiState.FormFilling(transactions, categories, errors)
-
-                validateLength(
-                    editedCategory.text,
-                    Category.MIN_TEXT_LENGTH,
-                    Category.MAX_TEXT_LENGTH
-                ).onFailure { message ->
-                    errors[CategoryFormField.TEXT] = message
-                }
-
-                categoryExists(editedCategory.text, categories, categoryID).onFailure { message ->
-                    errors[CategoryFormField.TEXT] = message
-                }
-
-                validateIcon(
-                    editedCategory.icon
-                ).onFailure { message ->
-                    errors[CategoryFormField.ICON] = message
-                }
+              validateCategory(editedCategory, ComponentMode.EDIT)
 
                 if (errors.isEmpty()) {
                     categories = dataService.editCategory(categoryID, editedCategory)
@@ -115,29 +97,35 @@ class CategoryViewModel(private val dataService: IDataService) : ViewModel() {
         }
     }
 
+    fun validateCategory(category: Category, componentMode: ComponentMode){
+        errors = mutableMapOf()
+        validateLength(
+            category.text,
+            Category.MIN_TEXT_LENGTH,
+            Category.MAX_TEXT_LENGTH
+        ).onFailure { message ->
+            errors[CategoryFormField.TEXT] = message
+        }
+        containsEmojis(category.text).onFailure {  message ->
+            errors[CategoryFormField.TEXT] = message
+        }
+        val categoryID = if (componentMode == ComponentMode.ADD) null else category.id
+        categoryExists(category.text, categories, categoryID).onFailure { message ->
+            errors[CategoryFormField.TEXT] = message
+        }
 
+        validateIcon(
+            category.icon
+        ).onFailure { message ->
+            errors[CategoryFormField.ICON] = message
+        }
+    }
     fun addCategory(category: Category) {
         viewModelScope.launch {
             errors = mutableMapOf()
             _uiState.value = CategoryUiState.FormFilling(transactions, categories, errors)
 
-            validateLength(
-                category.text,
-                Category.MIN_TEXT_LENGTH,
-                Category.MAX_TEXT_LENGTH
-            ).onFailure { message ->
-                errors[CategoryFormField.TEXT] = message
-            }
-
-            categoryExists(category.text, categories, null).onFailure { message ->
-                errors[CategoryFormField.TEXT] = message
-            }
-
-            validateIcon(
-                category.icon
-            ).onFailure { message ->
-                errors[CategoryFormField.ICON] = message
-            }
+            validateCategory(category, ComponentMode.ADD)
 
             if (errors.isEmpty()) {
                 dataService.addCategory(Category(null, category.text, category.icon, category.color))
@@ -172,9 +160,3 @@ class CategoryViewModel(private val dataService: IDataService) : ViewModel() {
 
 }
 
-fun List<Category>.containsText(text: String): Boolean {
-    for (category in this) {
-        if (category.text == text) return true;
-    }
-    return false;
-}

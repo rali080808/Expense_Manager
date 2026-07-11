@@ -37,7 +37,7 @@ data class Category(
     }
     companion object{
         val MIN_TEXT_LENGTH = 2
-        val MAX_TEXT_LENGTH = 8
+        val MAX_TEXT_LENGTH = 16
     }
 }
 
