@@ -74,4 +74,7 @@
     <string name="invalid_format">Invalid format</string>
     <string name="you_should_choose_1_emoji_and_nothing_else">You should choose 1 emoji and nothing else</string>
     <string name="an_emoji_is_reserved_for_the_icon_of_the_category_the_name_should_not_contain_any_emojis">An emoji is reserved for the icon of the category. The name should not contain any emojis.</string>
+    <string name="new_transaction">New Transaction</string>
+    <string name="edit_transaction">Edit transaction</string>
+    <string name="transaction_details">Transaction Details</string>
 </resources>

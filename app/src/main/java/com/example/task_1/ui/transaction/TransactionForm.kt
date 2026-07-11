@@ -32,8 +32,10 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.core.view.KeyEventDispatcher
 import com.example.task_1.R
 import com.example.task_1.domain.Category
+import com.example.task_1.domain.ComponentMode
 import com.example.task_1.domain.ErrorMessage
 import com.example.task_1.domain.NoFilter
 import com.example.task_1.domain.PayMethod
@@ -51,8 +53,9 @@ import kotlin.collections.forEach
 fun TransactionForm(
     currentTransaction: Transaction?,
     categories: List<Category>,
-    actionOnClick: (Transaction) -> Unit,
-    errors: Map<TransactionFormFields, ErrorMessage>?
+    actionOnClick: ((Transaction) -> Unit)?,
+    errors: Map<TransactionFormFields, ErrorMessage>?,
+    componentMode: ComponentMode
 ) {
     var expandedCategory by remember { mutableStateOf(false) }
     var expandedPayMethod by remember { mutableStateOf(false) }
@@ -62,11 +65,13 @@ fun TransactionForm(
     var receiver by remember { mutableStateOf(currentTransaction?.receiver ?: "") }
     var sum by remember { mutableStateOf(currentTransaction?.money ?: "0.0") }
     var categoryID by remember { mutableLongStateOf(currentTransaction?.categoryID ?: NoFilter) }
-    var date by remember { mutableStateOf(currentTransaction?.date?.let { LocalDate.parse(it) } ?: LocalDate.now()) }
+    var date by remember {
+        mutableStateOf(currentTransaction?.date?.let { LocalDate.parse(it) } ?: LocalDate.now())
+    }
     var description by remember { mutableStateOf(currentTransaction?.description ?: "") }
     var payMethod by remember { mutableStateOf(currentTransaction?.payMethod ?: PayMethod.DEBIT) }
     val datePickerState = rememberDatePickerState()
-
+    val isReadOnly = componentMode == ComponentMode.DETAILS
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -80,10 +85,26 @@ fun TransactionForm(
             .padding(MaterialTheme.spacing.medium),
         verticalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.small)
     ) {
-        Text("New Transaction", style = MaterialTheme.typography.titleMedium)
+        when (componentMode) {
+            ComponentMode.ADD -> Text(
+                stringResource(R.string.new_transaction),
+                style = MaterialTheme.typography.titleMedium
+            )
+
+            ComponentMode.EDIT -> Text(
+                stringResource(R.string.edit_transaction),
+                style = MaterialTheme.typography.titleMedium
+            )
+
+            else -> Text(
+                stringResource(R.string.transaction_details),
+                style = MaterialTheme.typography.titleMedium
+            )
+        }
 
 
         OutlinedTextField(
+            readOnly = isReadOnly,
             value = sender,
             onValueChange = { sender = it },
             label = { Text(stringResource(R.string.sender)) },
@@ -102,13 +123,14 @@ fun TransactionForm(
         )
 
         OutlinedTextField(
+            readOnly = isReadOnly,
             value = receiver,
-            onValueChange = {  receiver = it },
+            onValueChange = { receiver = it },
             label = { Text(stringResource(R.string.receiver)) },
             singleLine = true,
             modifier = Modifier.fillMaxWidth(),
             isError = errors?.containsKey(TransactionFormFields.RECEIVER) == true,
-             supportingText = {
+            supportingText = {
                 val error = errors?.get(TransactionFormFields.RECEIVER)
                 if (error != null && error.messageID != R.string.empty_string) {
                     Text(
@@ -120,13 +142,14 @@ fun TransactionForm(
         )
 
         OutlinedTextField(
+            readOnly = isReadOnly,
             value = sum,
             onValueChange = { sum = it },
             singleLine = true,
             label = { Text(stringResource(R.string.money)) },
             modifier = Modifier.fillMaxWidth(),
             isError = errors?.containsKey(TransactionFormFields.MONEY) == true,
-             supportingText = {
+            supportingText = {
                 val error = errors?.get(TransactionFormFields.MONEY)
                 if (error != null && error.messageID != R.string.empty_string) {
                     Text(
@@ -145,7 +168,7 @@ fun TransactionForm(
                 readOnly = true,
                 modifier = Modifier.fillMaxWidth(),
                 isError = errors?.containsKey(TransactionFormFields.DATE) == true,
-                 supportingText = {
+                supportingText = {
                     val error = errors?.get(TransactionFormFields.DATE)
                     if (error != null && error.messageID != R.string.empty_string) {
                         Text(
@@ -161,7 +184,7 @@ fun TransactionForm(
                     .clickable { showDatePicker = true })
         }
 
-        if (showDatePicker) {
+        if (showDatePicker && !isReadOnly) {
             DatePickerDialog(onDismissRequest = { showDatePicker = false }, confirmButton = {
                 TextButton(onClick = {
                     datePickerState.selectedDateMillis?.let { millis ->
@@ -187,14 +210,14 @@ fun TransactionForm(
                 readOnly = true,
                 modifier = Modifier.fillMaxWidth(),
                 leadingIcon = {
-                         Text(
-                            text = categories.getById(categoryID)?.icon ?: "",
-                            style = MaterialTheme.typography.titleMedium
-                        )
+                    Text(
+                        text = categories.getById(categoryID)?.icon ?: "",
+                        style = MaterialTheme.typography.titleMedium
+                    )
 
                 },
                 isError = errors?.containsKey(TransactionFormFields.CATEGORY) == true,
-                 supportingText = {
+                supportingText = {
                     val error = errors?.get(TransactionFormFields.CATEGORY)
                     if (error != null && error.messageID != R.string.empty_string) {
                         Text(
@@ -203,7 +226,7 @@ fun TransactionForm(
                         )
                     }
                 },
-                )
+            )
             Box(
                 modifier = Modifier
                     .matchParentSize()
@@ -211,7 +234,7 @@ fun TransactionForm(
 
 
             DropdownMenu(
-                expanded = expandedCategory,
+                expanded = expandedCategory && !isReadOnly,
                 onDismissRequest = { expandedCategory = false },
                 modifier = Modifier
                     .clip(MaterialTheme.shapes.small)
@@ -219,26 +242,27 @@ fun TransactionForm(
                 offset = androidx.compose.ui.unit.DpOffset(0.dp, 0.dp) // This anchors it to the Box
 
             ) {
-                categories.forEach { option  ->
-                    option.id?.let{ id ->
-                    DropdownMenuItem(text = {
-                        Row(
-                            horizontalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.small),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text(
-                                text = option.icon, style = MaterialTheme.typography.titleMedium
-                            )
-                            Text(
-                                text = option.text,
-                                style = MaterialTheme.typography.bodyLarge,
-                                color = Color(option.color)
-                            )
-                        }
-                    }, onClick = {
-                        categoryID = id
-                        expandedCategory = false
-                    })}
+                categories.forEach { option ->
+                    option.id?.let { id ->
+                        DropdownMenuItem(text = {
+                            Row(
+                                horizontalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.small),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    text = option.icon, style = MaterialTheme.typography.titleMedium
+                                )
+                                Text(
+                                    text = option.text,
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    color = Color(option.color)
+                                )
+                            }
+                        }, onClick = {
+                            categoryID = id
+                            expandedCategory = false
+                        })
+                    }
 
                 }
             }
@@ -253,7 +277,7 @@ fun TransactionForm(
                 readOnly = true,
                 modifier = Modifier.fillMaxWidth(),
                 isError = errors?.containsKey(TransactionFormFields.PAY_METHOD) == true,
-                 supportingText = {
+                supportingText = {
                     val error = errors?.get(TransactionFormFields.PAY_METHOD)
                     if (error != null && error.messageID != R.string.empty_string) {
                         Text(
@@ -270,10 +294,16 @@ fun TransactionForm(
 
 
             DropdownMenu(
-                expanded = expandedPayMethod, onDismissRequest = { expandedPayMethod = false }) {
+                expanded = expandedPayMethod && !isReadOnly,
+                onDismissRequest = { expandedPayMethod = false }) {
                 PayMethod.entries.forEach { method ->
-                    if ( method != PayMethod.UNKNOWN)
-                    DropdownMenuItem(text = { Text(stringResource(method.text)) }, onClick = {
+                    if (method != PayMethod.UNKNOWN) DropdownMenuItem(text = {
+                        Text(
+                            stringResource(
+                                method.text
+                            )
+                        )
+                    }, onClick = {
                         payMethod = method
                         expandedPayMethod = false
                     })
@@ -282,16 +312,18 @@ fun TransactionForm(
         }
 
         OutlinedTextField(
+            readOnly = isReadOnly,
             value = description,
             onValueChange = { description = it },
             label = { Text(stringResource(com.example.task_1.R.string.description)) },
             modifier = Modifier.fillMaxWidth()
         )
+        if (  !isReadOnly )
         Button(
             onClick = {
-                 actionOnClick(
+                actionOnClick?.invoke(
                     Transaction(
-                        id=currentTransaction?.id  ,
+                        id = currentTransaction?.id,
                         sender = sender,
                         receiver = receiver,
                         money = sum,

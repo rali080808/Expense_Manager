@@ -31,8 +31,6 @@ import com.example.task_1.ui.dashboard.DashboardViewModel
 import com.example.task_1.ui.transaction.TransactionViewModel
 import com.example.task_1.ui.category.CategoriesScreen
 import com.example.task_1.ui.dashboard.DashboardScreen
-import com.example.task_1.ui.ShowDescription
-import com.example.task_1.ui.transaction.TransactionForm
 import com.example.task_1.ui.transaction.TransactionsScreen
 import com.example.task_1.ui.category.CategoryDeleteDialog
 import kotlinx.serialization.Contextual
@@ -52,7 +50,7 @@ object DashboardScreenRoute
 object TransactionsScreenRoute
 
 @Composable
-fun Navigation(dataService : IDataService) {
+fun Navigation(dataService: IDataService) {
     val navController = rememberNavController()
     var currentDestination by rememberSaveable { mutableStateOf(AppDestinations.DASHBOARD) }
     val dashboardViewModel = remember { DashboardViewModel(dataService) }
@@ -108,11 +106,8 @@ fun Navigation(dataService : IDataService) {
                         transactionViewModel.loadData()
                     }
                     TransactionsScreen(
-
                         viewModel = transactionViewModel,
-                        onAddClick = { navController.navigate("addTransaction") },
-
-                        )
+                    )
                 }
 
 

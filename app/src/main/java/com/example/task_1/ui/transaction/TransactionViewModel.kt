@@ -73,7 +73,9 @@ class TransactionViewModel(private val dataService: IDataService) : ViewModel() 
 
         }
     }
+    fun formatMoney(money: String) {
 
+    }
     fun showError(messageResId: Int, args: List<Any> = emptyList()) {
         _uiState.value = TransactionUiState.Error(
             ErrorMessage(
@@ -89,8 +91,11 @@ class TransactionViewModel(private val dataService: IDataService) : ViewModel() 
                 errors[TransactionFormFields.CATEGORY] = message
             }
 
+            var formattedMoney = transaction.money
             validateMoney(transaction.money).onFailure { message ->
                 errors[TransactionFormFields.MONEY] = message
+            }.onSuccess { moneyBigDecimal ->
+                formattedMoney = moneyBigDecimal.stripTrailingZeros().toPlainString()
             }
 
             validateLength(
@@ -118,7 +123,7 @@ class TransactionViewModel(private val dataService: IDataService) : ViewModel() 
                 return@launch
             }
             _uiState.value = TransactionUiState.Loading
-            dataService.addTransaction(transaction)
+            dataService.addTransaction(transaction.copy(money=formattedMoney))
             allTransactions = dataService.getTransactions()
             filterByCategory(currentCategoryFilter)
             sortTransactions(currentSortType)

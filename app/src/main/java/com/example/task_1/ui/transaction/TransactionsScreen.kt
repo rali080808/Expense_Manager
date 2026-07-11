@@ -22,6 +22,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.Composition
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -50,10 +51,7 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TransactionsScreen(
-//    modifier: Modifier,
-//    style: TextStyle,
     viewModel: TransactionViewModel,
-    onAddClick: () -> Unit,
 ) {
     val uiState by viewModel.uiState.collectAsState()
     var expandedSortTypes by remember { mutableStateOf(false) }
@@ -70,12 +68,12 @@ fun TransactionsScreen(
     val transactions = (uiState as? TransactionUiState.Success)?.transactions
         ?: (uiState as? TransactionUiState.FormFilling)?.transactions
         ?: emptyList()
-    val errors =  (uiState as? TransactionUiState.FormFilling)?.errors
+    val errors = (uiState as? TransactionUiState.FormFilling)?.errors
     var componentMode by remember { mutableStateOf(ComponentMode.ADD) }
     var clickedTransactionID by remember { mutableStateOf<Long?>(null) }
 
-    LaunchedEffect( uiState ) {
-        if ( uiState is TransactionUiState.Success) {
+    LaunchedEffect(uiState) {
+        if (uiState is TransactionUiState.Success) {
             showForm = false
         }
     }
@@ -87,7 +85,6 @@ fun TransactionsScreen(
         if (uiState is TransactionUiState.Error) {
             ErrorDialog(
                 message = (uiState as TransactionUiState.Error).message,
-               // args = (uiState as TransactionUiState.Error).args,
                 loadData = { viewModel.loadData() })
         }
 
@@ -97,17 +94,19 @@ fun TransactionsScreen(
                 sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
             ) {
                 TransactionForm(
-                    currentTransaction = if (componentMode == ComponentMode.ADD) null else transactions.getById(clickedTransactionID),
+                    currentTransaction = if (componentMode == ComponentMode.EDIT)
+                        transactions.getById(clickedTransactionID) else null,
                     categories = categories,
                     actionOnClick = { transaction ->
                         viewModel.putFormFillingState()
                         if (componentMode == ComponentMode.ADD)
                             viewModel.addTransaction(transaction)
-                        else
+                        else if (componentMode == ComponentMode.EDIT)
                             viewModel.editTransaction(transaction)
-                      //  showForm = false
+                        else null
                     },
-                    errors = errors
+                    errors = errors,
+                    componentMode = componentMode
                 )
             }
         }
@@ -178,22 +177,23 @@ fun TransactionsScreen(
                                         }
                                     }
                                 )
-                                categories.forEach {  filter  ->
-                                    filter.id?.let{id->
-                                    DropdownMenuItem(
-                                        text = {
-                                            Text(
-                                                filter.text + " " + filter.icon,
-                                                color = Color(filter.color)
-                                            )
-                                        },
-                                        onClick = {
-                                            scope.launch {
-                                                viewModel.filterByCategory(id)
-                                                expandedCategoryFilter = false
+                                categories.forEach { filter ->
+                                    filter.id?.let { id ->
+                                        DropdownMenuItem(
+                                            text = {
+                                                Text(
+                                                    filter.text + " " + filter.icon,
+                                                    color = Color(filter.color)
+                                                )
+                                            },
+                                            onClick = {
+                                                scope.launch {
+                                                    viewModel.filterByCategory(id)
+                                                    expandedCategoryFilter = false
+                                                }
                                             }
-                                        }
-                                    )}
+                                        )
+                                    }
                                 }
                             }
                         }
@@ -238,12 +238,17 @@ fun TransactionsScreen(
                         TransactionCard(
                             transaction = transaction,
                             category = categories.getById(transaction.categoryID) ?: ErrorCategory,
-                            onEdit = { transactionId ->
+                            onEdit = {
                                 componentMode = ComponentMode.EDIT
-                                clickedTransactionID = transactionId
+                                clickedTransactionID = transaction.id
                                 showForm = true
+                            },
+                            onShowDescription = {
+                                componentMode = ComponentMode.DETAILS
+                                showForm = true
+                                clickedTransactionID = transaction.id
                             }
-                            )
+                        )
                         lastDate = transaction.date
                         if (index == transactions.size - 1) lastDate = null
                     }

@@ -22,27 +22,14 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.SegmentedButtonDefaults.Icon
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
- import androidx.compose.ui.Modifier
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.SpanStyle
-import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.text.withStyle
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.Dialog
-import androidx.compose.ui.window.DialogProperties
 import com.example.task_1.R
 import com.example.task_1.domain.Category
 import com.example.task_1.domain.Transaction
@@ -61,15 +48,11 @@ import androidx.compose.ui.draw.paint
 fun TransactionCard(
     transaction: Transaction,
     category: Category,
-    onEdit: (Long?) -> Unit
+    onEdit: (() -> Unit)?,
+    onShowDescription: () -> Unit
 ) {
-    var activeDescriptionDialog by remember { mutableStateOf(false) }
 
-    if (activeDescriptionDialog)
-        ShowDescription(
-            description = transaction.description,
-            onClose = { activeDescriptionDialog = false }
-        )
+
     Box(
         Modifier
             .fillMaxWidth()
@@ -80,7 +63,7 @@ fun TransactionCard(
             modifier = Modifier
                 .fillMaxWidth()
                 //.padding(horizontal = MaterialTheme.spacing.medium)
-                .clickable(onClick = { activeDescriptionDialog = true }),
+                .clickable(onClick = { onShowDescription() }),
             shape = MaterialTheme.shapes.small,
             colors = CardDefaults.cardColors(
                 containerColor = MaterialTheme.colorScheme.surface
@@ -177,8 +160,9 @@ fun TransactionCard(
             }
 
         }
+        if ( onEdit != null )
         IconButton(
-            onClick = { onEdit(transaction.id) },
+            onClick = { onEdit() },
             modifier = Modifier
                 .align(Alignment.TopEnd)
                 .padding(MaterialTheme.spacing.small)
@@ -193,48 +177,48 @@ fun TransactionCard(
     Spacer(modifier = Modifier.height(MaterialTheme.spacing.small))
 }
 
-
-@Composable
-fun ShowDescription(
-    description: String, onClose: () -> Unit
-) {
-
-    Dialog(
-        onDismissRequest = { onClose() },
-        properties = DialogProperties(usePlatformDefaultWidth = false)
-    ) {
-        Surface(
-            shape = MaterialTheme.shapes.large,
-            color = MaterialTheme.colorScheme.surface,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(MaterialTheme.spacing.large)
-        ) {
-            Column(modifier = Modifier.padding(MaterialTheme.spacing.medium)) {
-                Text(
-                    text = stringResource(R.string.description),
-                    style = MaterialTheme.typography.titleSmall,
-                    color = MaterialTheme.colorScheme.primary
-                )
-
-                Spacer(modifier = Modifier.height(MaterialTheme.spacing.small))
-
-                Text(
-                    text = description, style = MaterialTheme.typography.bodyLarge
-                )
-
-                Spacer(modifier = Modifier.height(MaterialTheme.spacing.medium))
-
-                Text(
-                    text = stringResource(R.string.dismiss),
-                    style = MaterialTheme.typography.labelLarge,
-                    color = MaterialTheme.colorScheme.secondary,
-                    modifier = Modifier
-                        .align(Alignment.End)
-                        .clickable { onClose() })
-            }
-        }
-    }
-
-
-}
+//
+//@Composable
+//fun ShowDescription(
+//    description: String, onClose: () -> Unit
+//) {
+//
+//    Dialog(
+//        onDismissRequest = { onClose() },
+//        properties = DialogProperties(usePlatformDefaultWidth = false)
+//    ) {
+//        Surface(
+//            shape = MaterialTheme.shapes.large,
+//            color = MaterialTheme.colorScheme.surface,
+//            modifier = Modifier
+//                .fillMaxWidth()
+//                .padding(MaterialTheme.spacing.large)
+//        ) {
+//            Column(modifier = Modifier.padding(MaterialTheme.spacing.medium)) {
+//                Text(
+//                    text = stringResource(R.string.description),
+//                    style = MaterialTheme.typography.titleSmall,
+//                    color = MaterialTheme.colorScheme.primary
+//                )
+//
+//                Spacer(modifier = Modifier.height(MaterialTheme.spacing.small))
+//
+//                Text(
+//                    text = description, style = MaterialTheme.typography.bodyLarge
+//                )
+//
+//                Spacer(modifier = Modifier.height(MaterialTheme.spacing.medium))
+//
+//                Text(
+//                    text = stringResource(R.string.dismiss),
+//                    style = MaterialTheme.typography.labelLarge,
+//                    color = MaterialTheme.colorScheme.secondary,
+//                    modifier = Modifier
+//                        .align(Alignment.End)
+//                        .clickable { onClose() })
+//            }
+//        }
+//    }
+//
+//
+//}
