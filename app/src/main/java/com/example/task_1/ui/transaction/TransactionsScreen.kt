@@ -22,7 +22,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.Composition
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -38,13 +37,12 @@ import androidx.compose.ui.res.stringResource
 import com.example.task_1.domain.ComponentMode
 import com.example.task_1.domain.ErrorCategory
 import com.example.task_1.domain.NoFilter
-import com.example.task_1.domain.Transaction
 import com.example.task_1.domain.getById
 import com.example.task_1.domain.uiStates.TransactionUiState
 import com.example.task_1.ui.ErrorDialog
 import com.example.task_1.ui.LoadingScreen
 import com.example.task_1.ui.TransactionCard
-import com.example.task_1.ui.category.DeleteDialog
+import com.example.task_1.ui.DeleteDialog
 import com.example.task_1.ui.theme.border
 import com.example.task_1.ui.theme.spacing
 import kotlinx.coroutines.launch

@@ -1,4 +1,4 @@
-package com.example.task_1.ui.category
+package com.example.task_1.ui
 
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Text
@@ -6,10 +6,9 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
 import com.example.task_1.R
-import com.example.task_1.domain.Category
 
 
- @Composable
+@Composable
 fun DeleteDialog(
     iDForDeletion: Long?,
     closeDialog: () -> Unit,

@@ -143,22 +143,23 @@ fun CategoryForm(
                         .matchParentSize()
                         .clickable { colorExpanded = !colorExpanded }
                 )
-            }
-            DropdownMenu(
-                expanded = colorExpanded,
-                onDismissRequest = { colorExpanded = false },
-                modifier = Modifier
-                    .clip(MaterialTheme.shapes.small)
-                    .background(MaterialTheme.colorScheme.surface)
-            ) {
-                colorOptions.forEach { item ->
-                    DropdownMenuItem(
-                        text = { Text(stringResource(item.first), color = Color(item.second)) },
-                        onClick = { categoryColor = item; colorExpanded = false }
-                    )
+                DropdownMenu(
+                    expanded = colorExpanded,
+                    onDismissRequest = { colorExpanded = false },
+                    modifier = Modifier
+                        .clip(MaterialTheme.shapes.small)
+                        .background(MaterialTheme.colorScheme.surface)
+                ) {
+                    colorOptions.forEach { item ->
+                        DropdownMenuItem(
+                            text = { Text(stringResource(item.first), color = Color(item.second)) },
+                            onClick = { categoryColor = item; colorExpanded = false }
+                        )
+                    }
                 }
             }
-        }
+            }
+
 
         Button(onClick = {
             actionOnClick(
