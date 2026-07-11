@@ -38,6 +38,7 @@ import com.example.task_1.ui.theme.border
 import com.example.task_1.ui.theme.spacing
 import com.example.task_1.ui.theme.width
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -49,7 +50,8 @@ fun TransactionCard(
     transaction: Transaction,
     category: Category,
     onEdit: (() -> Unit)?,
-    onShowDescription: () -> Unit
+    onShowDescription: () -> Unit,
+    onDeleteButtonClicked:(() -> Unit)?
 ) {
 
 
@@ -160,18 +162,32 @@ fun TransactionCard(
             }
 
         }
-        if ( onEdit != null )
-        IconButton(
-            onClick = { onEdit() },
-            modifier = Modifier
-                .align(Alignment.TopEnd)
-                .padding(MaterialTheme.spacing.small)
-        ) {
-            Icon(
-                imageVector = Icons.Default.Edit,
-                contentDescription = "Edit",
-                tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
-            )
+        if (onEdit != null && onDeleteButtonClicked != null ) {
+            Column(
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                   // .padding(MaterialTheme.spacing.small),
+              ,  horizontalAlignment = Alignment.End
+            ) {
+                IconButton(
+                    onClick = { onEdit() },
+                    ) {
+                    Icon(
+                        imageVector = Icons.Default.Edit,
+                        contentDescription = "Edit",
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
+                    )
+                }
+                IconButton(
+                    onClick = { onDeleteButtonClicked?.invoke() },
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Delete,
+                        contentDescription = "Delete",
+                        tint = Color.Red.copy(alpha = 0.5f)
+                    )
+                }
+            }
         }
     }
     Spacer(modifier = Modifier.height(MaterialTheme.spacing.small))

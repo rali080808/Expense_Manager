@@ -9,29 +9,25 @@ import com.example.task_1.R
 import com.example.task_1.domain.Category
 
 
-// TODO make it usable for transactions as well
-@Composable
-fun CategoryDeleteDialog(
-    categoryIDForDeletion: Long,
-    currentCategory: Category,
+ @Composable
+fun DeleteDialog(
+    iDForDeletion: Long?,
     closeDialog: () -> Unit,
-    removeCategory: (Long) -> Unit
+    removeObject: (Long?) -> Unit
 ) {
 
     AlertDialog(
         onDismissRequest = closeDialog,
-        title = { Text(stringResource(R.string.delete_category)) },
+        title = { Text(stringResource(R.string.delete)) },
         text = {
             Text(
-                stringResource(
-                    R.string.are_you_sure_that_you_want_to_delete, currentCategory.text
-                )
+                stringResource(R.string.are_you_sure_you_want_to_delete_this)
             )
         },
         confirmButton = {
             TextButton(
                 onClick = {
-                    removeCategory(categoryIDForDeletion)
+                    removeObject(iDForDeletion)
                     closeDialog()
                 }) {
                 Text(stringResource(R.string.ok))

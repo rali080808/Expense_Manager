@@ -3,8 +3,7 @@ package com.example.task_1.domain
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.core.util.Predicate.not
-import com.example.task_1.data.DataService
-import kotlinx.serialization.Serializable
+ import kotlinx.serialization.Serializable
 import java.math.BigDecimal
 import java.math.RoundingMode
 

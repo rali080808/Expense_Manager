@@ -23,8 +23,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
 import kotlinx.serialization.Serializable
 
-import com.example.task_1.data.DataService
-import com.example.task_1.domain.Category
+ import com.example.task_1.domain.Category
 import com.example.task_1.domain.ErrorCategory
 import com.example.task_1.ui.category.CategoryViewModel
 import com.example.task_1.ui.dashboard.DashboardViewModel
@@ -32,8 +31,7 @@ import com.example.task_1.ui.transaction.TransactionViewModel
 import com.example.task_1.ui.category.CategoriesScreen
 import com.example.task_1.ui.dashboard.DashboardScreen
 import com.example.task_1.ui.transaction.TransactionsScreen
-import com.example.task_1.ui.category.CategoryDeleteDialog
-import kotlinx.serialization.Contextual
+ import kotlinx.serialization.Contextual
 import androidx.compose.runtime.collectAsState
 import com.example.task_1.data.IDataService
 import com.example.task_1.domain.Transaction

@@ -45,23 +45,26 @@ class RoomDataService(
 
     override suspend fun getTransactions(): List<Transaction> = transactionsState.value
 
-    override suspend fun addCategory(category: Category): Unit =
+    override suspend fun addCategory(category: Category): List<Category> =
         withContext(Dispatchers.IO) {
             categoryDao.insertCategory(category.toEntity())
             delay(10)
+            return@withContext categoriesState.value
         }
 
-    override suspend fun addTransaction(transaction: Transaction): Unit =
+    override suspend fun addTransaction(transaction: Transaction): List<Transaction> =
         withContext(Dispatchers.IO) {
             transactionDao.insertTransaction(transaction.toEntity())
             delay(10)
+            return@withContext transactionsState.value
         }
 
-    override suspend fun editTransaction(transaction: Transaction): Unit =
+    override suspend fun editTransaction(transaction: Transaction):  List<Transaction> =
         withContext(Dispatchers.IO) {
             Log.d("UpdateDebug", "Updating transaction with ID: ${transaction.id}")
             transactionDao.updateTransaction(transaction.toEntity())
             delay(10)
+            return@withContext transactionsState.value
         }
 
     override suspend fun removeCategory(id: Long): List<Category> = withContext(Dispatchers.IO) {
@@ -76,6 +79,12 @@ class RoomDataService(
             delay(10)
             return@withContext categoriesState.value
         }
+
+    override suspend fun deleteTransaction(id: Long): List<Transaction> = withContext(Dispatchers.IO) {
+        transactionDao.deleteTransactionById(id)
+        delay(10)
+        return@withContext transactionsState.value
+    }
 
     fun clear() {
         serviceScope.cancel()

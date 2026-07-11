@@ -44,6 +44,7 @@ import com.example.task_1.domain.uiStates.TransactionUiState
 import com.example.task_1.ui.ErrorDialog
 import com.example.task_1.ui.LoadingScreen
 import com.example.task_1.ui.TransactionCard
+import com.example.task_1.ui.category.DeleteDialog
 import com.example.task_1.ui.theme.border
 import com.example.task_1.ui.theme.spacing
 import kotlinx.coroutines.launch
@@ -61,6 +62,7 @@ fun TransactionsScreen(
     var lastDate: String? = null
     val scope = rememberCoroutineScope()
     var showForm by remember { mutableStateOf(false) }
+    var showDeleteDialog by remember { mutableStateOf(false) }
     val categories = (uiState as? TransactionUiState.Success)?.categories
         ?: (uiState as? TransactionUiState.FormFilling)?.categories
         ?: emptyList()
@@ -77,6 +79,14 @@ fun TransactionsScreen(
             showForm = false
         }
     }
+    if (showDeleteDialog) {
+        DeleteDialog(
+            iDForDeletion = clickedTransactionID,
+            closeDialog = { showDeleteDialog = false },
+            removeObject = { id -> viewModel.deleteTransaction(id) }
+        )
+    }
+
     PullToRefreshBox(
         isRefreshing = isRefreshing,
         onRefresh = { viewModel.loadData() }
@@ -94,8 +104,8 @@ fun TransactionsScreen(
                 sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
             ) {
                 TransactionForm(
-                    currentTransaction = if (componentMode == ComponentMode.EDIT)
-                        transactions.getById(clickedTransactionID) else null,
+                    currentTransaction = if (componentMode == ComponentMode.ADD)
+                        null else transactions.getById(clickedTransactionID),
                     categories = categories,
                     actionOnClick = { transaction ->
                         viewModel.putFormFillingState()
@@ -246,6 +256,10 @@ fun TransactionsScreen(
                             onShowDescription = {
                                 componentMode = ComponentMode.DETAILS
                                 showForm = true
+                                clickedTransactionID = transaction.id
+                            },
+                            onDeleteButtonClicked = {
+                                showDeleteDialog = true
                                 clickedTransactionID = transaction.id
                             }
                         )

@@ -16,7 +16,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import com.example.task_1.domain.Result
- import com.example.task_1.domain.hasUpToTwoDecimalPlaces
+import com.example.task_1.domain.hasUpToTwoDecimalPlaces
 import com.example.task_1.domain.isNotEmpty
 import com.example.task_1.domain.validateLength
 import com.example.task_1.domain.validateMoney
@@ -65,6 +65,7 @@ class TransactionViewModel(private val dataService: IDataService) : ViewModel() 
             allTransactions = dataService.getTransactions().reversed()
 
             filteredTransactions = allTransactions
+            sortTransactions(currentSortType)
             categories = dataService.getCategories()
 
             _uiState.value = TransactionUiState.Success(
@@ -73,9 +74,11 @@ class TransactionViewModel(private val dataService: IDataService) : ViewModel() 
 
         }
     }
+
     fun formatMoney(money: String) {
 
     }
+
     fun showError(messageResId: Int, args: List<Any> = emptyList()) {
         _uiState.value = TransactionUiState.Error(
             ErrorMessage(
@@ -123,7 +126,7 @@ class TransactionViewModel(private val dataService: IDataService) : ViewModel() 
                 return@launch
             }
             _uiState.value = TransactionUiState.Loading
-            dataService.addTransaction(transaction.copy(money=formattedMoney))
+            dataService.addTransaction(transaction.copy(money = formattedMoney))
             allTransactions = dataService.getTransactions()
             filterByCategory(currentCategoryFilter)
             sortTransactions(currentSortType)
@@ -132,6 +135,19 @@ class TransactionViewModel(private val dataService: IDataService) : ViewModel() 
                 filteredTransactions, categories
             )
 
+        }
+    }
+
+    fun deleteTransaction(transactionID: Long?) {
+        viewModelScope.launch {
+            if (transactionID == null) {
+                _uiState.value =
+                    TransactionUiState.Error(ErrorMessage(R.string.error_please_try_again))
+            } else {
+                allTransactions =  dataService.deleteTransaction(transactionID)
+                filterByCategory(currentCategoryFilter)
+                sortTransactions(currentSortType)
+            }
         }
     }
 

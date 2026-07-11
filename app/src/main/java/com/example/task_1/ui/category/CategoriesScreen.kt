@@ -146,11 +146,10 @@ fun CategoriesScreen(
         clickedCategoryID?.let { clickedCategoryID ->
             val currentCategory = categories.getById(clickedCategoryID)
             currentCategory?.let { currentCategory ->
-                CategoryDeleteDialog(
-                    categoryIDForDeletion = clickedCategoryID,
-                    currentCategory = currentCategory,
+                DeleteDialog(
+                    iDForDeletion = clickedCategoryID,
                     closeDialog = { showDeleteDialog = false },
-                    removeCategory = { id -> viewModel.removeCategory(id) }
+                    removeObject = { id -> viewModel.removeCategory(id) }
                 )
             }
             if (currentCategory == null) {

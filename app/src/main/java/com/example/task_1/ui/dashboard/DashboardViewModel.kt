@@ -3,7 +3,6 @@ package com.example.task_1.ui.dashboard
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.task_1.R
-import com.example.task_1.data.DataService
 import com.example.task_1.data.IDataService
 import com.example.task_1.domain.Category
 import com.example.task_1.domain.uiStates.CategoryUiState
@@ -19,7 +18,7 @@ class DashboardViewModel(private val dataService: IDataService) : ViewModel() {
     private val _uiState = MutableStateFlow<DashboardUiState>(DashboardUiState.Loading)
     val uiState: StateFlow<DashboardUiState> get() = _uiState
     private var transactions: List<Transaction> = listOf()
-    private var categories:  List<Category> = listOf()
+    private var categories: List<Category> = listOf()
 
     init {
         loadData()
@@ -28,7 +27,7 @@ class DashboardViewModel(private val dataService: IDataService) : ViewModel() {
     fun totalExpenses(): String {
         var sum: BigDecimal = BigDecimal.ZERO;
         for (transaction in transactions) {
-           sum = sum.add( BigDecimal(  transaction.money))
+            sum = sum.add(BigDecimal(transaction.money))
         }
         return sum.toString()
     }
@@ -38,7 +37,7 @@ class DashboardViewModel(private val dataService: IDataService) : ViewModel() {
 
         var indexOfTheBiggest: Int = 0;
         for (transaction in transactions) {
-            if ( BigDecimal(transaction.money) > BigDecimal(transactions[indexOfTheBiggest].money)) {
+            if (BigDecimal(transaction.money) > BigDecimal(transactions[indexOfTheBiggest].money)) {
                 indexOfTheBiggest = transactions.indexOf(transaction)
             }
         }
@@ -48,9 +47,9 @@ class DashboardViewModel(private val dataService: IDataService) : ViewModel() {
     fun loadData() {
         viewModelScope.launch {
             _uiState.value = DashboardUiState.Loading
-            categories = dataService.getCategories()
-            transactions = dataService.getTransactions()
 
+            categories = dataService.getCategories()
+            transactions = dataService.getTransactions().sortedByDescending { it.date }
 
             _uiState.value = DashboardUiState.Success(
                 transactions = transactions,
@@ -59,6 +58,10 @@ class DashboardViewModel(private val dataService: IDataService) : ViewModel() {
                 biggestExpense = getBiggestExpense(),
             )
         }
+    }
+
+    fun sortCategoriesByExpenseDesc(): List<Category> {
+        return categories.sortedByDescending { it.expenseOnThisCategory(transactions) }
     }
 
 

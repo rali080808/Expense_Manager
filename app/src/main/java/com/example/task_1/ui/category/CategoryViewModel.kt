@@ -3,7 +3,6 @@ package com.example.task_1.ui.category
 import com.example.task_1.R
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.task_1.data.DataService
 import com.example.task_1.data.IDataService
 import com.example.task_1.domain.Category
 import com.example.task_1.domain.ComponentMode
@@ -65,10 +64,13 @@ class CategoryViewModel(private val dataService: IDataService) : ViewModel() {
         return false;
     }
 
-    fun removeCategory(categoryID: Long) {
+    fun removeCategory(categoryID: Long?) {
         viewModelScope.launch {
             _uiState.value = CategoryUiState.Loading
-
+            if ( categoryID == null ) {
+                _uiState.value = CategoryUiState.Error(ErrorMessage(R.string.error_please_try_again))
+                return@launch
+            }
             categories = dataService.removeCategory(categoryID)
             _uiState.value = CategoryUiState.Success(transactions, categories)
 
