@@ -6,8 +6,8 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 
 @Immutable
-data class Width(
-    val default: Dp = 60.dp,
+data class Height(
+    val default: Dp = 15.dp,
     val extraSmall: Dp = 110.dp,
     val small: Dp = 200.dp,
     val medium: Dp = 370.dp,
@@ -15,4 +15,4 @@ data class Width(
     val extraLarge: Dp = 900.dp
 )
 
-val LocalWidth = staticCompositionLocalOf { Width() }
+val LocalHeight = staticCompositionLocalOf { Height() }

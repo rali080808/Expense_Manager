@@ -17,7 +17,7 @@ private val DarkColorScheme = darkColorScheme(
     secondary = PurpleGrey80,
     tertiary = Pink80,
 
-)
+    )
 
 private val LightColorScheme = lightColorScheme(
     primary = DashboardPrimary,
@@ -46,6 +46,10 @@ val MaterialTheme.elevation: Elevation
 val MaterialTheme.width: Width
     @Composable
     get() = LocalWidth.current
+val MaterialTheme.height: Height
+    @Composable
+    get() = LocalHeight.current
+
 @Composable
 fun Task_1Theme(
     darkTheme: Boolean = isSystemInDarkTheme(),
@@ -57,24 +61,26 @@ fun Task_1Theme(
         LocalSpacing provides Spacing(),
         LocalBorder provides Border(),
         LocalElevation provides Elevation(),
-        LocalWidth provides Width()) {
+        LocalWidth provides Width(),
+        LocalHeight provides Height()
+    ) {
 
 
-    val colorScheme = when {
-        dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
-            val context = LocalContext.current
-            if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
+        val colorScheme = when {
+            dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
+                val context = LocalContext.current
+                if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
+            }
+
+            darkTheme -> DarkColorScheme
+            else -> LightColorScheme
         }
 
-        darkTheme -> DarkColorScheme
-        else -> LightColorScheme
+        MaterialTheme(
+            colorScheme = colorScheme,
+            typography = Typography,
+            shapes = Shapes,
+            content = content
+        )
     }
-
-    MaterialTheme(
-        colorScheme = colorScheme,
-        typography = Typography,
-        shapes = Shapes,
-        content = content
-    )
-}
 }
