@@ -37,6 +37,9 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.lifecycle.repeatOnLifecycle
 import com.example.task_1.R
 import com.example.task_1.domain.Category
 import com.example.task_1.domain.uiStates.CategoryUiState
@@ -58,7 +61,18 @@ fun CategoriesScreen(
 ) {
     val context = LocalContext.current
 
-    val uiState by viewModel.uiState.collectAsState()
+    //   val uiState by viewModel.uiState.collectAsState()
+
+    val lifecycleOwner = LocalLifecycleOwner.current
+    var uiState by remember { mutableStateOf<CategoryUiState>(CategoryUiState.Loading) }
+    LaunchedEffect(viewModel) {
+        lifecycleOwner.lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
+            viewModel.uiState.collect { state ->
+                uiState = state
+            }
+        }
+    }
+
     val categories = (uiState as? CategoryUiState.Success)?.categories
         ?: (uiState as? CategoryUiState.FormFilling)?.categories
         ?: emptyList()
@@ -165,7 +179,7 @@ fun CategoriesScreen(
         if (uiState is CategoryUiState.Error) {
             ErrorDialog(
                 message = (uiState as CategoryUiState.Error).message,
-                 loadData = { viewModel.loadData() })
+                loadData = { viewModel.loadData() })
         }
         LazyColumn(
             modifier = Modifier

@@ -32,6 +32,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Popup
 import androidx.compose.foundation.lazy.items
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.lifecycle.repeatOnLifecycle
 import com.example.task_1.ui.ErrorDialog
 import com.example.task_1.ui.PeriodFilter
 import com.example.task_1.ui.PeriodFilterBar
@@ -41,8 +44,16 @@ import com.example.task_1.ui.theme.spacing
 @Composable
 fun StatisticsScreen(viewModel: StatisticsViewModel) {
 
-    val uiState by viewModel.uiState.collectAsState()
-
+    val lifecycleOwner = LocalLifecycleOwner.current
+    var uiState by remember { mutableStateOf<StatisticsUiState>(StatisticsUiState.Loading) }
+    LaunchedEffect(viewModel) {
+        lifecycleOwner.lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
+            viewModel.uiState.collect { state ->
+                uiState =
+                    state   // новата стойност се записва в state-а и Compose пре-съставя екрана
+            }
+        }
+    }
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -68,7 +79,7 @@ fun StatisticsScreen(viewModel: StatisticsViewModel) {
                 val periodFilter = currentState.periodFilter
                 val startDate = currentState.startDate
                 val endDate = currentState.endDate
-                 LazyColumn(Modifier.padding(horizontal = MaterialTheme.spacing.small)) {
+                LazyColumn(Modifier.padding(horizontal = MaterialTheme.spacing.small)) {
                     item {
                         Text(
                             "Statistics",

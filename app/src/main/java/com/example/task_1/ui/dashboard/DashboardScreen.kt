@@ -14,6 +14,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.runtime.collectAsState
@@ -24,51 +25,48 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.lifecycle.repeatOnLifecycle
 import com.example.task_1.R
 import com.example.task_1.domain.ComponentMode
 import com.example.task_1.domain.uiStates.DashboardUiState
 import com.example.task_1.domain.ErrorCategory
 import com.example.task_1.domain.getById
+import com.example.task_1.domain.uiStates.CategoryUiState
 import com.example.task_1.ui.ErrorDialog
 import com.example.task_1.ui.LoadingScreen
 import com.example.task_1.ui.PeriodFilter
 import com.example.task_1.ui.TransactionCard
 import com.example.task_1.ui.theme.spacing
 import com.example.task_1.ui.transaction.TransactionForm
+import java.math.BigDecimal
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DashboardScreen(
     viewModel: DashboardViewModel
 ) {
-    val uiState by viewModel.uiState.collectAsState()
+   // val uiState by viewModel.uiState.collectAsState()
+    val lifecycleOwner = LocalLifecycleOwner.current
+    var uiState by remember { mutableStateOf<DashboardUiState>(DashboardUiState.Loading) }
+    LaunchedEffect(viewModel) {
+        lifecycleOwner.lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
+            viewModel.uiState.collect { state ->
+                uiState = state
+            }
+        }
+    }
+
     val isRefreshing = uiState is DashboardUiState.Loading
-    var transactions = (uiState as DashboardUiState.Success).transactions
-    val totalExpenses = (uiState as DashboardUiState.Success).totalExpenses
-    val biggestExpense = (uiState as DashboardUiState.Success).biggestExpense
-    val categories = (uiState as DashboardUiState.Success).categories
-    val today = (uiState as DashboardUiState.Success).today
 
     var showDescription by remember { mutableStateOf(false) }
     var clickedTransaction by remember { mutableStateOf<Long?>(null) }
 
-    if (showDescription) {
-        ModalBottomSheet(
-            onDismissRequest = { showDescription = false },
-            sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
-        ) {
-            TransactionForm(
-                currentTransaction = transactions.getById(clickedTransaction),
-                categories = categories,
-                actionOnClick = null,
-                errors = null,
-                componentMode = ComponentMode.DETAILS
-            )
-        }
-    }
+
     PullToRefreshBox(
         isRefreshing = isRefreshing, onRefresh = { viewModel.loadData() }) {
-        when (uiState) {
+        when (val state = uiState) {
             is DashboardUiState.Loading -> LoadingScreen()
             is DashboardUiState.Error -> ErrorDialog(
                 (uiState as DashboardUiState.Error).message,
@@ -76,8 +74,27 @@ fun DashboardScreen(
             )
 
             is DashboardUiState.Success ->
+            {
+                val transactions = state.transactions
+                val totalExpenses = state.totalExpenses
+                val biggestExpense = state.biggestExpense
+                val categories = state.categories
 
-
+                val today = state.today
+                if (showDescription) {
+                    ModalBottomSheet(
+                        onDismissRequest = { showDescription = false },
+                        sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+                    ) {
+                        TransactionForm(
+                            currentTransaction = transactions?.getById(clickedTransaction),
+                            categories = categories?:listOf(),
+                            actionOnClick = null,
+                            errors = null,
+                            componentMode = ComponentMode.DETAILS
+                        )
+                    }
+                }
                 LazyColumn(
                     Modifier
                         .fillMaxSize()
@@ -108,7 +125,7 @@ fun DashboardScreen(
                         ) {
                             SummaryCard(stringResource(R.string.total_sum), totalExpenses.toString())
                             SummaryCard(
-                                stringResource(R.string.biggest_expense), biggestExpense
+                                stringResource(R.string.biggest_expense), biggestExpense?:"0.0"
                             )
                         }
 
@@ -148,14 +165,14 @@ fun DashboardScreen(
                                 CategoryOverviewCard(
                                     category,
                                     totalExpenses,
-                                    transactions,
+                                    transactions?:listOf(),
                                     PeriodFilter.NONE,
                                     today,
                                     today
                                 )
                             }
                         }
-                    }
+                    }}
                 }
 
         }

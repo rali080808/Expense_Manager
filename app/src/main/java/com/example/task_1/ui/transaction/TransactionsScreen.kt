@@ -34,10 +34,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.lifecycle.repeatOnLifecycle
 import com.example.task_1.domain.ComponentMode
 import com.example.task_1.domain.ErrorCategory
 import com.example.task_1.domain.NoFilter
 import com.example.task_1.domain.getById
+import com.example.task_1.domain.uiStates.DashboardUiState
 import com.example.task_1.domain.uiStates.TransactionUiState
 import com.example.task_1.ui.ErrorDialog
 import com.example.task_1.ui.LoadingScreen
@@ -52,7 +56,18 @@ import kotlinx.coroutines.launch
 fun TransactionsScreen(
     viewModel: TransactionViewModel,
 ) {
-    val uiState by viewModel.uiState.collectAsState()
+   // val uiState by viewModel.uiState.collectAsState()
+
+    val lifecycleOwner = LocalLifecycleOwner.current
+    var uiState by remember { mutableStateOf<TransactionUiState>(TransactionUiState.Loading) }
+    LaunchedEffect(viewModel) {
+        lifecycleOwner.lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
+            viewModel.uiState.collect { state ->
+                uiState = state
+            }
+        }
+    }
+
     var expandedSortTypes by remember { mutableStateOf(false) }
     var expandedCategoryFilter by remember { mutableStateOf(false) }
     val categoryFilter = remember { NoFilter }
