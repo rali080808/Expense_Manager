@@ -36,10 +36,14 @@ import androidx.compose.runtime.collectAsState
 import com.example.task_1.data.IDataService
 import com.example.task_1.domain.Transaction
 import com.example.task_1.ui.TransactionCard
+import com.example.task_1.ui.statistics.StatisticsScreen
+import com.example.task_1.ui.statistics.StatisticsViewModel
 import com.example.task_1.ui.theme.spacing
 
 @Serializable
 object CategoriesScreenRoute
+@Serializable
+object StatisticsScreenRoute
 
 @Serializable
 object DashboardScreenRoute
@@ -54,6 +58,8 @@ fun Navigation(dataService: IDataService) {
     val dashboardViewModel = remember { DashboardViewModel(dataService) }
     val transactionViewModel = remember { TransactionViewModel(dataService) }
     val categoryViewModel = remember { CategoryViewModel(dataService) }
+    val statisticsViewModel = remember { StatisticsViewModel(dataService) }
+
     NavigationSuiteScaffold(
         navigationSuiteItems = {
             AppDestinations.entries.forEach { destination ->
@@ -108,6 +114,15 @@ fun Navigation(dataService: IDataService) {
                     )
                 }
 
+                composable<StatisticsScreenRoute> {
+                    LaunchedEffect(Unit) {
+                        statisticsViewModel.loadData()
+                    }
+                    StatisticsScreen(
+                        viewModel = statisticsViewModel,
+                    )
+                }
+
 
 
 
@@ -138,6 +153,7 @@ enum class AppDestinations(
     DASHBOARD("Dashboard", R.drawable.dashboard_24px, DashboardScreenRoute), TRANSACTIONS(
         "Transactions", R.drawable.wallet_24px, TransactionsScreenRoute
     ),
-    CATEGORIES("Categories", R.drawable.bunny, CategoriesScreenRoute)
+    CATEGORIES("Categories", R.drawable.bunny, CategoriesScreenRoute),
+    STATISTICS("Statistics", R.drawable.finance_24px, StatisticsScreenRoute)
 
 }

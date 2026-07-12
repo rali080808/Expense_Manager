@@ -1,5 +1,5 @@
 package com.example.task_1.ui.dashboard
-
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -16,7 +16,6 @@ import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -26,14 +25,13 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import com.example.task_1.R
-import com.example.task_1.domain.Category
 import com.example.task_1.domain.ComponentMode
 import com.example.task_1.domain.uiStates.DashboardUiState
 import com.example.task_1.domain.ErrorCategory
 import com.example.task_1.domain.getById
 import com.example.task_1.ui.ErrorDialog
-import com.example.task_1.ui.dashboard.DashboardViewModel
 import com.example.task_1.ui.LoadingScreen
+import com.example.task_1.ui.PeriodFilter
 import com.example.task_1.ui.TransactionCard
 import com.example.task_1.ui.theme.spacing
 import com.example.task_1.ui.transaction.TransactionForm
@@ -49,6 +47,8 @@ fun DashboardScreen(
     val totalExpenses = (uiState as DashboardUiState.Success).totalExpenses
     val biggestExpense = (uiState as DashboardUiState.Success).biggestExpense
     val categories = (uiState as DashboardUiState.Success).categories
+    val today = (uiState as DashboardUiState.Success).today
+
     var showDescription by remember { mutableStateOf(false) }
     var clickedTransaction by remember { mutableStateOf<Long?>(null) }
 
@@ -106,7 +106,7 @@ fun DashboardScreen(
                             ),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            SummaryCard(stringResource(R.string.total_sum), totalExpenses)
+                            SummaryCard(stringResource(R.string.total_sum), totalExpenses.toString())
                             SummaryCard(
                                 stringResource(R.string.biggest_expense), biggestExpense
                             )
@@ -119,9 +119,9 @@ fun DashboardScreen(
                             fontStyle = FontStyle.Italic,
                             modifier = Modifier.padding(MaterialTheme.spacing.small)
                         )
+                    }
 
-                        Column() {
-                            transactions.forEachIndexed { index, transaction ->
+                       items(transactions, key={it.id ?: -1L }) { transaction ->
                                 TransactionCard(
                                     transaction,
                                     categories.getById(transaction.categoryID) ?: ErrorCategory,
@@ -133,7 +133,7 @@ fun DashboardScreen(
                                     onDeleteButtonClicked = null
                                 )
                             }
-                        }
+                        item {
                         Text(
                             stringResource(R.string.categories_overview),
                             fontWeight = FontWeight.Bold,
@@ -145,7 +145,14 @@ fun DashboardScreen(
 
                         Column {
                             viewModel.sortCategoriesByExpenseDesc().forEach { category ->
-                                CategoryOverviewCard(category, totalExpenses, transactions)
+                                CategoryOverviewCard(
+                                    category,
+                                    totalExpenses,
+                                    transactions,
+                                    PeriodFilter.NONE,
+                                    today,
+                                    today
+                                )
                             }
                         }
                     }

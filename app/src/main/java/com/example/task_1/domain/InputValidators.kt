@@ -4,6 +4,8 @@ import androidx.core.content.MimeTypeFilter.matches
 import com.example.task_1.R
 import java.math.BigDecimal
 import kotlin.collections.listOf
+
+import java.text.BreakIterator
 import kotlin.text.Regex
 sealed class Result<out T> {
     data class Success<T>(val value: T) : Result<T>()
@@ -114,12 +116,26 @@ fun validateMoney(money: String): Result<BigDecimal> {
     }
 }
 
-fun validateIcon(icon: String): Result<String> {
-    val strictEmojiRegex = Regex("""^\p{IsExtended_Pictographic}$""")
-    if (icon.matches(strictEmojiRegex)) return Result.Success(icon)
-    return Result.Failure(ErrorMessage(R.string.you_should_choose_1_emoji_and_nothing_else))
-}
 
+fun validateIcon(icon: String): Result<String> {
+    if (icon.isEmpty()) {
+        return Result.Failure(ErrorMessage(R.string.you_should_choose_1_emoji_and_nothing_else))
+    }
+
+    val iterator = BreakIterator.getCharacterInstance()
+    iterator.setText(icon)
+
+    var count = 0
+    while (iterator.next() != BreakIterator.DONE) {
+        count++
+    }
+
+     return if (count == 1) {
+        Result.Success(icon)
+    } else {
+        Result.Failure(ErrorMessage(R.string.you_should_choose_1_emoji_and_nothing_else))
+    }
+}
 fun containsEmojis(text: String): Result<String> {
 
     val emojiRegex = Regex("[\\uD83C-\\uDBFF\\uDC00-\\uDFFF]+")

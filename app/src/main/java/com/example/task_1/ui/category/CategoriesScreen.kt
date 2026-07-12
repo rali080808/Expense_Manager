@@ -75,8 +75,10 @@ fun CategoriesScreen(
     var clickedCategoryID by remember { mutableStateOf<Long?>(null) }
 
     LaunchedEffect(uiState) {
+        println("$uiState")
         if (uiState is CategoryUiState.Success) {
             showForm = false
+            println("showform false")
         }
     }
     if (showForm) {
@@ -130,7 +132,7 @@ fun CategoriesScreen(
             if (currentCategory == null) {
                 Log.e(
                     "UI_ERROR",
-                    "Tried to delete category $clickedCategoryID, but it wasn't found in the list!"
+                    "Tried to delete category $clickedCategoryID!"
                 )
                 Toast.makeText(
                     context,
@@ -163,13 +165,12 @@ fun CategoriesScreen(
         if (uiState is CategoryUiState.Error) {
             ErrorDialog(
                 message = (uiState as CategoryUiState.Error).message,
-//args = (uiState as CategoryUiState.Error).args,
-                loadData = { viewModel.loadData() })
+                 loadData = { viewModel.loadData() })
         }
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(horizontal = MaterialTheme.spacing.medium)
+                .padding(horizontal = MaterialTheme.spacing.small)
         ) {
 
 
@@ -195,7 +196,7 @@ fun CategoriesScreen(
                 }
                 Spacer(Modifier.padding(MaterialTheme.spacing.medium))
             }
-            items(categories) { category ->
+            items(categories, key = { it.id ?: -1L }) { category ->
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()

@@ -80,4 +80,8 @@
     <string name="are_you_sure_you_want_to_delete_this">Are you sure you want to delete this?</string>
     <string name="delete">Delete</string>
     <string name="error_please_try_again">Error. Please, try again!</string>
+    <string name="filter">Filter</string>
+    <string name="date_period">Date period</string>
+    <string name="start_date">Start date</string>
+    <string name="end_date">End date</string>
 </resources>

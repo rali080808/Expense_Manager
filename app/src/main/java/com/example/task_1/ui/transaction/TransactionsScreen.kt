@@ -239,29 +239,34 @@ fun TransactionsScreen(
                 }
                 Spacer(Modifier.padding(MaterialTheme.spacing.small))
                 Column {
-                    transactions.forEachIndexed { index, transaction ->
+                    viewModel.groupByDate().forEachIndexed { index, transactions ->
                         if (viewModel.currentSortType == SortTypes.SORTBY_DATE_ASCENDING || viewModel.currentSortType == SortTypes.SORTBY_DATE_DESCENDING)
-                            if (lastDate != transaction.date)
-                                Text(transaction.date)
-                        TransactionCard(
-                            transaction = transaction,
-                            category = categories.getById(transaction.categoryID) ?: ErrorCategory,
-                            onEdit = {
-                                componentMode = ComponentMode.EDIT
-                                clickedTransactionID = transaction.id
-                                showForm = true
-                            },
-                            onShowDescription = {
-                                componentMode = ComponentMode.DETAILS
-                                showForm = true
-                                clickedTransactionID = transaction.id
-                            },
-                            onDeleteButtonClicked = {
-                                showDeleteDialog = true
-                                clickedTransactionID = transaction.id
+                            if (transactions.isNotEmpty() && lastDate != transactions[0].date) {
+                                Text(transactions[0].date)
+                                lastDate = transactions[0].date
                             }
-                        )
-                        lastDate = transaction.date
+
+                        transactions.forEach { transaction ->
+                            TransactionCard(
+                                transaction = transaction,
+                                category = categories.getById(transaction.categoryID)
+                                    ?: ErrorCategory,
+                                onEdit = {
+                                    componentMode = ComponentMode.EDIT
+                                    clickedTransactionID = transaction.id
+                                    showForm = true
+                                },
+                                onShowDescription = {
+                                    componentMode = ComponentMode.DETAILS
+                                    showForm = true
+                                    clickedTransactionID = transaction.id
+                                },
+                                onDeleteButtonClicked = {
+                                    showDeleteDialog = true
+                                    clickedTransactionID = transaction.id
+                                }
+                            )
+                        }
                         if (index == transactions.size - 1) lastDate = null
                     }
                 }

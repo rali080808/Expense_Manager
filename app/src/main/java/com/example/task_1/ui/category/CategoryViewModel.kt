@@ -67,8 +67,9 @@ class CategoryViewModel(private val dataService: IDataService) : ViewModel() {
     fun removeCategory(categoryID: Long?) {
         viewModelScope.launch {
             _uiState.value = CategoryUiState.Loading
-            if ( categoryID == null ) {
-                _uiState.value = CategoryUiState.Error(ErrorMessage(R.string.error_please_try_again))
+            if (categoryID == null) {
+                _uiState.value =
+                    CategoryUiState.Error(ErrorMessage(R.string.error_please_try_again))
                 return@launch
             }
             categories = dataService.removeCategory(categoryID)
@@ -81,12 +82,24 @@ class CategoryViewModel(private val dataService: IDataService) : ViewModel() {
         viewModelScope.launch {
 
             if (categories.containsID(categoryID)) {
-              validateCategory(editedCategory, ComponentMode.EDIT)
+                validateCategory(editedCategory, ComponentMode.EDIT)
+
+                _uiState.value = CategoryUiState.FormFilling(transactions, categories, errors)
+
+                val original = categories.getById(editedCategory.id)
+                println("Original: $original")
+                println("Edited: $editedCategory")
+                println("Are they equal? ${editedCategory == original}")
+                if (editedCategory == original) {
+                    _uiState.value = CategoryUiState.Success(transactions.toList(), categories.toList())
+                 println("return")
+                    return@launch
+                }
 
                 if (errors.isEmpty()) {
                     categories = dataService.editCategory(categoryID, editedCategory)
                     _uiState.value = CategoryUiState.Success(transactions, categories)
-                }else {
+                } else {
                     _uiState.value = CategoryUiState.FormFilling(transactions, categories, errors)
                 }
             } else {
@@ -99,7 +112,7 @@ class CategoryViewModel(private val dataService: IDataService) : ViewModel() {
         }
     }
 
-    fun validateCategory(category: Category, componentMode: ComponentMode){
+    fun validateCategory(category: Category, componentMode: ComponentMode) {
         errors = mutableMapOf()
         validateLength(
             category.text,
@@ -108,7 +121,7 @@ class CategoryViewModel(private val dataService: IDataService) : ViewModel() {
         ).onFailure { message ->
             errors[CategoryFormField.TEXT] = message
         }
-        containsEmojis(category.text).onFailure {  message ->
+        containsEmojis(category.text).onFailure { message ->
             errors[CategoryFormField.TEXT] = message
         }
         val categoryID = if (componentMode == ComponentMode.ADD) null else category.id
@@ -122,6 +135,7 @@ class CategoryViewModel(private val dataService: IDataService) : ViewModel() {
             errors[CategoryFormField.ICON] = message
         }
     }
+
     fun addCategory(category: Category) {
         viewModelScope.launch {
             errors = mutableMapOf()
@@ -130,10 +144,17 @@ class CategoryViewModel(private val dataService: IDataService) : ViewModel() {
             validateCategory(category, ComponentMode.ADD)
 
             if (errors.isEmpty()) {
-                dataService.addCategory(Category(null, category.text, category.icon, category.color))
+                dataService.addCategory(
+                    Category(
+                        null,
+                        category.text,
+                        category.icon,
+                        category.color
+                    )
+                )
                 categories = dataService.getCategories()
                 _uiState.value = CategoryUiState.Success(transactions, categories)
-            }else {
+            } else {
                 _uiState.value = CategoryUiState.FormFilling(transactions, categories, errors)
             }
 
@@ -151,7 +172,7 @@ class CategoryViewModel(private val dataService: IDataService) : ViewModel() {
         }
         if (categories.containsID(categoryID)) {
             if (transactionsInCategory(categoryID)) {
-              return false
+                return false
             }
             return true
         }

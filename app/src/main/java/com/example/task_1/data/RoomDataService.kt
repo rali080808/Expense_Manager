@@ -69,7 +69,7 @@ class RoomDataService(
 
     override suspend fun removeCategory(id: Long): List<Category> = withContext(Dispatchers.IO) {
         categoryDao.deleteCategoryById(id)
-        delay(10)
+        delay(20)
         return@withContext categoriesState.value
     }
 
@@ -82,7 +82,7 @@ class RoomDataService(
 
     override suspend fun deleteTransaction(id: Long): List<Transaction> = withContext(Dispatchers.IO) {
         transactionDao.deleteTransactionById(id)
-        delay(10)
+        delay(20)
         return@withContext transactionsState.value
     }
 

@@ -144,7 +144,7 @@ class TransactionViewModel(private val dataService: IDataService) : ViewModel() 
                 _uiState.value =
                     TransactionUiState.Error(ErrorMessage(R.string.error_please_try_again))
             } else {
-                allTransactions =  dataService.deleteTransaction(transactionID)
+                allTransactions = dataService.deleteTransaction(transactionID)
                 filterByCategory(currentCategoryFilter)
                 sortTransactions(currentSortType)
             }
@@ -238,5 +238,22 @@ class TransactionViewModel(private val dataService: IDataService) : ViewModel() 
 
     }
 
-
+    fun groupByDate(): List<List<Transaction>> {
+        if (filteredTransactions.isNotEmpty() && (currentSortType == SortTypes.SORTBY_DATE_ASCENDING || currentSortType == SortTypes.SORTBY_DATE_DESCENDING)) {
+            val groupedTransactions = mutableListOf<List<Transaction>>()
+            var list = mutableListOf<Transaction>()
+            list.add(filteredTransactions[0])
+            for (i in 1..<filteredTransactions.size) {
+                if ( filteredTransactions[i].date == filteredTransactions[i-1].date )
+                    list.add(filteredTransactions[i])
+                else {
+                    groupedTransactions.add(list)
+                    list = mutableListOf(filteredTransactions[i])
+                }
+            }
+            groupedTransactions.add(list)
+            return groupedTransactions
+        }
+        return listOf(filteredTransactions)
+    }
 }
