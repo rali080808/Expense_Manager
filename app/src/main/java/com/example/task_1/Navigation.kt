@@ -135,8 +135,9 @@ fun Navigation(dataService: IDataService) {
 enum class AppDestinations(
     val label: String, val icon: Int, val route: Any
 ) {
-    DASHBOARD("Dashboard", R.drawable.ic_home, DashboardScreenRoute), TRANSACTIONS(
-        "Transactions", R.drawable.ic_favorite, TransactionsScreenRoute
+    DASHBOARD("Dashboard", R.drawable.dashboard_24px, DashboardScreenRoute), TRANSACTIONS(
+        "Transactions", R.drawable.wallet_24px, TransactionsScreenRoute
     ),
-    CATEGORIES("Categories", R.drawable.ic_account_box, CategoriesScreenRoute)
+    CATEGORIES("Categories", R.drawable.bunny, CategoriesScreenRoute)
+
 }
