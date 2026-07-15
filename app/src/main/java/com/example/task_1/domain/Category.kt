@@ -17,6 +17,12 @@ data class Category(
     val icon: String,
     val color: Int,
 ) {
+    constructor( ) : this(
+        id = null,
+        text = "",
+        icon = "",
+        color = 0
+    )
     fun percentage(
         totalExpenses: BigDecimal,
         transactions: List<Transaction>,

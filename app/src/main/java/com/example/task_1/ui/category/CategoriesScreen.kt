@@ -103,7 +103,7 @@ fun CategoriesScreen(
             CategoryForm(
                 currentCategory = if (componentMode == ComponentMode.EDIT) categories.getById(
                     clickedCategoryID
-                ) else null,
+                ) else Category(),
                 actionOnClick = { category ->
                     if (componentMode == ComponentMode.ADD)
                         addCategory(category)

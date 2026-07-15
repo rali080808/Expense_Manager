@@ -35,13 +35,13 @@ import com.example.task_1.ui.transaction.TransactionFormFields
 
 @Composable
 fun CategoryForm(
-    currentCategory: Category?,
+    currentCategory: Category,
     actionOnClick: (Category) -> Unit,
     onCancel: () -> Unit,
     errors: Map<CategoryFormField, ErrorMessage>?
 ) {
-    var categoryText by remember { mutableStateOf(currentCategory?.text ?: "") }
-    var categoryIcon by remember { mutableStateOf(currentCategory?.icon ?: "") }
+    var categoryText by remember { mutableStateOf(currentCategory.text) }
+    var categoryIcon by remember { mutableStateOf(currentCategory.icon) }
     val colorOptions = listOf(
         R.string.blue to Color.Blue.toArgb(),
         R.string.green to Color.Green.toArgb(),
