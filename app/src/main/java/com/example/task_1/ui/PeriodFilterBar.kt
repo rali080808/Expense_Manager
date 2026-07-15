@@ -24,13 +24,16 @@ import kotlin.time.Instant
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PeriodFilterBar(
+    periodFilter: PeriodFilter,
+    startDate: String,
+    endDate: String,
     onPeriodSelected: (periodFilter: PeriodFilter, startDate: String, endDate: String) -> Unit
 ) {
     var showDatePickerStart by remember { mutableStateOf(false) }
     var showDatePickerEnd by remember { mutableStateOf(false) }
 
     val options = PeriodFilter.entries
-    var periodFilter by remember { mutableStateOf(PeriodFilter.MONTH) }
+    var periodFilter by remember { mutableStateOf(periodFilter) }
     var expandedPeriodFilter by remember { mutableStateOf(false) }
     var startDate by remember { mutableStateOf(LocalDate.now()) }
     var endDate by remember { mutableStateOf(LocalDate.now()) }

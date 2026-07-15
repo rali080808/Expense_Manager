@@ -124,7 +124,7 @@ fun StatisticsScreen(viewModel: StatisticsViewModel) {
 
                         Spacer(modifier = Modifier.padding(MaterialTheme.spacing.small))
 
-                        Text("Category Breakdown", style = MaterialTheme.typography.titleMedium)
+                        Text(stringResource(R.string.category_breakdown), style = MaterialTheme.typography.titleMedium)
                         Spacer(modifier = Modifier.padding(MaterialTheme.spacing.small))
                     }
 
@@ -143,6 +143,9 @@ fun StatisticsScreen(viewModel: StatisticsViewModel) {
                     }
                     item {
                         PeriodFilterBar(
+                            periodFilter = periodFilter,
+                            startDate = startDate,
+                            endDate = endDate,
                             onPeriodSelected = { periodFilter, startDate, endDate ->
                                 viewModel.setDateRange(
                                     periodFilter,
@@ -159,68 +162,6 @@ fun StatisticsScreen(viewModel: StatisticsViewModel) {
     }
 }
 
-
-@Composable
-fun AnimatedCategoryBar(category: Category, amount: BigDecimal, percentage: Float) {
-    var showPopup by remember { mutableStateOf(false) }
-    val progress = remember { Animatable(0f) }
-
-    LaunchedEffect(Unit) {
-        progress.animateTo(percentage, animationSpec = tween(1000, easing = LinearOutSlowInEasing))
-    }
-
-    Box(modifier = Modifier.padding(vertical = MaterialTheme.spacing.small)) {
-        Column(modifier = Modifier.clickable { showPopup = true }) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Text(category.text, fontWeight = FontWeight.SemiBold) // Used category.text
-                Text("${percentage}%")
-            }
-            Spacer(modifier = Modifier.padding(MaterialTheme.spacing.small))
-
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(MaterialTheme.height.small),
-                horizontalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.small)
-            ) {
-                repeat(20) { i ->
-                    val isActive = (i.toFloat() / 20) <= progress.value
-                    val barColor = Color(category.color) // Used category.color
-                    Box(
-                        modifier = Modifier
-                            .weight(1f)
-                            .fillMaxHeight()
-                            .clip(MaterialTheme.shapes.small)
-                            .background(if (isActive) barColor else barColor.copy(alpha = 0.2f))
-                    )
-                }
-            }
-        }
-
-        if (showPopup) {
-            Popup(alignment = Alignment.TopCenter, onDismissRequest = { showPopup = false }) {
-                Surface(
-                    color = MaterialTheme.colorScheme.inverseSurface,
-                    shape = MaterialTheme.shapes.small,
-                    modifier = Modifier.padding(
-                        top = MaterialTheme.spacing.medium,
-                        start = MaterialTheme.spacing.small,
-                        end = MaterialTheme.spacing.small
-                    )
-                ) {
-                    Text(
-                        "${category.text}: $${amount}",
-                        color = MaterialTheme.colorScheme.inverseOnSurface,
-                        modifier = Modifier.padding(MaterialTheme.spacing.small)
-                    )
-                }
-            }
-        }
-    }
-}
 
 @Composable
 fun MetricCard(title: String, value: String, modifier: Modifier = Modifier) {

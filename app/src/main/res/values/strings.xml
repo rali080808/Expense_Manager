@@ -88,4 +88,5 @@
     <string name="spent_this_month">Spent this month</string>
     <string name="total_period">Total Period</string>
     <string name="daily_average">Daily Average</string>
+    <string name="category_breakdown">Category Breakdown</string>
 </resources>
