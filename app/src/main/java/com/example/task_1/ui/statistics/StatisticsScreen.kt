@@ -29,16 +29,17 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Popup
 import androidx.compose.foundation.lazy.items
+import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.repeatOnLifecycle
+import com.example.task_1.R
 import com.example.task_1.ui.ErrorDialog
-import com.example.task_1.ui.PeriodFilter
 import com.example.task_1.ui.PeriodFilterBar
 import com.example.task_1.ui.dashboard.CategoryOverviewCard
+import com.example.task_1.ui.theme.height
 import com.example.task_1.ui.theme.spacing
 
 @Composable
@@ -49,8 +50,7 @@ fun StatisticsScreen(viewModel: StatisticsViewModel) {
     LaunchedEffect(viewModel) {
         lifecycleOwner.lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
             viewModel.uiState.collect { state ->
-                uiState =
-                    state   // новата стойност се записва в state-а и Compose пре-съставя екрана
+                uiState = state
             }
         }
     }
@@ -79,48 +79,53 @@ fun StatisticsScreen(viewModel: StatisticsViewModel) {
                 val periodFilter = currentState.periodFilter
                 val startDate = currentState.startDate
                 val endDate = currentState.endDate
+                val currentCurrency = currentState.selectedCurrency
                 LazyColumn(Modifier.padding(horizontal = MaterialTheme.spacing.small)) {
                     item {
                         Text(
-                            "Statistics",
+                            stringResource(R.string.statistics),
                             style = MaterialTheme.typography.titleLarge,
                             color = MaterialTheme.colorScheme.primary,
                             fontWeight = FontWeight.Bold
                         )
-                        Spacer(modifier = Modifier.height(16.dp))
+                        Spacer(modifier = Modifier.padding(MaterialTheme.spacing.small))
 
                         Card(modifier = Modifier.fillMaxWidth()) {
-                            Column(modifier = Modifier.padding(24.dp)) {
+                            Column(modifier = Modifier.padding(MaterialTheme.spacing.medium)) {
                                 Text(
-                                    "Spent this month",
+                                    stringResource(R.string.spent_this_month),
                                     style = MaterialTheme.typography.titleMedium
                                 )
                                 Text(
-                                    "$${totalCurrentMonth}",
+                                    "${totalCurrentMonth} $currentCurrency",
                                     style = MaterialTheme.typography.displaySmall,
                                     color = MaterialTheme.colorScheme.primary
                                 )
                             }
                         }
 
-                        Spacer(modifier = Modifier.height(16.dp))
+                        Spacer(modifier = Modifier.height(MaterialTheme.height.default))
 
                         Row(
                             modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            horizontalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.small)
                         ) {
                             MetricCard(
-                                "Total Period",
-                                "$${totalSelectedPeriod}",
+                                stringResource(R.string.total_period),
+                                "${totalSelectedPeriod} ${currentCurrency}",
                                 Modifier.weight(1f)
                             )
-                            MetricCard("Daily Avg", "$${averageDaily}", Modifier.weight(1f))
+                            MetricCard(
+                                stringResource(R.string.daily_average),
+                                "${averageDaily} ${currentCurrency}",
+                                Modifier.weight(1f)
+                            )
                         }
 
-                        Spacer(modifier = Modifier.height(24.dp))
+                        Spacer(modifier = Modifier.padding(MaterialTheme.spacing.small))
 
                         Text("Category Breakdown", style = MaterialTheme.typography.titleMedium)
-                        Spacer(modifier = Modifier.height(8.dp))
+                        Spacer(modifier = Modifier.padding(MaterialTheme.spacing.small))
                     }
 
                     items(
@@ -164,7 +169,7 @@ fun AnimatedCategoryBar(category: Category, amount: BigDecimal, percentage: Floa
         progress.animateTo(percentage, animationSpec = tween(1000, easing = LinearOutSlowInEasing))
     }
 
-    Box(modifier = Modifier.padding(vertical = 12.dp)) {
+    Box(modifier = Modifier.padding(vertical = MaterialTheme.spacing.small)) {
         Column(modifier = Modifier.clickable { showPopup = true }) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -173,13 +178,13 @@ fun AnimatedCategoryBar(category: Category, amount: BigDecimal, percentage: Floa
                 Text(category.text, fontWeight = FontWeight.SemiBold) // Used category.text
                 Text("${percentage}%")
             }
-            Spacer(modifier = Modifier.height(6.dp))
+            Spacer(modifier = Modifier.padding(MaterialTheme.spacing.small))
 
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(10.dp),
-                horizontalArrangement = Arrangement.spacedBy(2.dp)
+                    .height(MaterialTheme.height.small),
+                horizontalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.small)
             ) {
                 repeat(20) { i ->
                     val isActive = (i.toFloat() / 20) <= progress.value
@@ -188,7 +193,7 @@ fun AnimatedCategoryBar(category: Category, amount: BigDecimal, percentage: Floa
                         modifier = Modifier
                             .weight(1f)
                             .fillMaxHeight()
-                            .clip(RoundedCornerShape(2.dp))
+                            .clip(MaterialTheme.shapes.small)
                             .background(if (isActive) barColor else barColor.copy(alpha = 0.2f))
                     )
                 }
@@ -199,13 +204,17 @@ fun AnimatedCategoryBar(category: Category, amount: BigDecimal, percentage: Floa
             Popup(alignment = Alignment.TopCenter, onDismissRequest = { showPopup = false }) {
                 Surface(
                     color = MaterialTheme.colorScheme.inverseSurface,
-                    shape = RoundedCornerShape(8.dp),
-                    modifier = Modifier.padding(top = 40.dp, start = 16.dp, end = 16.dp)
+                    shape = MaterialTheme.shapes.small,
+                    modifier = Modifier.padding(
+                        top = MaterialTheme.spacing.medium,
+                        start = MaterialTheme.spacing.small,
+                        end = MaterialTheme.spacing.small
+                    )
                 ) {
                     Text(
                         "${category.text}: $${amount}",
                         color = MaterialTheme.colorScheme.inverseOnSurface,
-                        modifier = Modifier.padding(12.dp)
+                        modifier = Modifier.padding(MaterialTheme.spacing.small)
                     )
                 }
             }
@@ -216,7 +225,7 @@ fun AnimatedCategoryBar(category: Category, amount: BigDecimal, percentage: Floa
 @Composable
 fun MetricCard(title: String, value: String, modifier: Modifier = Modifier) {
     Card(modifier = modifier) {
-        Column(modifier = Modifier.padding(16.dp)) {
+        Column(modifier = Modifier.padding(MaterialTheme.spacing.small)) {
             Text(title, style = MaterialTheme.typography.labelMedium)
             Text(value, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
         }

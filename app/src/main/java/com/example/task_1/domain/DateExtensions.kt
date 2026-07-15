@@ -1,7 +1,6 @@
 package com.example.task_1.domain
 
-import com.example.task_1.ui.PeriodFilter
-import kotlinx.datetime.toKotlinLocalIsoWeekDate
+ import kotlinx.datetime.toKotlinLocalIsoWeekDate
 import java.time.LocalDate
 
 fun LocalDate.isDateInRange(
@@ -11,7 +10,7 @@ fun LocalDate.isDateInRange(
 ): Boolean {
 
     return when (periodFilter) {
-        PeriodFilter.NONE -> true
+//        PeriodFilter.NONE -> true
         PeriodFilter.MONTH -> (this.month == startDate.month && this.year == startDate.year)
         PeriodFilter.CUSTOM -> this in startDate..endDate
         PeriodFilter.TODAY -> this == startDate

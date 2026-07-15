@@ -4,8 +4,7 @@ import android.icu.math.BigDecimal
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.core.util.Predicate.not
-import com.example.task_1.ui.PeriodFilter
-import kotlinx.coroutines.flow.Flow
+ import kotlinx.coroutines.flow.Flow
 import kotlinx.serialization.Serializable
 import java.math.RoundingMode
 import java.time.LocalDate

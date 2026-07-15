@@ -1,4 +1,5 @@
 package com.example.task_1.ui.dashboard
+
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -32,11 +33,11 @@ import com.example.task_1.R
 import com.example.task_1.domain.ComponentMode
 import com.example.task_1.domain.uiStates.DashboardUiState
 import com.example.task_1.domain.ErrorCategory
+import com.example.task_1.domain.PeriodFilter
 import com.example.task_1.domain.getById
 import com.example.task_1.domain.uiStates.CategoryUiState
 import com.example.task_1.ui.ErrorDialog
 import com.example.task_1.ui.LoadingScreen
-import com.example.task_1.ui.PeriodFilter
 import com.example.task_1.ui.TransactionCard
 import com.example.task_1.ui.theme.spacing
 import com.example.task_1.ui.transaction.TransactionForm
@@ -47,7 +48,7 @@ import java.math.BigDecimal
 fun DashboardScreen(
     viewModel: DashboardViewModel
 ) {
-   // val uiState by viewModel.uiState.collectAsState()
+    // val uiState by viewModel.uiState.collectAsState()
     val lifecycleOwner = LocalLifecycleOwner.current
     var uiState by remember { mutableStateOf<DashboardUiState>(DashboardUiState.Loading) }
     LaunchedEffect(viewModel) {
@@ -73,8 +74,7 @@ fun DashboardScreen(
                 loadData = { viewModel.loadData() }
             )
 
-            is DashboardUiState.Success ->
-            {
+            is DashboardUiState.Success -> {
                 val transactions = state.transactions
                 val totalExpenses = state.totalExpenses
                 val biggestExpense = state.biggestExpense
@@ -88,7 +88,7 @@ fun DashboardScreen(
                     ) {
                         TransactionForm(
                             currentTransaction = transactions?.getById(clickedTransaction),
-                            categories = categories?:listOf(),
+                            categories = categories ?: listOf(),
                             actionOnClick = null,
                             errors = null,
                             componentMode = ComponentMode.DETAILS
@@ -123,9 +123,12 @@ fun DashboardScreen(
                             ),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            SummaryCard(stringResource(R.string.total_sum), totalExpenses.toString())
                             SummaryCard(
-                                stringResource(R.string.biggest_expense), biggestExpense?:"0.0"
+                                stringResource(R.string.total_sum),
+                                totalExpenses.toString()
+                            )
+                            SummaryCard(
+                                stringResource(R.string.biggest_expense), biggestExpense ?: "0.0"
                             )
                         }
 
@@ -138,19 +141,19 @@ fun DashboardScreen(
                         )
                     }
 
-                       items(transactions, key={it.id ?: -1L }) { transaction ->
-                                TransactionCard(
-                                    transaction,
-                                    categories.getById(transaction.categoryID) ?: ErrorCategory,
-                                    onEdit = null,
-                                    onShowDescription = {
-                                        showDescription = true
-                                        clickedTransaction = transaction.id
-                                    },
-                                    onDeleteButtonClicked = null
-                                )
-                            }
-                        item {
+                    items(transactions, key = { it.id ?: -1L }) { transaction ->
+                        TransactionCard(
+                            transaction,
+                            categories.getById(transaction.categoryID) ?: ErrorCategory,
+                            onEdit = null,
+                            onShowDescription = {
+                                showDescription = true
+                                clickedTransaction = transaction.id
+                            },
+                            onDeleteButtonClicked = null
+                        )
+                    }
+                    item {
                         Text(
                             stringResource(R.string.categories_overview),
                             fontWeight = FontWeight.Bold,
@@ -165,15 +168,16 @@ fun DashboardScreen(
                                 CategoryOverviewCard(
                                     category,
                                     totalExpenses,
-                                    transactions?:listOf(),
-                                    PeriodFilter.NONE,
+                                    transactions ,
+                                    PeriodFilter.MONTH,
                                     today,
                                     today
                                 )
                             }
                         }
-                    }}
+                    }
                 }
+            }
 
         }
     }

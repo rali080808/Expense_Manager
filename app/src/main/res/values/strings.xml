@@ -84,4 +84,8 @@
     <string name="date_period">Date period</string>
     <string name="start_date">Start date</string>
     <string name="end_date">End date</string>
+    <string name="statistics">Statistics</string>
+    <string name="spent_this_month">Spent this month</string>
+    <string name="total_period">Total Period</string>
+    <string name="daily_average">Daily Average</string>
 </resources>

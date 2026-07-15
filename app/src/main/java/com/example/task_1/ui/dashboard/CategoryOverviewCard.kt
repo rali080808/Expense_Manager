@@ -15,7 +15,7 @@ import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import com.example.task_1.ui.PeriodFilter
+import com.example.task_1.domain.PeriodFilter
 import com.example.task_1.ui.theme.height
 import com.example.task_1.ui.theme.width
 

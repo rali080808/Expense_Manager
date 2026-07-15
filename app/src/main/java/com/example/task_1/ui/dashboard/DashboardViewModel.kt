@@ -6,12 +6,12 @@ import androidx.lifecycle.viewModelScope
 import com.example.task_1.R
 import com.example.task_1.data.IDataService
 import com.example.task_1.domain.Category
+import com.example.task_1.domain.PeriodFilter
 import com.example.task_1.domain.uiStates.CategoryUiState
 import com.example.task_1.domain.uiStates.DashboardUiState
 import com.example.task_1.domain.Transaction
 import com.example.task_1.domain.uiStates.TransactionUiState
-import com.example.task_1.ui.PeriodFilter
-import kotlinx.coroutines.flow.MutableStateFlow
+ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import java.time.LocalDate
@@ -22,7 +22,7 @@ class DashboardViewModel(private val dataService: IDataService) : ViewModel() {
     private var transactions: List<Transaction> = listOf()
     private var categories: List<Category> = listOf()
     private val today = LocalDate.now().toString()
-    init {
+    init { // TODO last 5
         loadData()
     }
 
@@ -64,7 +64,7 @@ class DashboardViewModel(private val dataService: IDataService) : ViewModel() {
     }
 
     fun sortCategoriesByExpenseDesc(): List<Category> {
-        return categories.sortedByDescending { it.expenseOnThisCategory(transactions, PeriodFilter.NONE, today, today) }
+        return categories.sortedByDescending { it.expenseOnThisCategory(transactions, PeriodFilter.MONTH, today, today) }
     }
 
 

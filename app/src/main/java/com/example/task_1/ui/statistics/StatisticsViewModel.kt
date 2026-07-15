@@ -6,16 +6,21 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.task_1.data.IDataService
 import com.example.task_1.domain.Category
+import com.example.task_1.domain.PeriodFilter
 import com.example.task_1.domain.Transaction
 import com.example.task_1.domain.isDateInRange
 import com.example.task_1.domain.uiStates.StatisticsUiState
-import com.example.task_1.ui.PeriodFilter
-import com.example.task_1.ui.PeriodFilterBar
+ import com.example.task_1.ui.PeriodFilterBar
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import kotlinx.datetime.toKotlinLocalIsoWeekDate
+import java.time.DayOfWeek
 import java.time.LocalDate
+import java.time.Period
+import java.time.temporal.ChronoUnit
+import java.time.temporal.TemporalAdjusters
+import kotlin.div
 
 class StatisticsViewModel(private val dataService: IDataService) : ViewModel() {
     private val _uiState = MutableStateFlow<StatisticsUiState>(StatisticsUiState.Loading)
@@ -24,9 +29,9 @@ class StatisticsViewModel(private val dataService: IDataService) : ViewModel() {
     private var categories: List<Category> = listOf()
 
     var periodFilter = PeriodFilter.MONTH
-    val today = LocalDate.now().toString()
-    var startDate = LocalDate.now().toString()
-    var endDate = LocalDate.now().toString()
+    val today: LocalDate = LocalDate.now()
+    var startDate: LocalDate = LocalDate.now()
+    var endDate: LocalDate = LocalDate.now()
 
     init {
         loadData()
@@ -38,16 +43,17 @@ class StatisticsViewModel(private val dataService: IDataService) : ViewModel() {
 
             categories = dataService.getCategories()
             transactions = dataService.getTransactions().sortedByDescending { it.date }
-
+            setDateRange(PeriodFilter.MONTH)
             _uiState.value = StatisticsUiState.Success(
                 totalExpenses(PeriodFilter.MONTH),
                 totalExpenses(),
                 averageDaily(),
-                 transactions,
+                transactions,
                 periodFilter,
-                startDate,
-                endDate,
-                today
+                startDate.toString(),
+                endDate.toString(),
+                today.toString(),
+                transactions.getOrNull(0)?.currency?.sign ?: ""
             )
         }
     }
@@ -59,9 +65,8 @@ class StatisticsViewModel(private val dataService: IDataService) : ViewModel() {
         for (transaction in transactions) {
             if (LocalDate.parse(transaction.date).isDateInRange(
                     periodFilter = periodFilter,
-                    startDate = if (periodFilter == PeriodFilter.MONTH) LocalDate.parse(today)
-                    else LocalDate.parse(startDate),
-                    endDate = LocalDate.parse(endDate)
+                    startDate = startDate,
+                    endDate = endDate
                 )
             ) {
                 sum = sum.add(BigDecimal(transaction.money))
@@ -76,35 +81,55 @@ class StatisticsViewModel(private val dataService: IDataService) : ViewModel() {
             it.expenseOnThisCategory(
                 transactions,
                 periodFilter,
-                startDate,
-                endDate
+                startDate.toString(),
+                endDate.toString()
             )
         }
     }
 
     fun averageDaily(): BigDecimal {
-        return BigDecimal.ZERO
-        // TODO
+        val days = ChronoUnit.DAYS.between(startDate, endDate) + 1
+
+        return if (days > 0) totalExpenses().divide(
+            BigDecimal.valueOf(days),
+            2,
+            BigDecimal.ROUND_HALF_UP
+        ) else BigDecimal.ZERO
     }
 
-    fun setDateRange(periodFilter: PeriodFilter, startDate: String, endDate: String) {
+    fun setDateRange(periodFilter: PeriodFilter, startDate: String = today.toString(), endDate: String = today.toString()) {
         _uiState.value = StatisticsUiState.Loading
         this.periodFilter = periodFilter
-        if (periodFilter != PeriodFilter.CUSTOM) {
-            this.startDate = today
-            this.endDate = today
+
+        when (periodFilter) {
+            PeriodFilter.MONTH -> {
+                this.startDate = today.withDayOfMonth(1)
+                this.endDate = today
+            }
+            PeriodFilter.WEEK -> {
+                this.startDate = today.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY))
+                this.endDate = today
+            }
+            PeriodFilter.TODAY -> {
+                this.startDate = today
+                this.endDate = today
+            }
+            PeriodFilter.CUSTOM -> {
+                this.startDate = LocalDate.parse(startDate)
+                this.endDate = LocalDate.parse(endDate)
+            }
         }
-        this.startDate = startDate
-        this.endDate = endDate
+
         _uiState.value = StatisticsUiState.Success(
-            totalExpenses(PeriodFilter.MONTH),
-            totalExpenses(),
-            averageDaily(),
-             transactions,
-            periodFilter,
-            startDate,
-            endDate,
-            today
+            totalCurrentMonth = totalExpenses(PeriodFilter.MONTH),
+            totalSelectedPeriod = totalExpenses(),
+            averageDaily = averageDaily(),
+            transactions = transactions,
+            periodFilter = periodFilter,
+            startDate = this.startDate.toString(),
+            endDate = this.endDate.toString(),
+            today = today.toString(),
+            selectedCurrency = transactions.getOrNull(0)?.currency?.sign ?: ""
         )
 
     }
