@@ -1,5 +1,6 @@
 package com.example.task_1.ui.transaction
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.task_1.R
@@ -45,8 +46,7 @@ class TransactionViewModel(private val dataService: IDataService) : ViewModel() 
     private var allTransactions = listOf<Transaction>()
     private var filteredTransactions = listOf<Transaction>()
     private var categories = listOf<Category>()
-    private var errors =
-        mutableMapOf<TransactionFormFields, ErrorMessage>()  // = TransactionFormFields.entries.associateWith { ErrorMessage(R.string.empty_string) }.toMutableMap()
+    private var errors = mutableMapOf<TransactionFormFields, ErrorMessage>()
     var currentSortType = SortTypes.SORTBY_DATE_DESCENDING
     var currentCategoryFilter = NoFilter
     private var periodFilter = PeriodFilter.MONTH
@@ -77,7 +77,7 @@ class TransactionViewModel(private val dataService: IDataService) : ViewModel() 
             allTransactions = dataService.getTransactions().reversed()
 
             filteredTransactions = allTransactions
-            sortTransactions(currentSortType)
+            filterAndSort()
             categories = dataService.getCategories()
 
             _uiState.value = TransactionUiState.Success(
@@ -141,9 +141,7 @@ class TransactionViewModel(private val dataService: IDataService) : ViewModel() 
             _uiState.value = TransactionUiState.Loading
             dataService.addTransaction(transaction.copy(money = formattedMoney))
             allTransactions = dataService.getTransactions()
-            filterByCategory(currentCategoryFilter)
-            sortTransactions(currentSortType)
-
+            filterAndSort()
             _uiState.value = TransactionUiState.Success(
                 transactions = filteredTransactions,
                 categories = categories,
@@ -164,8 +162,7 @@ class TransactionViewModel(private val dataService: IDataService) : ViewModel() 
                     TransactionUiState.Error(ErrorMessage(R.string.error_please_try_again))
             } else {
                 allTransactions = dataService.deleteTransaction(transactionID)
-                filterByCategory(currentCategoryFilter)
-                sortTransactions(currentSortType)
+                filterAndSort()
             }
         }
     }
@@ -210,8 +207,7 @@ class TransactionViewModel(private val dataService: IDataService) : ViewModel() 
             _uiState.value = TransactionUiState.Loading
             dataService.editTransaction(transaction)
             allTransactions = dataService.getTransactions()
-            filterByCategory(currentCategoryFilter)
-            sortTransactions(currentSortType)
+            filterAndSort()
 
             _uiState.value = TransactionUiState.Success(
                 transactions = filteredTransactions,
@@ -234,8 +230,8 @@ class TransactionViewModel(private val dataService: IDataService) : ViewModel() 
         val currentList = filteredTransactions
 
         val sortedList = when (sortType) {
-            SortTypes.SORTBY_SUM_ASCENDING -> currentList.sortedBy { it.money }
-            SortTypes.SORTBY_SUM_DESCENDING -> currentList.sortedByDescending { it.money }
+            SortTypes.SORTBY_SUM_ASCENDING -> currentList.sortedBy { BigDecimal(it.money) }
+            SortTypes.SORTBY_SUM_DESCENDING -> currentList.sortedByDescending { BigDecimal(it.money) }
             SortTypes.SORTBY_DATE_ASCENDING -> currentList.sortedBy { it.date }
             SortTypes.SORTBY_DATE_DESCENDING -> currentList.sortedByDescending { it.date }
         }
@@ -255,7 +251,7 @@ class TransactionViewModel(private val dataService: IDataService) : ViewModel() 
 
     fun filterByPeriod() {
         val list = mutableListOf<Transaction>()
-        for (transaction in filteredTransactions) {
+        for (transaction in allTransactions) {
             if (LocalDate.parse(transaction.date).isDateInRange(
                     periodFilter = periodFilter,
                     startDate = LocalDate.parse(startDate.toString()),
@@ -284,7 +280,10 @@ class TransactionViewModel(private val dataService: IDataService) : ViewModel() 
 
             PeriodFilter.WEEK -> {
                 this.startDate = today.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY))
+                Log.e("start of week", this.startDate.toString())
                 this.endDate = today
+                Log.e("end of week", this.endDate.toString())
+
             }
 
             PeriodFilter.TODAY -> {
@@ -297,7 +296,7 @@ class TransactionViewModel(private val dataService: IDataService) : ViewModel() 
                 this.endDate = LocalDate.parse(endDate)
             }
         }
-        filterByPeriod()
+        filterAndSort()
 
         _uiState.value = TransactionUiState.Success(
             transactions = filteredTransactions,
@@ -310,12 +309,18 @@ class TransactionViewModel(private val dataService: IDataService) : ViewModel() 
         )
     }
 
+    fun filterAndSort() {
+        filterByPeriod()
+        filterByCategory(currentCategoryFilter)
+        sortTransactions(currentSortType)
+    }
+
     fun filterByCategory(categoryID: Long) {
         _uiState.value = TransactionUiState.Loading
         currentCategoryFilter = categoryID
 
-        if (categoryID == NoFilter) filteredTransactions = allTransactions
-        else filteredTransactions = allTransactions.filter { it.categoryID == categoryID }
+        if (categoryID != NoFilter) filteredTransactions =
+            filteredTransactions.filter { it.categoryID == categoryID }
 
 
         sortTransactions(currentSortType)

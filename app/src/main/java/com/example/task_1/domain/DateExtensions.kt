@@ -14,7 +14,6 @@ fun LocalDate.isDateInRange(
         PeriodFilter.MONTH -> (this.month == startDate.month && this.year == startDate.year)
         PeriodFilter.CUSTOM -> this in startDate..endDate
         PeriodFilter.TODAY -> this == startDate
-        PeriodFilter.WEEK -> this.toKotlinLocalIsoWeekDate() == startDate.toKotlinLocalIsoWeekDate()
-                          && this.year == startDate.year
+        PeriodFilter.WEEK -> startDate <= this && this <= endDate
     }
 }
