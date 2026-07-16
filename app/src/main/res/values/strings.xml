@@ -89,4 +89,6 @@
     <string name="total_period">Total Period</string>
     <string name="daily_average">Daily Average</string>
     <string name="category_breakdown">Category Breakdown</string>
+    <string name="transactions">Transactions</string>
+    <string name="empty_you_have_not_added_transactions_yet_click_the_button_to_add_a_new_transaction">Empty. You have not added transactions yet. Click the + button to add a new transaction.</string>
 </resources>
