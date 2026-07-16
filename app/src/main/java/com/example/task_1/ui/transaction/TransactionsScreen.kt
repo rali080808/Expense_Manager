@@ -59,7 +59,6 @@ import kotlinx.coroutines.launch
 fun TransactionsScreen(
     viewModel: TransactionViewModel,
 ) {
-    // val uiState by viewModel.uiState.collectAsState()
 
     val lifecycleOwner = LocalLifecycleOwner.current
     var uiState by remember { mutableStateOf<TransactionUiState>(TransactionUiState.Loading) }
