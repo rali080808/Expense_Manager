@@ -46,12 +46,18 @@ class CategoryViewModel(private val dataService: IDataService) : ViewModel() {
     fun loadData() {
         viewModelScope.launch {
             _uiState.value = CategoryUiState.Loading
+            try {
+                transactions = dataService.getTransactions()
+                categories = dataService.getCategories()
 
-            transactions = dataService.getTransactions()
-            categories = dataService.getCategories()
-
-            _uiState.value = CategoryUiState.Success(transactions, categories)
-
+                _uiState.value = CategoryUiState.Success(transactions, categories)
+            } catch (e: Exception) {
+                _uiState.value = CategoryUiState.Error(
+                    ErrorMessage(
+                        R.string.error_please_try_again
+                    )
+                )
+            }
         }
     }
 
@@ -72,7 +78,15 @@ class CategoryViewModel(private val dataService: IDataService) : ViewModel() {
                     CategoryUiState.Error(ErrorMessage(R.string.error_please_try_again))
                 return@launch
             }
-            categories = dataService.removeCategory(categoryID)
+            try {
+                categories = dataService.removeCategory(categoryID)
+            } catch (e: Exception) {
+                _uiState.value = CategoryUiState.Error(
+                    ErrorMessage(
+                        R.string.error_please_try_again
+                    )
+                )
+            }
             _uiState.value = CategoryUiState.Success(transactions, categories)
 
         }
@@ -87,18 +101,24 @@ class CategoryViewModel(private val dataService: IDataService) : ViewModel() {
                 _uiState.value = CategoryUiState.FormFilling(transactions, categories, errors)
 
                 val original = categories.getById(editedCategory.id)
-                println("Original: $original")
-                println("Edited: $editedCategory")
-                println("Are they equal? ${editedCategory == original}")
+
                 if (editedCategory == original) {
-                    _uiState.value = CategoryUiState.Success(transactions.toList(), categories.toList())
-                 println("return")
+                    _uiState.value =
+                        CategoryUiState.Success(transactions.toList(), categories.toList())
                     return@launch
                 }
 
                 if (errors.isEmpty()) {
-                    categories = dataService.editCategory(categoryID, editedCategory)
-                    _uiState.value = CategoryUiState.Success(transactions, categories)
+                    try {
+                        categories = dataService.editCategory(categoryID, editedCategory)
+                        _uiState.value = CategoryUiState.Success(transactions, categories)
+                    } catch (e: Exception) {
+                        _uiState.value = CategoryUiState.Error(
+                            ErrorMessage(
+                                R.string.error_please_try_again
+                            )
+                        )
+                    }
                 } else {
                     _uiState.value = CategoryUiState.FormFilling(transactions, categories, errors)
                 }
@@ -115,9 +135,7 @@ class CategoryViewModel(private val dataService: IDataService) : ViewModel() {
     fun validateCategory(category: Category, componentMode: ComponentMode) {
         errors = mutableMapOf()
         validateLength(
-            category.text,
-            Category.MIN_TEXT_LENGTH,
-            Category.MAX_TEXT_LENGTH
+            category.text, Category.MIN_TEXT_LENGTH, Category.MAX_TEXT_LENGTH
         ).onFailure { message ->
             errors[CategoryFormField.TEXT] = message
         }
@@ -141,21 +159,27 @@ class CategoryViewModel(private val dataService: IDataService) : ViewModel() {
             errors = mutableMapOf()
             _uiState.value = CategoryUiState.FormFilling(transactions, categories, errors)
 
-            validateCategory(category, ComponentMode.ADD)
+            try {
 
-            if (errors.isEmpty()) {
-                dataService.addCategory(
-                    Category(
-                        null,
-                        category.text,
-                        category.icon,
-                        category.color
+                validateCategory(category, ComponentMode.ADD)
+
+                if (errors.isEmpty()) {
+                    dataService.addCategory(
+                        Category(
+                            null, category.text, category.icon, category.color
+                        )
+                    )
+                    categories = dataService.getCategories()
+                    _uiState.value = CategoryUiState.Success(transactions, categories)
+                } else {
+                    _uiState.value = CategoryUiState.FormFilling(transactions, categories, errors)
+                }
+            } catch (e: Exception) {
+                _uiState.value = CategoryUiState.Error(
+                    ErrorMessage(
+                        R.string.error_please_try_again
                     )
                 )
-                categories = dataService.getCategories()
-                _uiState.value = CategoryUiState.Success(transactions, categories)
-            } else {
-                _uiState.value = CategoryUiState.FormFilling(transactions, categories, errors)
             }
 
         }
@@ -164,19 +188,16 @@ class CategoryViewModel(private val dataService: IDataService) : ViewModel() {
     // TODO check whether to remove Boolean from return type
     fun validateIDForDeletion(categoryID: Long?): Boolean {
 
+        if (categoryID != null && categories.containsID(categoryID)) {
+            return !transactionsInCategory(categoryID)
+        }
+        _uiState.value = CategoryUiState.Error(
+            ErrorMessage(
+                R.string.error_please_try_again
+            )
+        )
 
-        if (categoryID == null) {
-            _uiState.value =
-                CategoryUiState.Error(ErrorMessage(R.string.please_try_again, args = listOf()))
-            return false
-        }
-        if (categories.containsID(categoryID)) {
-            if (transactionsInCategory(categoryID)) {
-                return false
-            }
-            return true
-        }
-        throw IllegalArgumentException("Category ID $categoryID does not exist.")
+        return false
 
     }
 

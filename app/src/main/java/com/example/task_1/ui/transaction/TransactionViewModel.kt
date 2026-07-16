@@ -23,6 +23,8 @@ import com.example.task_1.domain.isDateInRange
 import com.example.task_1.domain.isNotEmpty
 import com.example.task_1.domain.validateLength
 import com.example.task_1.domain.validateMoney
+import com.example.task_1.ui.ErrorDialog
+import com.example.task_1.ui.ShowEmpty
 import java.math.BigDecimal
 import java.time.DayOfWeek
 import java.time.LocalDate
@@ -73,22 +75,25 @@ class TransactionViewModel(private val dataService: IDataService) : ViewModel() 
     fun loadData() {
         viewModelScope.launch {
             _uiState.value = TransactionUiState.Loading
+            try {
+                allTransactions = dataService.getTransactions().reversed()
 
-            allTransactions = dataService.getTransactions().reversed()
+                filteredTransactions = allTransactions
+                filterAndSort()
+                categories = dataService.getCategories()
 
-            filteredTransactions = allTransactions
-            filterAndSort()
-            categories = dataService.getCategories()
-
-            _uiState.value = TransactionUiState.Success(
-                transactions = filteredTransactions,
-                categories = categories,
-                errors = errors,
-                sent = false,
-                periodFilter = periodFilter,
-                startDate = startDate.toString(),
-                endDate = endDate.toString()
-            )
+                _uiState.value = TransactionUiState.Success(
+                    transactions = filteredTransactions,
+                    categories = categories,
+                    errors = errors,
+                    sent = false,
+                    periodFilter = periodFilter,
+                    startDate = startDate.toString(),
+                    endDate = endDate.toString()
+                )
+            } catch (e: Exception) {
+                showError(R.string.error_please_try_again)
+            }
         }
     }
 
@@ -102,123 +107,134 @@ class TransactionViewModel(private val dataService: IDataService) : ViewModel() 
 
     fun addTransaction(transaction: Transaction) {
         viewModelScope.launch {
-            errors = mutableMapOf()
-            isChosenCategory(transaction.categoryID).onFailure { message ->
-                errors[TransactionFormFields.CATEGORY] = message
-            }
+            try {
+                errors = mutableMapOf()
+                isChosenCategory(transaction.categoryID).onFailure { message ->
+                    errors[TransactionFormFields.CATEGORY] = message
+                }
 
-            var formattedMoney = transaction.money
-            validateMoney(transaction.money).onFailure { message ->
-                errors[TransactionFormFields.MONEY] = message
-            }.onSuccess { moneyBigDecimal ->
-                formattedMoney = moneyBigDecimal.stripTrailingZeros().toPlainString()
-            }
+                var formattedMoney = transaction.money
+                validateMoney(transaction.money).onFailure { message ->
+                    errors[TransactionFormFields.MONEY] = message
+                }.onSuccess { moneyBigDecimal ->
+                    formattedMoney = moneyBigDecimal.stripTrailingZeros().toPlainString()
+                }
 
-            validateLength(
-                transaction.sender, Transaction.MIN_NAME_LENGTH, Transaction.MAX_NAME_LENGTH
-            ).onFailure { message ->
-                errors[TransactionFormFields.SENDER] = message
-            }
+                validateLength(
+                    transaction.sender, Transaction.MIN_NAME_LENGTH, Transaction.MAX_NAME_LENGTH
+                ).onFailure { message ->
+                    errors[TransactionFormFields.SENDER] = message
+                }
 
-            validateLength(
-                transaction.receiver, Transaction.MIN_NAME_LENGTH, Transaction.MAX_NAME_LENGTH
-            ).onFailure { message ->
-                errors[TransactionFormFields.RECEIVER] = message
-            }
+                validateLength(
+                    transaction.receiver, Transaction.MIN_NAME_LENGTH, Transaction.MAX_NAME_LENGTH
+                ).onFailure { message ->
+                    errors[TransactionFormFields.RECEIVER] = message
+                }
 
-            if (errors.isNotEmpty()) {
+                if (errors.isNotEmpty()) {
+                    _uiState.value = TransactionUiState.Success(
+                        transactions = filteredTransactions,
+                        categories = categories,
+                        errors = errors,
+                        sent = false,
+                        periodFilter = periodFilter,
+                        startDate = startDate.toString(),
+                        endDate = endDate.toString()
+                    )
+                    return@launch
+                }
+                _uiState.value = TransactionUiState.Loading
+                dataService.addTransaction(transaction.copy(money = formattedMoney))
+                allTransactions = dataService.getTransactions()
+                filterAndSort()
                 _uiState.value = TransactionUiState.Success(
                     transactions = filteredTransactions,
                     categories = categories,
                     errors = errors,
-                    sent = false,
+                    sent = true,
                     periodFilter = periodFilter,
                     startDate = startDate.toString(),
                     endDate = endDate.toString()
                 )
-                return@launch
+            } catch (e: Exception) {
+                showError(R.string.error_please_try_again)
             }
-            _uiState.value = TransactionUiState.Loading
-            dataService.addTransaction(transaction.copy(money = formattedMoney))
-            allTransactions = dataService.getTransactions()
-            filterAndSort()
-            _uiState.value = TransactionUiState.Success(
-                transactions = filteredTransactions,
-                categories = categories,
-                errors = errors,
-                sent = true,
-                periodFilter = periodFilter,
-                startDate = startDate.toString(),
-                endDate = endDate.toString()
-            )
 
         }
     }
 
     fun deleteTransaction(transactionID: Long?) {
         viewModelScope.launch {
-            if (transactionID == null) {
-                _uiState.value =
-                    TransactionUiState.Error(ErrorMessage(R.string.error_please_try_again))
-            } else {
-                allTransactions = dataService.deleteTransaction(transactionID)
-                filterAndSort()
+            try {
+                if (transactionID == null) {
+                    _uiState.value =
+                        TransactionUiState.Error(ErrorMessage(R.string.error_please_try_again))
+                } else {
+                    allTransactions = dataService.deleteTransaction(transactionID)
+                    filterAndSort()
+                }
+            } catch (e: Exception) {
+                showError(R.string.error_please_try_again)
             }
         }
     }
 
     fun editTransaction(transaction: Transaction) {
         viewModelScope.launch {
+            try {
+                errors = mutableMapOf()
+                isChosenCategory(transaction.categoryID).onFailure { message ->
+                    errors[TransactionFormFields.CATEGORY] = message
+                }
 
-            errors = mutableMapOf()
-            isChosenCategory(transaction.categoryID).onFailure { message ->
-                errors[TransactionFormFields.CATEGORY] = message
-            }
+                validateMoney(transaction.money).onFailure { message ->
+                    errors[TransactionFormFields.MONEY] = message
+                }
 
-            validateMoney(transaction.money).onFailure { message ->
-                errors[TransactionFormFields.MONEY] = message
-            }
+                validateLength(
+                    transaction.sender, Transaction.MIN_NAME_LENGTH, Transaction.MAX_NAME_LENGTH
+                ).onFailure { message ->
+                    errors[TransactionFormFields.SENDER] = message
+                }
 
-            validateLength(
-                transaction.sender, Transaction.MIN_NAME_LENGTH, Transaction.MAX_NAME_LENGTH
-            ).onFailure { message ->
-                errors[TransactionFormFields.SENDER] = message
-            }
+                validateLength(
+                    transaction.receiver, Transaction.MIN_NAME_LENGTH, Transaction.MAX_NAME_LENGTH
+                ).onFailure { message ->
+                    errors[TransactionFormFields.RECEIVER] = message
+                }
 
-            validateLength(
-                transaction.receiver, Transaction.MIN_NAME_LENGTH, Transaction.MAX_NAME_LENGTH
-            ).onFailure { message ->
-                errors[TransactionFormFields.RECEIVER] = message
-            }
+                if (errors.isNotEmpty()) {
+                    _uiState.value = TransactionUiState.Success(
+                        transactions = filteredTransactions,
+                        categories = categories,
+                        errors = errors,
+                        sent = false,
+                        periodFilter = periodFilter,
+                        startDate = startDate.toString(),
+                        endDate = endDate.toString()
+                    )
+                    return@launch
+                }
 
-            if (errors.isNotEmpty()) {
+                _uiState.value = TransactionUiState.Loading
+                dataService.editTransaction(transaction)
+                allTransactions = dataService.getTransactions()
+                filterAndSort()
+
                 _uiState.value = TransactionUiState.Success(
                     transactions = filteredTransactions,
                     categories = categories,
                     errors = errors,
-                    sent = false,
+                    sent = true,
                     periodFilter = periodFilter,
                     startDate = startDate.toString(),
                     endDate = endDate.toString()
                 )
-                return@launch
+
+            } catch (e: Exception) {
+                showError(R.string.error_please_try_again)
             }
-
-            _uiState.value = TransactionUiState.Loading
-            dataService.editTransaction(transaction)
-            allTransactions = dataService.getTransactions()
-            filterAndSort()
-
-            _uiState.value = TransactionUiState.Success(
-                transactions = filteredTransactions,
-                categories = categories,
-                errors = errors,
-                sent = true,
-                periodFilter = periodFilter,
-                startDate = startDate.toString(),
-                endDate = endDate.toString()
-            )
-
         }
     }
 
@@ -228,25 +244,27 @@ class TransactionViewModel(private val dataService: IDataService) : ViewModel() 
         currentSortType = sortType;
 
         val currentList = filteredTransactions
+        try {
+            val sortedList = when (sortType) {
+                SortTypes.SORTBY_SUM_ASCENDING -> currentList.sortedBy { BigDecimal(it.money) }
+                SortTypes.SORTBY_SUM_DESCENDING -> currentList.sortedByDescending { BigDecimal(it.money) }
+                SortTypes.SORTBY_DATE_ASCENDING -> currentList.sortedBy { it.date }
+                SortTypes.SORTBY_DATE_DESCENDING -> currentList.sortedByDescending { it.date }
+            }
+            filteredTransactions = sortedList
 
-        val sortedList = when (sortType) {
-            SortTypes.SORTBY_SUM_ASCENDING -> currentList.sortedBy { BigDecimal(it.money) }
-            SortTypes.SORTBY_SUM_DESCENDING -> currentList.sortedByDescending { BigDecimal(it.money) }
-            SortTypes.SORTBY_DATE_ASCENDING -> currentList.sortedBy { it.date }
-            SortTypes.SORTBY_DATE_DESCENDING -> currentList.sortedByDescending { it.date }
+            _uiState.value = TransactionUiState.Success(
+                transactions = filteredTransactions,
+                categories = categories,
+                errors = errors,
+                sent = false,
+                periodFilter = periodFilter,
+                startDate = startDate.toString(),
+                endDate = endDate.toString()
+            )
+        } catch (e: Exception) {
+            showError(R.string.error_please_try_again)
         }
-
-        filteredTransactions = sortedList
-
-        _uiState.value = TransactionUiState.Success(
-            transactions = filteredTransactions,
-            categories = categories,
-            errors = errors,
-            sent = false,
-            periodFilter = periodFilter,
-            startDate = startDate.toString(),
-            endDate = endDate.toString()
-        )
     }
 
     fun filterByPeriod() {
@@ -271,42 +289,42 @@ class TransactionViewModel(private val dataService: IDataService) : ViewModel() 
     ) {
         _uiState.value = TransactionUiState.Loading
         this.periodFilter = periodFilter
+        try {
+            when (periodFilter) {
+                PeriodFilter.MONTH -> {
+                    this.startDate = today.withDayOfMonth(1)
+                    this.endDate = today
+                }
 
-        when (periodFilter) {
-            PeriodFilter.MONTH -> {
-                this.startDate = today.withDayOfMonth(1)
-                this.endDate = today
+                PeriodFilter.WEEK -> {
+                    this.startDate = today.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY))
+                    this.endDate = today
+                }
+
+                PeriodFilter.TODAY -> {
+                    this.startDate = today
+                    this.endDate = today
+                }
+
+                PeriodFilter.CUSTOM -> {
+                    this.startDate = LocalDate.parse(startDate)
+                    this.endDate = LocalDate.parse(endDate)
+                }
             }
+            filterAndSort()
 
-            PeriodFilter.WEEK -> {
-                this.startDate = today.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY))
-                Log.e("start of week", this.startDate.toString())
-                this.endDate = today
-                Log.e("end of week", this.endDate.toString())
-
-            }
-
-            PeriodFilter.TODAY -> {
-                this.startDate = today
-                this.endDate = today
-            }
-
-            PeriodFilter.CUSTOM -> {
-                this.startDate = LocalDate.parse(startDate)
-                this.endDate = LocalDate.parse(endDate)
-            }
+            _uiState.value = TransactionUiState.Success(
+                transactions = filteredTransactions,
+                categories = categories,
+                errors = errors,
+                sent = false,
+                periodFilter = periodFilter,
+                startDate = this.startDate.toString(),
+                endDate = this.endDate.toString()
+            )
+        } catch (e: Exception) {
+            showError(R.string.error_please_try_again)
         }
-        filterAndSort()
-
-        _uiState.value = TransactionUiState.Success(
-            transactions = filteredTransactions,
-            categories = categories,
-            errors = errors,
-            sent = false,
-            periodFilter = periodFilter,
-            startDate = this.startDate.toString(),
-            endDate = this.endDate.toString()
-        )
     }
 
     fun filterAndSort() {
@@ -322,8 +340,6 @@ class TransactionViewModel(private val dataService: IDataService) : ViewModel() 
         if (categoryID != NoFilter) filteredTransactions =
             filteredTransactions.filter { it.categoryID == categoryID }
 
-
-        sortTransactions(currentSortType)
         _uiState.value = TransactionUiState.Success(
             transactions = filteredTransactions,
             categories = categories,
