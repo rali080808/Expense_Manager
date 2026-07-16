@@ -7,5 +7,4 @@ enum class PeriodFilter(val label: String) {
     WEEK("This week"),
     MONTH("This month"),
     CUSTOM("Custom"),
-//    NONE("None")
-}
+ }
